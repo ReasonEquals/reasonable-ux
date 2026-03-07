@@ -27,7 +27,7 @@ The core loop:
 
 ## Project Structure
 ```
-binder-qa/
+reasons-qagent/
 ├── tests/
 │   ├── agent_test.py      # Main agentic test runner
 │   └── test_login.py      # Simple single-run test
@@ -44,8 +44,8 @@ binder-qa/
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/yourusername/binder-qa.git
-cd binder-qa
+git clone https://github.com/yourusername/reasons-qagent.git
+cd reasons-qagent
 ```
 
 **2. Create virtual environment**
