@@ -9,23 +9,26 @@ from datetime import datetime
 load_dotenv()
 client = Anthropic()
 
-GOAL = "Test the login form. Try logging in with valid credentials (username: tomsmith, password: SuperSecretPassword!), then try with invalid credentials and observe the error handling."
+
 
 async def screenshot_as_base64(page):
-    screenshot = await page.screenshot()
+    screenshot = await page.screenshot(type="jpeg", quality=40)
     return base64.b64encode(screenshot).decode("utf-8")
 
-async def run():
+DEFAULT_goal = "Test the login form. Try logging in with valid credentials (username: tomsmith, password: SuperSecretPassword!), then try with invalid credentials and observe the error handling."
+
+async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
 
-        await page.goto("https://the-internet.herokuapp.com/login")
+        await page.goto(url)
 
         conversation = []
         report = []
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_label = "login_form_test"
+        run_label = goal.split()[0:3]
+        run_label = "_".join(run_label).lower().strip(".,!?") + "_test"
 
         for step in range(8):
             print(f"\n--- Agent Step {step + 1} ---")
@@ -42,13 +45,13 @@ async def run():
                         "type": "image",
                         "source": {
                             "type": "base64",
-                            "media_type": "image/png",
+                            "media_type": "image/jpeg",
                             "data": encoded
                         }
                     },
                     {
                         "type": "text",
-                        "text": f"""You are a QA agent. Your goal is: {GOAL}
+                        "text": f"""You are a QA agent. Your goal is: {goal}.
 
 Current step: {step + 1}
 
@@ -56,7 +59,7 @@ Respond in JSON with exactly this shape:
 {{
     "observation": "what you see on the page",
     "action": "click | type | navigate | done",
-    "target": "css selector or URL or null",
+    "target": "simple CSS selector (id, class, tag, or attribute only — no :contains()) or URL or null",
     "value": "text to type or null",
     "reasoning": "why you chose this action",
     "pass_fail": "pass | fail | in_progress",
@@ -157,7 +160,7 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
 </head>
 <body>
     <h1>🧪 QA Agent Report</h1>
-    <div class="goal"><strong>Goal:</strong> {GOAL}</div>
+    <div class="goal"><strong>goal:</strong> {goal}</div>
     <p><strong>Run ID:</strong> {run_id}</p>
     <p class="status">Final Status: {final_status}</p>
     <table>
@@ -186,4 +189,5 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
 
         await browser.close()
 
-asyncio.run(run())
+if __name__ == "__main__":
+    asyncio.run(run())
