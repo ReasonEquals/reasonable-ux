@@ -1,0 +1,15 @@
+# environment
+.env
+venv/
+
+# python
+__pycache__/
+*.pyc
+
+# test artifacts
+screenshots/
+reports/
+
+# optional but common
+.pytest_cache/
+.DS_Store
