@@ -1,4 +1,12 @@
-# binder-qa 🧪
+# reasons-qagent 🧪
+
+![Agent Demo](docs/demo.gif)
+
+## Dashboard
+![Dashboard](docs/dashboard.png)
+
+## Sample Report
+![Sample Report](docs/sample_report.png)
 
 An agentic QA testing tool powered by Claude AI and Playwright.
 

@@ -142,6 +142,7 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
         html = f"""<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>QA Report — {run_label} — {run_id}</title>
     <style>
         body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
