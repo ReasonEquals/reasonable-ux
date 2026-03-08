@@ -18,7 +18,7 @@ async def screenshot_as_base64(page):
 
 DEFAULT_goal = "Test the login form. Try logging in with valid credentials (username: tomsmith, password: SuperSecretPassword!), then try with invalid credentials and observe the error handling."
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8):
+async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8, suite_dir=None):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
@@ -29,7 +29,10 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
         report = []
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
-        run_dir = f"runs/{run_id}_{run_label}"
+        if suite_dir:
+            run_dir = f"{suite_dir}/{run_id}_{run_label}"
+        else:
+            run_dir = f"runs/{run_id}_{run_label}"
         screenshots_dir = f"{run_dir}/screenshots"
         os.makedirs(screenshots_dir, exist_ok=True)
 
