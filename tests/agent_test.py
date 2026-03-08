@@ -161,20 +161,24 @@ If you are on step {max_steps}, you MUST use action: done with a final pass_fail
     <meta charset="UTF-8">
     <title>QA Report — {run_label} — {run_id}</title>
     <style>
-        body {{ font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
-        h1 {{ color: #333; }}
-        .status {{ font-size: 24px; font-weight: bold; color: {status_color}; }}
-        .goal {{ background: #fff; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0; }}
-        table {{ width: 100%; border-collapse: collapse; background: #fff; }}
-        th {{ background: #2c3e50; color: white; padding: 10px; text-align: left; }}
-        td {{ padding: 10px; border-bottom: 1px solid #ddd; vertical-align: top; }}
-        tr:hover {{ background: #f9f9f9; }}
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{ font-family: Arial, sans-serif; margin: 40px; background: #1a1a2e; color: #eee; }}
+        h1 {{ font-size: 28px; margin-bottom: 8px; color: #00d4ff; }}
+        .status {{ font-size: 24px; font-weight: bold; color: {status_color}; margin: 16px 0; }}
+        .goal {{ background: #16213e; padding: 15px; border-left: 4px solid #00d4ff; margin: 20px 0; border-radius: 4px; }}
+        .meta {{ color: #888; font-size: 13px; margin: 8px 0; }}
+        table {{ width: 100%; border-collapse: collapse; background: #16213e; border-radius: 8px; overflow: hidden; margin-top: 20px; }}
+        th {{ background: #0f3460; color: #00d4ff; padding: 12px 16px; text-align: left; font-size: 13px; }}
+        td {{ padding: 12px 16px; border-bottom: 1px solid #0f3460; vertical-align: top; font-size: 13px; }}
+        tr:last-child td {{ border-bottom: none; }}
+        tr:hover td {{ background: #0f3460; }}
+        img {{ border-radius: 4px; border: 1px solid #0f3460; }}
     </style>
 </head>
 <body>
     <h1>🧪 QA Agent Report</h1>
     <div class="goal"><strong>goal:</strong> {goal}</div>
-    <p><strong>Run ID:</strong> {run_id}</p>
+    <p class="meta"><strong>Run ID:</strong> {run_id}</p>
     <p class="status">Final Status: {final_status}</p>
     <table>
         <tr>
