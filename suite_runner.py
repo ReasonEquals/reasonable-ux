@@ -23,6 +23,12 @@ async def run_suite(url: str, max_steps: int = 8):
     test_plan = await plan(url)
     test_cases = test_plan["suggested_test_cases"]
 
+    CI_MODE = os.environ.get("CI", "false").lower() == "true"
+    if CI_MODE:
+        print("🚨 Running in CI mode - headless browser")
+    else:
+        print("🚨 Running in interactive mode - visible browser")
+
     print(f"\n▶ Running {len(test_cases)} test cases...\n")
 
     suite_results = []
@@ -36,6 +42,18 @@ async def run_suite(url: str, max_steps: int = 8):
         print(f"\n{'='*60}")
         print(f"Test {i+1}/{len(test_cases)} [{priority.upper()}]: {goal}")
         print(f"{'='*60}")
+
+        if CI_MODE and priority in ["low", "medium"]:
+            print(f"⏭️ Skipping [{priority.upper()}] in CI")
+            suite_results.append({
+                "test_number": i + 1,
+                "goal": goal,
+                "priority": priority,
+                "final_status": "skipped",
+                "verdict": "Skipped in CI — only HIGH priority tests run in CI",
+                "report_path": ""
+            })
+            continue
 
         try:
             tokens = await asyncio.wait_for(
@@ -97,15 +115,16 @@ async def run_suite(url: str, max_steps: int = 8):
     passed = sum(1 for r in suite_results if r["final_status"] == "pass")
     failed = sum(1 for r in suite_results if r["final_status"] == "fail")
     errors = sum(1 for r in suite_results if r["final_status"] == "error")
-    total = len(suite_results)
     timeouts = sum(1 for r in suite_results if r["final_status"] == "timeout")
+    skipped = sum(1 for r in suite_results if r["final_status"] == "skipped")
+    total = len(suite_results)
     suite_status = "PASS" if failed == 0 and errors == 0 and timeouts == 0 else "FAIL"
     suite_color = "#2ecc71" if suite_status == "PASS" else "#e74c3c"
 
     rows = ""
     for r in suite_results:
         pf = r["final_status"].upper()
-        pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
+        pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#888" if pf == "SKIPPED" else "#f39c12"
         priority_color = "#e74c3c" if r["priority"] == "high" else "#f39c12" if r["priority"] == "medium" else "#2ecc71"
         link = f'<a href="{r["report_path"]}" style="color:#00d4ff">View →</a>' if r["report_path"] else "—"
         rows += f"""
@@ -155,6 +174,7 @@ async def run_suite(url: str, max_steps: int = 8):
         <div class="stat"><div class="number fail">{failed}</div><div class="label">FAILED</div></div>
         <div class="stat"><div class="number" style="color:#f39c12">{errors}</div><div class="label">ERRORS</div></div>
         <div class="stat"><div class="number" style="color:#f39c12">{timeouts}</div><div class="label">TIMEOUTS</div></div>
+        <div class="stat"><div class="number" style="color:#888">{skipped}</div><div class="label">SKIPPED</div></div>
         <div class="stat"><div class="number" style="color:#00d4ff">{total_input + total_output:,}</div><div class="label">TOKENS</div></div>
     </div>
     <table>
