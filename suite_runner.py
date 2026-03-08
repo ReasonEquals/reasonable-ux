@@ -2,6 +2,7 @@ import asyncio
 import os
 import json
 import sys
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -37,11 +38,9 @@ async def run_suite(url: str, max_steps: int = 8):
         print(f"{'='*60}")
 
         try:
-            tokens = await run(
-                url=url,
-                goal=goal,
-                max_steps=max_steps,
-                suite_dir=str(suite_dir)
+            tokens = await asyncio.wait_for(
+                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir)),
+                timeout=300
             )
             total_input += tokens.get("input", 0)
             total_output += tokens.get("output", 0)
@@ -72,6 +71,17 @@ async def run_suite(url: str, max_steps: int = 8):
             status_icon = "✅" if final_status == "pass" else "❌" if final_status == "fail" else "⚠️"
             print(f"{status_icon} {final_status.upper()}: {verdict}")
 
+        except asyncio.TimeoutError:
+            print(f"⏱️ Test {i+1} exceeded max runtime, marking as timeout")
+            suite_results.append({
+                "test_number": i + 1,
+                "goal": goal,
+                "priority": priority,
+                "final_status": "timeout",
+                "verdict": "Test exceeded 300 second time limit",
+                "report_path": ""
+            })
+
         except Exception as e:
             print(f"❌ Test {i+1} failed with error: {e}")
             suite_results.append({
@@ -88,7 +98,8 @@ async def run_suite(url: str, max_steps: int = 8):
     failed = sum(1 for r in suite_results if r["final_status"] == "fail")
     errors = sum(1 for r in suite_results if r["final_status"] == "error")
     total = len(suite_results)
-    suite_status = "PASS" if failed == 0 and errors == 0 else "FAIL"
+    timeouts = sum(1 for r in suite_results if r["final_status"] == "timeout")
+    suite_status = "PASS" if failed == 0 and errors == 0 and timeouts == 0 else "FAIL"
     suite_color = "#2ecc71" if suite_status == "PASS" else "#e74c3c"
 
     rows = ""
@@ -143,6 +154,7 @@ async def run_suite(url: str, max_steps: int = 8):
         <div class="stat"><div class="number pass">{passed}</div><div class="label">PASSED</div></div>
         <div class="stat"><div class="number fail">{failed}</div><div class="label">FAILED</div></div>
         <div class="stat"><div class="number" style="color:#f39c12">{errors}</div><div class="label">ERRORS</div></div>
+        <div class="stat"><div class="number" style="color:#f39c12">{timeouts}</div><div class="label">TIMEOUTS</div></div>
         <div class="stat"><div class="number" style="color:#00d4ff">{total_input + total_output:,}</div><div class="label">TOKENS</div></div>
     </div>
     <table>
@@ -162,6 +174,8 @@ async def run_suite(url: str, max_steps: int = 8):
     suite_report_path = suite_dir / "suite_report.html"
     with open(suite_report_path, "w", encoding="utf-8") as f:
         f.write(html)
+    subprocess.run(["python", "build_index.py"])
+    print("📊 Dashboard index updated.")
 
     print(f"\n{'='*60}")
     print(f"📊 Suite complete: {passed}/{total} passed")

@@ -121,12 +121,25 @@ If you are on step {max_steps}, you MUST use action: done with a final pass_fail
                     print(f"\n✅ Agent complete — {decision.get('pass_fail', '').upper()}: {decision.get('verdict', '')}")
                     break
                 elif decision["action"] == "click":
-                    await page.click(decision["target"])
+                    await asyncio.wait_for(page.click(decision["target"]), timeout=10)
                 elif decision["action"] == "navigate":
-                    await page.goto(decision["target"])
+                    await asyncio.wait_for(page.goto(decision["target"]), timeout=15)
                 elif decision["action"] == "type":
-                    await page.fill(decision["target"], decision["value"])
+                    await asyncio.wait_for(page.fill(decision["target"], decision["value"]), timeout=10)
 
+            except asyncio.TimeoutError:
+                print(f"⏱️ Step {step + 1} timed out")
+                report.append({
+                    "step": step + 1,
+                    "screenshot": screenshot_path,
+                    "observation": "Step timed out",
+                    "action": "timeout",
+                    "target": decision.get("target"),
+                    "reasoning": "Action exceeded time limit",
+                    "pass_fail": "fail",
+                    "verdict": f"Step {step + 1} timed out waiting for action to complete"
+                })
+                break
             except Exception as e:
                 print(f"Could not parse action: {e}")
                 break
