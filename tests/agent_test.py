@@ -20,7 +20,8 @@ DEFAULT_goal = "Test the login form. Try logging in with valid credentials (user
 
 async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8, suite_dir=None):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        headless = os.environ.get("CI", "false").lower() == "true"
+        browser = await p.chromium.launch(headless=headless)
         page = await browser.new_page()
 
         await page.goto(url)
@@ -216,7 +217,8 @@ If you are on step {max_steps}, you MUST use action: done with a final pass_fail
             f.write(html)
         print(f"🌐 HTML report saved: {html_path}")
 
-        await browser.close()
+        await asyncio.sleep(0.5)
+        await asyncio.wait_for(browser.close(), timeout=10)
 
         total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
         total_output = sum(r.get("output_tokens", 0) for r in report if "output_tokens" in r)
