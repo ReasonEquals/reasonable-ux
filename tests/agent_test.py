@@ -74,7 +74,7 @@ Respond in JSON with exactly this shape:
 {{
     "observation": "what you see on the page",
     "action": "click | type | navigate | done",
-    "target": "simple CSS selector using id or class preferred over bare tag names (e.g. use '.button' not 'a', '#username' not 'input') — no :contains() — or URL or null",
+    "target": "simple CSS selector — prefer id over class over tag (e.g. '#username', 'button[type=submit]', 'input[name=password]') — avoid generic selectors like '.button' or bare 'a' — no :contains() — or URL or null",
     "value": "text to type or null",
     "reasoning": "why you chose this action",
     "pass_fail": "pass | fail | in_progress",
