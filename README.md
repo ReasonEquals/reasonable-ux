@@ -1,4 +1,5 @@
 # reasons-qagent 🧪
+![CI](https://github.com/qa-reasonably/reasons-qagent/actions/workflows/test.yml/badge.svg)
 
 ![Agent Demo](docs/demo.gif)
 
