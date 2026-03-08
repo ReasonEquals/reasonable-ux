@@ -1,4 +1,5 @@
 import asyncio
+import os
 from playwright.async_api import async_playwright
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -27,13 +28,15 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
         conversation = []
         report = []
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_label = goal.split()[0:3]
-        run_label = "_".join(run_label).lower().strip(".,!?") + "_test"
+        run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
+        run_dir = f"runs/{run_id}_{run_label}"
+        screenshots_dir = f"{run_dir}/screenshots"
+        os.makedirs(screenshots_dir, exist_ok=True)
 
-        for step in range(8):
+        for step in range(max_steps):
             print(f"\n--- Agent Step {step + 1} ---")
 
-            screenshot_path = f"screenshots/{run_label}_{run_id}_step_{step + 1}.png"
+            screenshot_path = f"{screenshots_dir}/step_{step + 1}.png"
             await page.screenshot(path=screenshot_path)
             encoded = await screenshot_as_base64(page)
             print(f"📸 Screenshot saved: {screenshot_path}")
@@ -75,7 +78,7 @@ Respond in JSON with exactly this shape:
 }}
 
 If your goal is complete, use action: done and give a final pass_fail and verdict.
-If you are on step 8, you MUST use action: done with a final pass_fail and verdict — do not continue."""
+If you are on step {max_steps}, you MUST use action: done with a final pass_fail and verdict — do not continue."""
                     }
                 ]
             })
@@ -128,8 +131,8 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
             await asyncio.sleep(1)
 
         # Save JSON report
-        report_path = f"reports/{run_label}_{run_id}.json"
-        with open(report_path, "w") as f:
+        report_path = f"{run_dir}/report.json"
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
         print(f"\n📄 JSON report saved: {report_path}")
 
@@ -144,7 +147,7 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
             rows += f"""
             <tr>
                 <td>{entry['step']}</td>
-                <td><img src="../{entry['screenshot']}" width="200"/></td>
+                <td><img src="screenshots/step_{entry['step']}.png" width="200"/></td>
                 <td>{entry['observation']}</td>
                 <td>{entry['action']}</td>
                 <td>{entry['reasoning']}</td>
@@ -188,7 +191,7 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
 </body>
 </html>"""
 
-        html_path = f"reports/{run_label}_{run_id}.html"
+        html_path = f"{run_dir}/report.html"
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
         print(f"🌐 HTML report saved: {html_path}")

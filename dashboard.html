@@ -83,7 +83,7 @@
 
             let index;
             try {
-                const res = await fetch("reports/index.json");
+                const res = await fetch("runs/index.json");
                 if (!res.ok) throw new Error("No index found");
                 index = await res.json();
             } catch {

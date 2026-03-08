@@ -9,6 +9,7 @@ __pycache__/
 # test artifacts
 screenshots/
 reports/
+runs/
 
 # optional but common
 .pytest_cache/
