@@ -183,11 +183,14 @@ async def run_suite(url: str, max_steps: int = 8):
     print(f"   Output: {total_output:,} tokens")
     print(f"   Total:  {total_input + total_output:,} tokens")
     print(f"🌐 Suite report: {suite_report_path}")
+    return suite_status == "PASS"
 
 if __name__ == "__main__":
     import argparse
+    import sys
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", type=str, default="https://the-internet.herokuapp.com/login")
     parser.add_argument("--steps", type=int, default=8)
     args = parser.parse_args()
-    asyncio.run(run_suite(url=args.url, max_steps=args.steps))
+    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps))
+    sys.exit(0 if result else 1)
