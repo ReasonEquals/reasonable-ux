@@ -11,10 +11,11 @@ def parse_args():
     parser.add_argument("--url", type=str, help="Target URL to test")
     parser.add_argument("--goal", type=str, help="Test goal for the agent")
     parser.add_argument("--steps", type=int, default=10, help="Max steps (default: 10)")
+    parser.add_argument("--token-budget", type=int, default=None, help="Max tokens per test (default: unlimited)")
     parser.add_argument("--plan", action="store_true", help="Run planner first to generate test cases")
     return parser.parse_args()
 
-async def run_with_plan(url, steps):
+async def run_with_plan(url, steps, token_budget):
     from planner import plan
     from agent_test import run
 
@@ -26,12 +27,12 @@ async def run_with_plan(url, steps):
 
     print(f"\n🎯 Selected goal: {chosen}\n")
 
-    total_tokens = await run(url=url, goal=chosen, max_steps=steps)
+    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget)
     return total_tokens
 
-async def run_without_plan(url, goal, steps):
+async def run_without_plan(url, goal, steps, token_budget):
     from agent_test import run
-    total_tokens = await run(url=url, goal=goal, max_steps=steps)
+    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget)
     return total_tokens
 
 def build_index():
@@ -47,15 +48,17 @@ if __name__ == "__main__":
     print(f"\n🚀 Starting test run")
     print(f"   URL:   {url}")
     print(f"   Steps: {args.steps}")
+    if args.token_budget:
+        print(f"   Budget: {args.token_budget:,} tokens")
     if args.plan:
         print(f"   Mode:  Planner → Agent\n")
     else:
         print(f"   Goal:  {goal}\n")
 
     if args.plan:
-        total_tokens = asyncio.run(run_with_plan(url, args.steps))
+        total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget))
     else:
-        total_tokens = asyncio.run(run_without_plan(url, goal, args.steps))
+        total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget))
 
     build_index()
 

@@ -14,7 +14,7 @@ A complete reference for building an agentic QA testing tool using Python, Playw
 An agentic QA system differs from traditional test automation in one fundamental way:
 
 > **Traditional automation:** You tell the computer exactly what to do. Brittle. Breaks when UI changes.
-> **Agentic automation:** You tell the agent what to *goal* to achieve. It figures out the steps.
+> **Agentic automation:** You tell the agent what *goal* to achieve. It figures out the steps.
 
 The agent sees the page as a screenshot, decides what to do, executes it, takes another screenshot, and repeats. It reasons like a QA engineer would — observing, deciding, acting — rather than following a script.
 
@@ -207,6 +207,22 @@ if CI_MODE and priority in ["low", "medium"]:
 ```
 Skipped tests do NOT count as failures — suite status only fails on `fail`, `error`, or `timeout`.
 
+### 11. Model Tiering
+Not every component needs the most expensive model. The planner reads HTML and generates test cases — a task Sonnet handles well. The agent does vision-based reasoning on screenshots where quality matters more.
+**Implementation:** Planner uses `claude-sonnet-4-6`, agent uses `claude-opus-4-5`.
+**Result:** No measurable quality degradation. Pass rates held at ~80-90% across suite runs, per-test token averages stayed consistent (~9,000 tokens/test). The cost savings come from Sonnet's lower per-token pricing on the planner call, not from reduced token counts.
+**Talking point:** "I implemented model tiering so each component uses the cheapest model that maintains quality. The planner doesn't need Opus-level reasoning to read HTML and generate test cases."
+
+### 12. Token Budget Cap
+Runaway tests can burn tokens indefinitely if the agent loops or gets stuck in expensive reasoning. A per-test token budget acts as a cost ceiling.
+**Implementation:** Running token total tracked inside the agent loop. Budget checked before each API call. If exceeded, test stops with a forced fail verdict.
+```python
+if token_budget and tokens_used >= token_budget:
+    # stop test, record budget_stop in report
+```
+Available via CLI: `--token-budget 15000`. Defaults to unlimited when not set.
+**Why it matters:** Timeout handling catches tests that run too long. Budget cap catches tests that spend too much. Different failure modes, both need guardrails.
+
 ---
 
 ## GitHub Actions (CI/CD)
@@ -284,7 +300,9 @@ jobs:
 - Use JPEG at 40% quality instead of PNG
 - Skip low/medium priority tests in CI
 - Track tokens per test and per suite — makes optimization data-driven
-- Consider model tiering for future: cheap model for actions, strong model for failure analysis
+- Model tiering: Sonnet 4.6 for planner, Opus 4.5 for agent — each component uses the cheapest model that maintains quality
+- Token budget cap via `--token-budget` prevents runaway costs on stuck tests
+- Baseline data: ~9,000 tokens/test average, full suites (12-14 tests) run ~$0.70
 
 ### Debugging
 - Always run headed locally first — watching the browser is the fastest way to understand failures
@@ -316,6 +334,9 @@ jobs:
 
 **On limitations and honesty:**
 "The system has real limitations — it's non-deterministic, it can't handle OAuth flows, and some UI elements aren't reliably clickable in headless mode. I documented these explicitly in the README rather than hiding them, because the honest framing is that this is exploratory agentic testing, not a replacement for deterministic regression."
+
+**On cost optimization:**
+"I approached cost from multiple angles — image stripping for an 84% token reduction, JPEG compression, model tiering so the planner runs on Sonnet while the agent stays on Opus, and a token budget cap as a safety net. Each optimization was data-driven: I baselined before and after to verify quality held. Full suites run for under a dollar."
 
 ---
 
@@ -355,6 +376,8 @@ jobs:
 - [ ] Create `.github/workflows/test.yml`
 - [ ] Add `ANTHROPIC_API_KEY` to GitHub Secrets
 - [ ] Add CI skip logic for low/medium priority tests
+- [ ] Implement model tiering — Sonnet for planner, Opus for agent
+- [ ] Add token budget cap with `--token-budget` CLI flag
 - [ ] Write README with: what it is, how it works, setup, usage, engineering decisions, known limitations
 
 ---

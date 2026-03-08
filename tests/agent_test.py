@@ -18,7 +18,7 @@ async def screenshot_as_base64(page):
 
 DEFAULT_goal = "Test the login form. Try logging in with valid credentials (username: tomsmith, password: SuperSecretPassword!), then try with invalid credentials and observe the error handling."
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8, suite_dir=None):
+async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8, suite_dir=None, token_budget=None):
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
@@ -28,6 +28,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
 
         conversation = []
         report = []
+        tokens_used = 0
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
         if suite_dir:
@@ -38,6 +39,21 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
         os.makedirs(screenshots_dir, exist_ok=True)
 
         for step in range(max_steps):
+            # Check token budget before next API call
+            if token_budget and tokens_used >= token_budget:
+                print(f"💰 Token budget exceeded ({tokens_used:,}/{token_budget:,}), stopping test")
+                report.append({
+                    "step": step + 1,
+                    "screenshot": "",
+                    "observation": "Token budget exceeded",
+                    "action": "budget_stop",
+                    "target": None,
+                    "reasoning": f"Used {tokens_used:,} of {token_budget:,} token budget",
+                    "pass_fail": "fail",
+                    "verdict": f"Test stopped — token budget of {token_budget:,} exceeded"
+                })
+                break
+
             print(f"\n--- Agent Step {step + 1} ---")
 
             screenshot_path = f"{screenshots_dir}/step_{step + 1}.png"
@@ -94,7 +110,10 @@ If you are on step {max_steps}, you MUST use action: done with a final pass_fail
             )
 
             raw = response.content[0].text
+            tokens_used += response.usage.input_tokens + response.usage.output_tokens
             print(raw)
+            if token_budget:
+                print(f"💰 Tokens: {tokens_used:,}/{token_budget:,}")
 
             conversation.append({
                 "role": "assistant",

@@ -40,6 +40,11 @@ The core loop:
 python suite_runner.py --url "https://yoursite.com"
 ```
 
+**Run with a token budget per test:**
+```bash
+python suite_runner.py --url "https://yoursite.com" --token-budget 15000
+```
+
 **Run single test with auto-generated goal:**
 ```bash
 python run.py --plan --url "https://yoursite.com"
@@ -89,6 +94,12 @@ Claude's default tendency is to use bare tag selectors (`a`, `button`) which mat
 
 **Headless detection**
 The agent runs headed locally (visible browser window) and headless automatically in CI. This is detected via the `CI` environment variable that GitHub Actions sets, requiring no manual config change between environments.
+
+**Model tiering**
+The planner runs on Claude Sonnet 4.6 and the agent runs on Claude Opus 4.5. The planner's job — reading HTML and generating test cases — doesn't require the same reasoning depth as the agent's vision-based decision making. Testing showed no quality degradation after the switch: pass rates held at ~80-90% across suite runs, and per-test token averages remained consistent (~9,000 tokens/test). The architecture supports per-component model selection, so future cost optimization can target the agent independently.
+
+**Token budget cap**
+Each test can be given a token budget via `--token-budget`. If a test exceeds its budget, it stops immediately with a forced fail verdict. This prevents runaway costs from tests that loop or get stuck in expensive reasoning cycles. The budget is optional and defaults to unlimited.
 
 **JPEG compression**
 Screenshots sent to Claude use JPEG at 40% quality instead of PNG. Claude can still read the page clearly at this quality level and the token cost of image blocks drops significantly.
@@ -174,6 +185,8 @@ Core pipeline is working end-to-end, including CI/CD via GitHub Actions.
 - CI/CD via GitHub Actions (manual trigger + pull requests)
 - Dashboard with tabbed Individual Runs + Suite Runs views
 - Global dashboard stats aggregating individual and suite results
+- Model tiering — Sonnet 4.6 for planning, Opus 4.5 for agent execution
+- Token budget cap per test via `--token-budget` CLI flag
 
 **In progress:**
 - SauceDemo stable run as primary demo target
