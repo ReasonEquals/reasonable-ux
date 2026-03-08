@@ -38,6 +38,14 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
             encoded = await screenshot_as_base64(page)
             print(f"📸 Screenshot saved: {screenshot_path}")
 
+# Strip images from previous messages to reduce token cost
+            for msg in conversation:
+                if msg["role"] == "user" and isinstance(msg["content"], list):
+                    msg["content"] = [
+                        block for block in msg["content"] 
+                        if block.get("type") != "image"
+                    ]
+
             conversation.append({
                 "role": "user",
                 "content": [
@@ -51,7 +59,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
                     },
                     {
                         "type": "text",
-                        "text": f"""You are a QA agent. Your goal is: {goal}.
+                        "text": f"""You are a QA agent. Your goal is: {goal}
 
 Current step: {step + 1}
 
@@ -59,7 +67,7 @@ Respond in JSON with exactly this shape:
 {{
     "observation": "what you see on the page",
     "action": "click | type | navigate | done",
-    "target": "simple CSS selector (id, class, tag, or attribute only — no :contains()) or URL or null",
+    "target": "simple CSS selector using id or class preferred over bare tag names (e.g. use '.button' not 'a', '#username' not 'input') — no :contains() — or URL or null",
     "value": "text to type or null",
     "reasoning": "why you chose this action",
     "pass_fail": "pass | fail | in_progress",
@@ -98,7 +106,9 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
                     "target": decision.get("target"),
                     "reasoning": decision["reasoning"],
                     "pass_fail": decision.get("pass_fail", "in_progress"),
-                    "verdict": decision.get("verdict", "")
+                    "verdict": decision.get("verdict", ""),
+                    "input_tokens": response.usage.input_tokens,
+                    "output_tokens": response.usage.output_tokens
                 })
 
                 if decision["action"] == "done":
@@ -172,7 +182,7 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
             <th>Reasoning</th>
             <th>Pass/Fail</th>
             <th>Verdict</th>
-        </tr>
+</tr>
         {rows}
     </table>
 </body>
@@ -183,11 +193,11 @@ If you are on step 8, you MUST use action: done with a final pass_fail and verdi
             f.write(html)
         print(f"🌐 HTML report saved: {html_path}")
 
-        print(f"\n--- Token Usage ---")
-        print(f"Input:  {response.usage.input_tokens}")
-        print(f"Output: {response.usage.output_tokens}")
-
         await browser.close()
+
+        total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
+        total_output = sum(r.get("output_tokens", 0) for r in report if "output_tokens" in r)
+        return {"input": total_input, "output": total_output, "total": total_input + total_output}
 
 if __name__ == "__main__":
     asyncio.run(run())
