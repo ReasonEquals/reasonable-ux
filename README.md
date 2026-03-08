@@ -5,8 +5,8 @@
 ## Dashboard
 ![Dashboard](docs/dashboard.png)
 
-## Sample Report
-![Sample Report](docs/sample_report.png)
+## Suite Report
+![Suite Report](docs/sample_report.png)
 
 An agentic QA testing tool powered by Claude AI and Playwright. Point it at any URL and it plans, executes, and reports on test coverage automatically.
 
@@ -32,19 +32,19 @@ The core loop:
 
 ## Usage
 
-**Run with auto-generated test plan (recommended):**
+**Run full suite — planner generates and executes all test cases:**
+```bash
+python suite_runner.py --url "https://yoursite.com"
+```
+
+**Run single test with auto-generated goal:**
 ```bash
 python run.py --plan --url "https://yoursite.com"
 ```
 
-**Run with a specific goal:**
+**Run single test with specific goal:**
 ```bash
 python run.py --url "https://yoursite.com" --goal "Test the checkout flow"
-```
-
-**Run with default login test:**
-```bash
-python run.py
 ```
 
 **View the dashboard:**
@@ -58,10 +58,13 @@ python -m http.server 8000
 ## Engineering decisions
 
 **Context window optimization**
-Early runs consumed ~55,000 tokens per test. Images from prior conversation turns were being sent to Claude repeatedly even though only the current screenshot matters. Stripping images from previous messages while preserving the text reasoning trail reduced average token usage to ~8,800 per run — an 84% reduction with no measurable impact on test quality. Sequential multi-test suite execution is in progress; per-test cost will remain ~8,800 tokens regardless of suite size.
+Early runs consumed ~55,000 tokens per test. Images from prior conversation turns were being sent to Claude repeatedly even though only the current screenshot matters. Stripping images from previous messages while preserving the text reasoning trail reduced average token usage to ~8,800 per run — an 84% reduction with no measurable impact on test quality. Full suite runs (8 test cases) average ~62,000 tokens total (~$0.94) with each test case running in a fresh isolated context.
 
 **Separation of concerns**
-`agent_test.py` is a reusable module. `run.py` is the single entry point. `build_index.py` is infrastructure. Each file has one job. The planner is its own module so it can be swapped, extended, or called independently.
+`agent_test.py` is a reusable module. `run.py` is the single-goal entry point. `suite_runner.py` runs the full planner-generated suite. `build_index.py` is infrastructure. Each file has one job. The planner is its own module so it can be swapped, extended, or called independently.
+
+**Folder-per-run structure**
+Each test run creates its own folder under `runs/` containing screenshots and reports. Suite runs nest individual test folders inside a parent suite folder. This prevents file collisions, makes runs self-contained, and scales cleanly to parallel execution in the future.
 
 **CSS selector guidance**
 Claude's default tendency is to use bare tag selectors (`a`, `button`) which match multiple elements and cause timeouts. Prompting Claude to prefer id and class selectors eliminated this failure mode without requiring post-processing of its output.
@@ -78,12 +81,12 @@ reasons-qagent/
 │   ├── agent_test.py      # Agentic browser runner
 │   ├── planner.py         # HTML scraper and test case generator
 │   └── test_login.py      # Simple single-run baseline test
-├── screenshots/           # Per-step screenshots (auto-generated)
-├── reports/               # JSON + HTML reports (auto-generated)
+├── runs/                  # All test runs and suite runs (auto-generated)
 ├── docs/                  # README assets
 ├── dashboard.html         # Visual report dashboard
-├── build_index.py         # Indexes reports for dashboard
-├── run.py                 # Orchestrator and CLI entry point
+├── build_index.py         # Indexes runs for dashboard
+├── run.py                 # Single-test orchestrator and CLI
+├── suite_runner.py        # Full suite executor
 ├── .env                   # API key (never committed)
 ├── .env.example           # Env variable template
 └── README.md
@@ -128,11 +131,11 @@ cp .env.example .env
 ---
 
 ## Status
-Active development. Core pipeline (planner → agent → report → dashboard) is working. 
+Active development. Core pipeline (planner → agent → suite runner → report → dashboard) is working.
 
 **In progress:**
-- Sequential test suite execution (run all generated test cases in one command)
-- Orchestrator improvements
+- Dashboard integration for suite reports
+- Timeout handling with forced fail verdicts
 - CI/CD integration
 
 ---
