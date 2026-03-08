@@ -172,9 +172,10 @@ Core pipeline is working end-to-end, including CI/CD via GitHub Actions.
 - Timeout handling with forced fail verdicts and suite-level tracking
 - Headless mode with automatic CI detection
 - CI/CD via GitHub Actions (manual trigger + pull requests)
+- Dashboard with tabbed Individual Runs + Suite Runs views
+- Global dashboard stats aggregating individual and suite results
 
 **In progress:**
-- Dashboard integration for suite reports
 - SauceDemo stable run as primary demo target
 
 ---
