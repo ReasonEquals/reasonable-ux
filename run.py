@@ -1,6 +1,7 @@
 import asyncio
 import argparse
 import json
+import requests
 import subprocess
 import sys
 import os
@@ -20,6 +21,8 @@ def parse_args():
     parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     parser.add_argument("--pages", nargs="+", type=str, default=None,
                         help="URL paths to test sequentially (e.g. / /pricing /about). Appended to --url. Requires --mode ux.")
+    parser.add_argument("--discover", action="store_true",
+                        help="Crawl --url to discover internal pages, then run agent on each (UX mode). Overrides --pages if both passed.")
     return parser.parse_args()
 
 async def run_with_plan(url, steps, token_budget, email, password, mode):
@@ -78,6 +81,19 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
         print(f"🌐 Page: {path}  →  {full_url}")
         print(f"{'='*60}")
 
+        # HEAD check — skip 4xx paths before spending agent tokens
+        try:
+            head = requests.head(
+                full_url, timeout=8, allow_redirects=True,
+                headers={"User-Agent": "reasonable-ux/1.0"},
+            )
+            if 400 <= head.status_code < 500:
+                print(f"⚠️  Skipping {path} — HEAD returned {head.status_code}")
+                continue
+        except requests.RequestException as e:
+            print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
+            continue
+
         before = _existing_run_names()
         tokens = await agent_run(
             url=full_url, goal=goal, max_steps=steps,
@@ -116,7 +132,7 @@ def build_index():
 if __name__ == "__main__":
     args = parse_args()
 
-    url = args.url or "https://the-internet.herokuapp.com/login"
+    url  = args.url  or "https://the-internet.herokuapp.com/login"
     goal = args.goal or "Test the login form with valid and invalid credentials."
 
     print(f"\n🚀 Starting test run")
@@ -127,21 +143,40 @@ if __name__ == "__main__":
         print(f"   Budget: {args.token_budget:,} tokens")
     if args.email:
         print(f"   Email: {args.email}")
-    if args.pages:
+    if args.discover:
+        print(f"   Discover: enabled" + (" (--pages ignored)" if args.pages else ""))
+    elif args.pages:
         print(f"   Pages: {' '.join(args.pages)}")
     if args.plan:
         print(f"   Plan:  Planner → Agent\n")
     else:
         print(f"   Goal:  {goal}\n")
 
-    if args.pages:
+    # ── Resolve pages list ────────────────────────────────────────────────────
+    if args.discover:
+        if args.pages:
+            print("ℹ️  --discover takes precedence; ignoring --pages.")
+        from site_crawler import crawl
+        print(f"\n🔍 Crawling {url} for internal links...")
+        pages = crawl(url)
+        if pages:
+            print(f"   Found {len(pages)} path(s): {' '.join(pages)}\n")
+        else:
+            print("⚠️  No pages discovered. Exiting.")
+            sys.exit(1)
+    elif args.pages:
+        pages = args.pages
+    else:
+        pages = None
+
+    if pages:
         if args.mode != "ux":
-            print("ℹ️  --pages requires UX mode; switching to --mode ux.")
+            print("ℹ️  --pages/--discover requires UX mode; switching to --mode ux.")
             args.mode = "ux"
 
         page_results, total_tokens = asyncio.run(
             run_pages(url, goal, args.steps, args.token_budget,
-                      args.email, args.password, args.mode, args.pages)
+                      args.email, args.password, args.mode, pages)
         )
 
         build_index()
