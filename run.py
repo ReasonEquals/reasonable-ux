@@ -13,9 +13,12 @@ def parse_args():
     parser.add_argument("--steps", type=int, default=10, help="Max steps (default: 10)")
     parser.add_argument("--token-budget", type=int, default=None, help="Max tokens per test (default: unlimited)")
     parser.add_argument("--plan", action="store_true", help="Run planner first to generate test cases")
+    parser.add_argument("--email", type=str, default=None, help="Email/username for login or signup forms")
+    parser.add_argument("--password", type=str, default=None, help="Password for login or signup forms")
+    parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     return parser.parse_args()
 
-async def run_with_plan(url, steps, token_budget):
+async def run_with_plan(url, steps, token_budget, email, password, mode):
     from planner import plan
     from agent_test import run
 
@@ -27,12 +30,12 @@ async def run_with_plan(url, steps, token_budget):
 
     print(f"\n🎯 Selected goal: {chosen}\n")
 
-    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget)
+    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode)
     return total_tokens
 
-async def run_without_plan(url, goal, steps, token_budget):
+async def run_without_plan(url, goal, steps, token_budget, email, password, mode):
     from agent_test import run
-    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget)
+    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode)
     return total_tokens
 
 def build_index():
@@ -48,17 +51,20 @@ if __name__ == "__main__":
     print(f"\n🚀 Starting test run")
     print(f"   URL:   {url}")
     print(f"   Steps: {args.steps}")
+    print(f"   Mode:  {args.mode.upper()}")
     if args.token_budget:
         print(f"   Budget: {args.token_budget:,} tokens")
+    if args.email:
+        print(f"   Email: {args.email}")
     if args.plan:
-        print(f"   Mode:  Planner → Agent\n")
+        print(f"   Plan:  Planner → Agent\n")
     else:
         print(f"   Goal:  {goal}\n")
 
     if args.plan:
-        total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget))
+        total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode))
     else:
-        total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget))
+        total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode))
 
     build_index()
 

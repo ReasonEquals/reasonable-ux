@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
-async def run_suite(url: str, max_steps: int = 8, token_budget: int = None):
+async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa"):
     from planner import plan
     from agent_test import run
 
@@ -57,7 +57,7 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None):
 
         try:
             tokens = await asyncio.wait_for(
-                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget),
+                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget, email=email, password=password, mode=mode),
                 timeout=300
             )
             total_input += tokens.get("input", 0)
@@ -212,6 +212,9 @@ if __name__ == "__main__":
     parser.add_argument("--url", type=str, default="https://the-internet.herokuapp.com/login")
     parser.add_argument("--steps", type=int, default=8)
     parser.add_argument("--token-budget", type=int, default=None, help="Max tokens per test (default: unlimited)")
+    parser.add_argument("--email", type=str, default=None, help="Email/username for login or signup forms")
+    parser.add_argument("--password", type=str, default=None, help="Password for login or signup forms")
+    parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     args = parser.parse_args()
-    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget))
+    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget, email=args.email, password=args.password, mode=args.mode))
     sys.exit(0 if result else 1)

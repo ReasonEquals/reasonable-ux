@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(ls runs/20260407_162836_evaluate_the_landing/*.pdf)"
+    ]
+  }
+}
