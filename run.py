@@ -96,47 +96,38 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 _browser = await _p.chromium.launch(headless=_headless)
                 _context = await _browser.new_context()
                 _page = await _context.new_page()
-                # Navigate to the login page directly — the root URL may not show a login form
-                _login_paths = ["/auth/login", "/login", "/signin", "/sign-in"]
-                _login_url = base_url
-                for _lp in _login_paths:
-                    if any(p == _lp or p.startswith(_lp) for p in pages):
-                        _login_url = base_url.rstrip("/") + _lp
-                        break
-                await _page.goto(_login_url)
-                await _page.wait_for_load_state("networkidle")
-                print(f"   🌐 Auth page loaded: {_page.url}")
                 try:
-                    # Try email input first, then fall back to any visible text input
-                    _email_sel = 'input[type="email"], input[name="email"], input[id*="email" i], input[placeholder*="email" i]'
-                    await _page.wait_for_selector(_email_sel, timeout=15000)
-                    await _page.fill(_email_sel, email)
-                    # Check if password field is already visible; if not, click Continue/Next first
-                    _pw_sel = 'input[type="password"]'
-                    _pw_visible = await _page.locator(_pw_sel).is_visible() if await _page.locator(_pw_sel).count() > 0 else False
-                    if not _pw_visible:
-                        # Multi-step flow — click the submit/continue button to reveal password field
-                        _continue_sel = 'button[type="submit"], button:has-text("Continue"), button:has-text("Next")'
-                        await _page.click(_continue_sel)
-                        await _page.wait_for_selector(_pw_sel, timeout=15000)
-                    await _page.fill(_pw_sel, password)
+                    await _page.goto(base_url.rstrip("/") + "/auth/login")
+                    await _page.wait_for_load_state("networkidle")
+                    print(f"   🌐 Auth page loaded: {_page.url}")
+
+                    # Step 1: fill email and click Continue
+                    await _page.wait_for_selector('input[type="email"]', timeout=15000)
+                    await _page.fill('input[type="email"]', email)
                     await _page.click('button[type="submit"]')
+
+                    # Step 2: wait for password field to appear, fill it and submit
+                    await _page.wait_for_selector('input[type="password"]', timeout=15000)
+                    await _page.fill('input[type="password"]', password)
+                    await _page.click('button[type="submit"]')
+
                     await _page.wait_for_load_state("networkidle")
                     print(f"   ✅ Auth complete — current URL: {_page.url}")
                 except Exception as e:
-                    # Save a screenshot to help diagnose selector mismatches
                     try:
-                        _ss_path = "/tmp/auth_debug.png"
-                        await _page.screenshot(path=_ss_path)
-                        print(f"   📸 Debug screenshot: {_ss_path}")
+                        await _page.screenshot(path="/tmp/auth_debug.png")
+                        print(f"   📸 Debug screenshot: /tmp/auth_debug.png")
                     except Exception:
                         pass
                     print(f"   ⚠️  Auth attempt failed: {e} — continuing without session state")
+                    await _browser.close()
                     return None
+
                 _tf = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
                 _auth_path = _tf.name
                 _tf.close()
                 await _context.storage_state(path=_auth_path)
+                await _browser.close()
                 return _auth_path
         auth_state_path = await _do_auth()
         if auth_state_path:
