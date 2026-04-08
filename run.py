@@ -195,9 +195,12 @@ if __name__ == "__main__":
 
             hostname = urlparse(url).hostname or url.replace("https://", "").replace("http://", "")
             safe_domain = hostname.replace(".", "_")
-            iso_date = datetime.now().strftime("%Y-%m-%d")
-            Path("runs").mkdir(exist_ok=True)
-            output_path = Path("runs") / f"{safe_domain}_{iso_date}_multi_page.pdf"
+            now = datetime.now()
+            iso_date = now.strftime("%Y-%m-%d")
+            iso_time = now.strftime("%H-%M-%S")
+            suite_folder = Path("runs") / f"suite_{now.strftime('%Y%m%d_%H%M%S')}"
+            suite_folder.mkdir(parents=True, exist_ok=True)
+            output_path = suite_folder / f"{safe_domain}_{iso_date}_{iso_time}_multi_page.pdf"
 
             persona_results = None
             if args.personas or args.static_personas:
@@ -242,8 +245,10 @@ if __name__ == "__main__":
                         orchestrate(url, single_report, use_static=args.static_personas)
                     )
                     safe_domain = (_up(url).hostname or url).replace(".", "_")
-                    iso_date = _dt.now().strftime("%Y-%m-%d")
-                    output_path = run_folder / f"{safe_domain}_{iso_date}_persona.pdf"
+                    _now = _dt.now()
+                    iso_date = _now.strftime("%Y-%m-%d")
+                    iso_time = _now.strftime("%H-%M-%S")
+                    output_path = run_folder / f"{safe_domain}_{iso_date}_{iso_time}_persona.pdf"
                     print(f"\n📄 Generating persona report → {output_path}")
                     build_pdf(run_folder, single_report, url, output_path,
                               persona_results=persona_results)
