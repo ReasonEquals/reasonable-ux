@@ -61,21 +61,49 @@ def _existing_run_names(runs_dir="runs"):
     runs_path = Path(runs_dir)
     if not runs_path.exists():
         return set()
-    return {f.name for f in runs_path.iterdir() if f.is_dir()}
+    names = set()
+    for item in runs_path.iterdir():
+        if item.is_dir():
+            names.add(item.name)
+            # Also capture names of children (domain subfolder pattern)
+            for child in item.iterdir():
+                if child.is_dir():
+                    names.add(child.name)
+    return names
 
 
 def _newest_run_folder(before_names, runs_dir="runs"):
-    """Return the run folder created after the before_names snapshot was taken."""
+    """Return the run folder created after the before_names snapshot was taken.
+    Searches both runs/ directly and one level of domain subfolders."""
     runs_path = Path(runs_dir)
     if not runs_path.exists():
         return None
-    current = {f.name: f for f in runs_path.iterdir() if f.is_dir()}
-    new_names = set(current.keys()) - before_names
-    if new_names:
-        return current[sorted(new_names, reverse=True)[0]]
-    # Fallback: most recently modified
-    folders = sorted(current.values(), key=lambda f: f.stat().st_mtime, reverse=True)
-    return folders[0] if folders else None
+
+    def all_run_folders():
+        folders = {}
+        for item in runs_path.iterdir():
+            if item.is_dir() and not item.name.startswith("suite_"):
+                # Check if this is a domain subfolder (contains timestamped run dirs)
+                children = [c for c in item.iterdir() if c.is_dir()]
+                if children and any("_" in c.name for c in children):
+                    for child in children:
+                        folders[str(child)] = child
+                else:
+                    folders[str(item)] = item
+        return folders
+
+    current = all_run_folders()
+    new_folders = {k: v for k, v in current.items()
+                   if v.name not in before_names and str(v.parent) != str(runs_path) or v.name not in before_names}
+
+    # Find folders whose names weren't in before_names
+    new_by_name = {k: v for k, v in current.items() if v.name not in before_names}
+    if new_by_name:
+        return sorted(new_by_name.values(), key=lambda f: f.stat().st_mtime, reverse=True)[0]
+
+    # Fallback: most recently modified across all run folders
+    all_folders = list(current.values())
+    return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
 async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
