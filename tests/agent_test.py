@@ -3,6 +3,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
+import anthropic
 from anthropic import Anthropic
 from dotenv import load_dotenv
 import base64
@@ -13,6 +14,113 @@ from urllib.parse import urlparse
 load_dotenv()
 client = Anthropic()
 
+
+class LLMAdapter:
+    """Normalises API calls across providers (anthropic, openai, google)."""
+
+    def __init__(self, provider: str):
+        self._provider = provider
+        if provider == "anthropic":
+            self._client = anthropic.AsyncAnthropic()
+        elif provider == "openai":
+            import openai as _openai
+            self._client = _openai.AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        elif provider == "google":
+            import google.generativeai as genai
+            genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
+            self._genai = genai
+        else:
+            raise ValueError(f"Unknown provider: {provider!r}")
+
+    async def complete(self, messages: list, model: str, max_tokens: int) -> tuple:
+        """Routes to the appropriate provider. Returns (response_text, input_tokens, output_tokens)."""
+        if self._provider == "anthropic":
+            return await self._complete_anthropic(messages, model, max_tokens)
+        elif self._provider == "openai":
+            return await self._complete_openai(messages, model, max_tokens)
+        elif self._provider == "google":
+            return await self._complete_google(messages, model, max_tokens)
+
+    async def _complete_anthropic(self, messages, model, max_tokens):
+        response = await self._client.messages.create(
+            model=model, max_tokens=max_tokens, messages=messages
+        )
+        return (response.content[0].text, response.usage.input_tokens, response.usage.output_tokens)
+
+    @staticmethod
+    def _anthropic_to_openai_messages(messages) -> list:
+        """Translates Anthropic message format to OpenAI format."""
+        oai_messages = []
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+            if isinstance(content, str):
+                oai_messages.append({"role": role, "content": content})
+            elif isinstance(content, list):
+                oai_content = []
+                for block in content:
+                    if block.get("type") == "image":
+                        src = block["source"]
+                        oai_content.append({
+                            "type": "image_url",
+                            "image_url": {"url": f"data:{src['media_type']};base64,{src['data']}"}
+                        })
+                    else:
+                        oai_content.append(block)
+                oai_messages.append({"role": role, "content": oai_content})
+            else:
+                oai_messages.append({"role": role, "content": content})
+        return oai_messages
+
+    async def _complete_openai(self, messages, model, max_tokens):
+        oai_messages = self._anthropic_to_openai_messages(messages)
+        response = await self._client.chat.completions.create(
+            model=model, max_tokens=max_tokens, messages=oai_messages
+        )
+        return (
+            response.choices[0].message.content,
+            response.usage.prompt_tokens,
+            response.usage.completion_tokens,
+        )
+
+    @staticmethod
+    def _anthropic_to_google_contents(messages) -> list:
+        """Translates Anthropic message format to Google generativeai format."""
+        contents = []
+        for msg in messages:
+            role = "model" if msg["role"] == "assistant" else "user"
+            content = msg["content"]
+            if isinstance(content, str):
+                parts = [content]
+            elif isinstance(content, list):
+                parts = []
+                for block in content:
+                    if block.get("type") == "image":
+                        src = block["source"]
+                        parts.append({
+                            "mime_type": src["media_type"],
+                            "data": base64.b64decode(src["data"]),
+                        })
+                    else:
+                        parts.append(block.get("text", ""))
+            else:
+                parts = [str(content)]
+            contents.append({"role": role, "parts": parts})
+        return contents
+
+    async def _complete_google(self, messages, model, max_tokens):
+        contents = self._anthropic_to_google_contents(messages)
+        gen_model = self._genai.GenerativeModel(model)
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: gen_model.generate_content(
+                contents,
+                generation_config={"max_output_tokens": max_tokens},
+            )
+        )
+        in_tok = response.usage_metadata.prompt_token_count or 0
+        out_tok = response.usage_metadata.candidates_token_count or 0
+        return (response.text, in_tok, out_tok)
 
 
 async def screenshot_as_base64(page):
@@ -503,7 +611,7 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3):
+async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
@@ -575,6 +683,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
             }
 
     # ── Full vision eval ──────────────────────────────────────────────────────
+    adapter = LLMAdapter(provider)
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
@@ -648,14 +757,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                 ]
             })
 
-            response = client.messages.create(
-                model="claude-opus-4-5",
-                max_tokens=1024,
-                messages=conversation
-            )
-
-            raw = response.content[0].text
-            tokens_used += response.usage.input_tokens + response.usage.output_tokens
+            raw, _in_tok, _out_tok = await adapter.complete(conversation, model, 1024)
+            tokens_used += _in_tok + _out_tok
             print(raw)
             if token_budget:
                 print(f"💰 Tokens: {tokens_used:,}/{token_budget:,}")
@@ -691,8 +794,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                     "target": decision.get("target"),
                     "pass_fail": decision.get("pass_fail", "in_progress"),
                     "verdict": decision.get("verdict", ""),
-                    "input_tokens": response.usage.input_tokens,
-                    "output_tokens": response.usage.output_tokens
+                    "input_tokens": _in_tok,
+                    "output_tokens": _out_tok
                 }
 
                 if mode == "ux":
