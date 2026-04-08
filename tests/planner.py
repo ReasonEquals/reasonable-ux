@@ -15,8 +15,12 @@ async def scrape_page(url: str) -> str:
         await browser.close()
     return html
 
-def extract_testable_elements(html: str) -> str:
-    prompt = f"""You are a QA planner. Analyze this HTML and identify all testable elements.
+def extract_testable_elements(html: str, url: str) -> str:
+    prompt = f"""You are a QA planner. Analyze this HTML from {url} and identify all testable elements.
+
+The page URL is: {url}
+Generate test goals that match the ACTUAL PURPOSE of this specific page. Do NOT default to login testing unless this page is actually a login page. If this is a pricing page, test pricing; if it's a FAQ, test navigation and content; if it's a features page, test CTAs and feature exploration.
+
 Focus on:
 - Forms and input fields
 - Buttons and links
@@ -61,7 +65,7 @@ async def plan(url: str) -> dict:
     html = await scrape_page(url)
     
     print("🧠 Analyzing page structure...")
-    plan = extract_testable_elements(html)
+    plan = extract_testable_elements(html, url)
     
     print(f"\n📋 Page: {plan['page_summary']}")
     print(f"   Found {len(plan['testable_elements'])} testable elements")
