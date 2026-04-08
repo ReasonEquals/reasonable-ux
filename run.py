@@ -104,7 +104,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                     # Step 1: fill email and click Continue
                     await _page.wait_for_selector('input[type="email"]', timeout=15000)
                     await _page.fill('input[type="email"]', email)
-                    await _page.click('button[type="submit"]')
+                    await _page.click('button:has-text("Continue")')
 
                     # Step 2: wait for password field to appear, fill it and submit
                     await _page.wait_for_selector('input[type="password"]', timeout=15000)
