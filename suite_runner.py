@@ -10,11 +10,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
 async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa"):
     from planner import plan
-    from agent_test import run
+    from agent_test import run, _make_run_dir
 
-    suite_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    suite_dir = Path(f"runs/suite_{suite_id}")
-    suite_dir.mkdir(parents=True, exist_ok=True)
+    suite_dir = Path(_make_run_dir(url, "suite"))
+    suite_id = suite_dir.name
 
     print(f"\n🚀 Suite run started: {suite_id}")
     print(f"   URL: {url}\n")
