@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
-async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa", scout: bool = False, scout_threshold: int = 3):
+async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa", scout: bool = False, scout_threshold: int = 3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
     from planner import plan
     from agent_test import run, _make_run_dir
 
@@ -62,7 +62,7 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, emai
 
         try:
             tokens = await asyncio.wait_for(
-                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold),
+                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model),
                 timeout=300
             )
             total_input += tokens.get("input", 0)
@@ -240,6 +240,8 @@ if __name__ == "__main__":
     parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     parser.add_argument("--scout", action="store_true", help="Enable scout mode: text-only pre-screen before full eval")
     parser.add_argument("--scout-threshold", type=int, default=3, help="Scout interest score threshold (1-5, default 3); pages scoring below this are skipped")
+    parser.add_argument("--provider", choices=["anthropic", "openai", "google"], default="anthropic")
+    parser.add_argument("--model", default="claude-opus-4-5")
     args = parser.parse_args()
-    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget, email=args.email, password=args.password, mode=args.mode, scout=args.scout, scout_threshold=args.scout_threshold))
+    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget, email=args.email, password=args.password, mode=args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model))
     sys.exit(0 if result else 1)
