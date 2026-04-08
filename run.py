@@ -111,7 +111,15 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                     _email_sel = 'input[type="email"], input[name="email"], input[id*="email" i], input[placeholder*="email" i]'
                     await _page.wait_for_selector(_email_sel, timeout=15000)
                     await _page.fill(_email_sel, email)
-                    await _page.fill('input[type="password"]', password)
+                    # Check if password field is already visible; if not, click Continue/Next first
+                    _pw_sel = 'input[type="password"]'
+                    _pw_visible = await _page.locator(_pw_sel).is_visible() if await _page.locator(_pw_sel).count() > 0 else False
+                    if not _pw_visible:
+                        # Multi-step flow — click the submit/continue button to reveal password field
+                        _continue_sel = 'button[type="submit"], button:has-text("Continue"), button:has-text("Next")'
+                        await _page.click(_continue_sel)
+                        await _page.wait_for_selector(_pw_sel, timeout=15000)
+                    await _page.fill(_pw_sel, password)
                     await _page.click('button[type="submit"]')
                     await _page.wait_for_load_state("networkidle")
                     print(f"   ✅ Auth complete — current URL: {_page.url}")
