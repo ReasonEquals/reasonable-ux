@@ -96,15 +96,33 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 _browser = await _p.chromium.launch(headless=_headless)
                 _context = await _browser.new_context()
                 _page = await _context.new_page()
-                await _page.goto(base_url)
+                # Navigate to the login page directly — the root URL may not show a login form
+                _login_paths = ["/auth/login", "/login", "/signin", "/sign-in"]
+                _login_url = base_url
+                for _lp in _login_paths:
+                    if any(p == _lp or p.startswith(_lp) for p in pages):
+                        _login_url = base_url.rstrip("/") + _lp
+                        break
+                await _page.goto(_login_url)
                 await _page.wait_for_load_state("networkidle")
+                print(f"   🌐 Auth page loaded: {_page.url}")
                 try:
-                    await _page.fill('input[type="email"], input[name="email"], input[type="text"]', email)
+                    # Try email input first, then fall back to any visible text input
+                    _email_sel = 'input[type="email"], input[name="email"], input[id*="email" i], input[placeholder*="email" i]'
+                    await _page.wait_for_selector(_email_sel, timeout=15000)
+                    await _page.fill(_email_sel, email)
                     await _page.fill('input[type="password"]', password)
                     await _page.click('button[type="submit"]')
                     await _page.wait_for_load_state("networkidle")
                     print(f"   ✅ Auth complete — current URL: {_page.url}")
                 except Exception as e:
+                    # Save a screenshot to help diagnose selector mismatches
+                    try:
+                        _ss_path = "/tmp/auth_debug.png"
+                        await _page.screenshot(path=_ss_path)
+                        print(f"   📸 Debug screenshot: {_ss_path}")
+                    except Exception:
+                        pass
                     print(f"   ⚠️  Auth attempt failed: {e} — continuing without session state")
                     return None
                 _tf = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
