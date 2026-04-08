@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
-async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa"):
+async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa", scout: bool = False, scout_threshold: int = 3):
     from planner import plan
     from agent_test import run, _make_run_dir
 
@@ -33,6 +33,12 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, emai
     suite_results = []
     total_input = 0
     total_output = 0
+    scout_only_count = 0
+    full_eval_count = 0
+    scout_input_total = 0
+    scout_output_total = 0
+    full_input_total = 0
+    full_output_total = 0
 
     # Step 2 — Run each test case
     for i, tc in enumerate(test_cases):
@@ -56,11 +62,21 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, emai
 
         try:
             tokens = await asyncio.wait_for(
-                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget, email=email, password=password, mode=mode),
+                run(url=url, goal=goal, max_steps=max_steps, suite_dir=str(suite_dir), token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold),
                 timeout=300
             )
             total_input += tokens.get("input", 0)
             total_output += tokens.get("output", 0)
+            s_in = tokens.get("scout_input_tokens", 0)
+            s_out = tokens.get("scout_output_tokens", 0)
+            scout_input_total += s_in
+            scout_output_total += s_out
+            if tokens.get("scout_skipped"):
+                scout_only_count += 1
+            else:
+                full_eval_count += 1
+                full_input_total += tokens.get("input", 0) - s_in
+                full_output_total += tokens.get("output", 0) - s_out
 
             # Find the latest run folder inside suite_dir
             run_folders = sorted(suite_dir.iterdir())
@@ -198,6 +214,14 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, emai
 
     print(f"\n{'='*60}")
     print(f"📊 Suite complete: {passed}/{total} passed")
+    if scout:
+        print(f"\n🔍 Scout summary:")
+        print(f"   Scout-only (skipped):  {scout_only_count}")
+        print(f"   Fully evaluated:       {full_eval_count}")
+        scout_total = scout_input_total + scout_output_total
+        full_total = full_input_total + full_output_total
+        print(f"   Scout phase tokens:    {scout_total:,} (in: {scout_input_total:,}, out: {scout_output_total:,})")
+        print(f"   Full eval tokens:      {full_total:,} (in: {full_input_total:,}, out: {full_output_total:,})")
     print(f"   Input:  {total_input:,} tokens")
     print(f"   Output: {total_output:,} tokens")
     print(f"   Total:  {total_input + total_output:,} tokens")
@@ -214,6 +238,8 @@ if __name__ == "__main__":
     parser.add_argument("--email", type=str, default=None, help="Email/username for login or signup forms")
     parser.add_argument("--password", type=str, default=None, help="Password for login or signup forms")
     parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
+    parser.add_argument("--scout", action="store_true", help="Enable scout mode: text-only pre-screen before full eval")
+    parser.add_argument("--scout-threshold", type=int, default=3, help="Scout interest score threshold (1-5, default 3); pages scoring below this are skipped")
     args = parser.parse_args()
-    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget, email=args.email, password=args.password, mode=args.mode))
+    result = asyncio.run(run_suite(url=args.url, max_steps=args.steps, token_budget=args.token_budget, email=args.email, password=args.password, mode=args.mode, scout=args.scout, scout_threshold=args.scout_threshold))
     sys.exit(0 if result else 1)
