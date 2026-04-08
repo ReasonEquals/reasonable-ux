@@ -204,6 +204,7 @@ def _build_prompt(goal, step, max_steps, email, password, mode, url=None):
             creds_block += f"  Email/Username: {email}\n"
         if password:
             creds_block += f"  Password: {password}\n"
+        creds_block += "  Login tip: after entering password, use selector 'button[type=\"submit\"]' to click Sign in (not the bare 'button' selector, which may hit a Change/Back button instead).\n"
 
     url_block = f"\nYou are evaluating {url}. Never navigate to a different domain — if you find yourself on a different domain, use navigate to return to {url}.\n" if url else ""
 
@@ -611,7 +612,7 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
+async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None):
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
@@ -687,7 +688,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
-        page = await browser.new_page()
+        context = await browser.new_context(storage_state=storage_state)
+        page = await context.new_page()
 
         await page.goto(url)
 
@@ -889,7 +891,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
         print(f"🌐 HTML report saved: {html_path}")
 
         await asyncio.sleep(0.5)
-        await asyncio.wait_for(browser.close(), timeout=10)
+        await asyncio.wait_for(context.close(), timeout=10)
 
         total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
         total_output = sum(r.get("output_tokens", 0) for r in report if "output_tokens" in r)

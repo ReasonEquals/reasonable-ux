@@ -85,6 +85,37 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
     page_results = []
     total_tokens_all = {"input": 0, "output": 0, "total": 0}
 
+    import tempfile
+    auth_state_path = None
+    if email and password:
+        print(f"\n🔐 Pre-authenticating session for {base_url}...")
+        async def _do_auth():
+            from playwright.async_api import async_playwright as _async_playwright
+            _headless = os.environ.get("CI", "false").lower() == "true"
+            async with _async_playwright() as _p:
+                _browser = await _p.chromium.launch(headless=_headless)
+                _context = await _browser.new_context()
+                _page = await _context.new_page()
+                await _page.goto(base_url)
+                await _page.wait_for_load_state("networkidle")
+                try:
+                    await _page.fill('input[type="email"], input[name="email"], input[type="text"]', email)
+                    await _page.fill('input[type="password"]', password)
+                    await _page.click('button[type="submit"]')
+                    await _page.wait_for_load_state("networkidle")
+                    print(f"   ✅ Auth complete — current URL: {_page.url}")
+                except Exception as e:
+                    print(f"   ⚠️  Auth attempt failed: {e} — continuing without session state")
+                    return None
+                _tf = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+                _auth_path = _tf.name
+                _tf.close()
+                await _context.storage_state(path=_auth_path)
+                return _auth_path
+        auth_state_path = await _do_auth()
+        if auth_state_path:
+            print(f"   💾 Session saved to {auth_state_path}")
+
     for path in pages:
         path = path if path.startswith("/") else "/" + path
         full_url = base_url.rstrip("/") + path
@@ -99,7 +130,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 full_url, timeout=8, allow_redirects=True,
                 headers={"User-Agent": "reasonable-ux/1.0"},
             )
-            if 400 <= head.status_code < 500:
+            if 400 <= head.status_code < 500 and head.status_code != 405:
                 print(f"⚠️  Skipping {path} — HEAD returned {head.status_code}")
                 continue
         except requests.RequestException as e:
@@ -111,6 +142,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
             url=full_url, goal=goal, max_steps=steps,
             token_budget=token_budget, email=email, password=password, mode=mode,
             scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
+            storage_state=auth_state_path,
         )
         run_folder = _newest_run_folder(before)
 
@@ -134,6 +166,12 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 print(f"⚠️  No report.json found in {run_folder}")
         else:
             print(f"⚠️  Could not locate run folder for {path}")
+
+    if auth_state_path:
+        try:
+            os.unlink(auth_state_path)
+        except Exception:
+            pass
 
     return page_results, total_tokens_all
 
