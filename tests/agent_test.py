@@ -1,5 +1,7 @@
 import asyncio
 import os
+import requests
+from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 from anthropic import Anthropic
 from dotenv import load_dotenv
@@ -239,6 +241,100 @@ async def _run_below_fold_analysis(page, run_dir, url):
         return None
 
 
+async def scout_page(url: str) -> dict:
+    """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
+    Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
+    """
+    try:
+        resp = requests.get(url, timeout=10, headers={"User-Agent": "reasonable-ux-scout/1.0"})
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        return {
+            "interest_score": 1,
+            "reason": f"Page fetch failed: {e}",
+            "extracted_text": "",
+            "input_tokens": 0,
+            "output_tokens": 0,
+        }
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    title = soup.title.string.strip() if soup.title and soup.title.string else ""
+    meta_tag = soup.find("meta", attrs={"name": "description"})
+    meta_desc = meta_tag.get("content", "").strip() if meta_tag else ""
+    h1_tags = [h.get_text(strip=True) for h in soup.find_all("h1")]
+    h1 = h1_tags[0] if h1_tags else ""
+
+    nav_links = []
+    nav = soup.find("nav") or soup.find("header")
+    if nav:
+        nav_links = [a.get_text(strip=True) for a in nav.find_all("a") if a.get_text(strip=True)][:10]
+
+    cta_texts = []
+    for el in soup.find_all(["button", "a"]):
+        cls = " ".join(el.get("class", []))
+        text = el.get_text(strip=True)
+        if text and any(kw in cls.lower() for kw in ["cta", "btn", "button", "primary", "signup", "sign-up", "get-started", "start", "trial", "free"]):
+            cta_texts.append(text)
+    if not cta_texts:
+        cta_texts = [b.get_text(strip=True) for b in soup.find_all("button") if b.get_text(strip=True)][:5]
+    cta_texts = cta_texts[:5]
+
+    extracted_text = (
+        f"Title: {title}\n"
+        f"Meta description: {meta_desc}\n"
+        f"H1: {h1}\n"
+        f"Nav links: {', '.join(nav_links)}\n"
+        f"Primary CTA buttons: {', '.join(cta_texts)}"
+    )
+
+    scout_prompt = f"""You are evaluating whether a web page is worth a full UX analysis. Based on the extracted page elements below, rate the page's interest for UX evaluation on a scale of 1-5.
+
+Page elements:
+{extracted_text}
+
+Interest score rubric:
+- 5: Rich content page with clear UX elements worth evaluating (pricing, features, signup flow, product demo)
+- 4: Substantial content with some evaluatable UX (about, contact, blog landing)
+- 3: Moderate content, worth a look (generic landing page, thin but real content)
+- 2: Minimal content or mostly boilerplate (simple terms, cookie policy, error page)
+- 1: Empty, redirect, or no meaningful content
+
+Respond with a JSON object with exactly these two fields:
+{{
+    "interest_score": <integer 1-5>,
+    "reason": "<one sentence explaining the score>"
+}}"""
+
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=256,
+        messages=[{"role": "user", "content": scout_prompt}]
+    )
+
+    raw = response.content[0].text
+    try:
+        clean = raw.replace("```json", "").replace("```", "").strip()
+        result = json.loads(clean)
+        return {
+            "interest_score": max(1, min(5, int(result.get("interest_score", 3)))),
+            "reason": result.get("reason", ""),
+            "extracted_text": extracted_text,
+            "input_tokens": response.usage.input_tokens,
+            "output_tokens": response.usage.output_tokens,
+        }
+    except Exception as e:
+        print(f"⚠️  Could not parse scout response: {e}\nRaw: {raw}")
+        return {
+            "interest_score": 3,
+            "reason": "Could not parse scout response, defaulting to threshold",
+            "extracted_text": extracted_text,
+            "input_tokens": response.usage.input_tokens,
+            "output_tokens": response.usage.output_tokens,
+        }
+
+
 def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
     final_status = report[-1].get("pass_fail", "unknown").upper()
     status_color = "#2ecc71" if final_status == "PASS" else "#e74c3c" if final_status == "FAIL" else "#f39c12"
@@ -265,6 +361,23 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
     if mode == "ux":
         rows = ""
         for entry in report:
+            if entry.get("action") == "scout_skip":
+                score = entry.get("interest_score", "?")
+                rows += f"""
+            <tr>
+                <td>{entry['step']}</td>
+                <td style="color:#888;font-size:11px">scout skip</td>
+                <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
+                <td style="color:#888">scout_skip</td>
+                <td>—</td><td>—</td><td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td style="color:#888;font-weight:bold">SKIP</td>
+                <td>{entry.get('verdict','')}</td>
+            </tr>"""
+                continue
+
             pf = entry.get("pass_fail", "").upper()
             pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
 
@@ -336,6 +449,19 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
     # Default: qa mode
     rows = ""
     for entry in report:
+        if entry.get("action") == "scout_skip":
+            rows += f"""
+        <tr>
+            <td>{entry['step']}</td>
+            <td style="color:#888;font-size:11px">scout skip</td>
+            <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
+            <td>scout_skip</td>
+            <td style="color:#888">{entry.get('reasoning','')}</td>
+            <td style="color:#888;font-weight:bold">SKIP</td>
+            <td>{entry.get('verdict','')}</td>
+        </tr>"""
+            continue
+
         pf = entry.get("pass_fail", "").upper()
         pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
         rows += f"""
@@ -377,7 +503,78 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa"):
+async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3):
+    # ── Scout phase (optional) ────────────────────────────────────────────────
+    scout_input_tokens = 0
+    scout_output_tokens = 0
+
+    if scout:
+        scout_result = await scout_page(url)
+        score = scout_result["interest_score"]
+        reason = scout_result["reason"]
+        extracted = scout_result["extracted_text"]
+        scout_input_tokens = scout_result["input_tokens"]
+        scout_output_tokens = scout_result["output_tokens"]
+        print(f"🔍 Scout: {url} scored {score}/5 — {reason}")
+
+        if score < scout_threshold:
+            if not goal:
+                goal = _infer_goal_from_url(url, mode)
+            run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
+            if suite_dir:
+                _path = urlparse(url).path.strip("/")
+                page_segment = _path.replace("/", "_") if _path else "homepage"
+                run_dir = f"{suite_dir}/{page_segment}"
+            else:
+                run_dir = _make_run_dir(url, "single_page")
+            os.makedirs(run_dir, exist_ok=True)
+
+            scout_entry = {
+                "step": 1,
+                "screenshot": "",
+                "observation": extracted,
+                "action": "scout_skip",
+                "target": None,
+                "pass_fail": "skip",
+                "verdict": f"Scout score {score}/5 — {reason}. Below threshold, skipped full evaluation.",
+                "interest_score": score,
+                "input_tokens": scout_input_tokens,
+                "output_tokens": scout_output_tokens,
+            }
+            if mode == "ux":
+                scout_entry["cta_clarity"] = None
+                scout_entry["copy_quality"] = None
+                scout_entry["flow_smoothness"] = None
+                scout_entry["first_impression"] = ""
+                scout_entry["friction_points"] = []
+                scout_entry["recommendations"] = []
+                scout_entry["confidence"] = "low"
+            else:
+                scout_entry["reasoning"] = f"Scout score {score}/5 below threshold {scout_threshold}. No full evaluation performed."
+
+            report = [scout_entry]
+            report_path = f"{run_dir}/report.json"
+            with open(report_path, "w", encoding="utf-8") as f:
+                json.dump(report, f, indent=2)
+            print(f"\n📄 JSON report saved: {report_path}")
+
+            html = _build_html_report(report, goal, run_id, run_label, mode)
+            html_path = f"{run_dir}/report.html"
+            with open(html_path, "w", encoding="utf-8") as f:
+                f.write(html)
+            print(f"🌐 HTML report saved: {html_path}")
+
+            return {
+                "input": scout_input_tokens,
+                "output": scout_output_tokens,
+                "total": scout_input_tokens + scout_output_tokens,
+                "scout_skipped": True,
+                "scout_input_tokens": scout_input_tokens,
+                "scout_output_tokens": scout_output_tokens,
+            }
+
+    # ── Full vision eval ──────────────────────────────────────────────────────
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
@@ -593,7 +790,14 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
 
         total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
         total_output = sum(r.get("output_tokens", 0) for r in report if "output_tokens" in r)
-        return {"input": total_input, "output": total_output, "total": total_input + total_output}
+        return {
+            "input": total_input + scout_input_tokens,
+            "output": total_output + scout_output_tokens,
+            "total": total_input + total_output + scout_input_tokens + scout_output_tokens,
+            "scout_skipped": False,
+            "scout_input_tokens": scout_input_tokens,
+            "scout_output_tokens": scout_output_tokens,
+        }
 
 if __name__ == "__main__":
     asyncio.run(run())

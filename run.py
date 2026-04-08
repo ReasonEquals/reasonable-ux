@@ -27,9 +27,13 @@ def parse_args():
                         help="Run multi-persona analysis after audit and include in PDF.")
     parser.add_argument("--static-personas", action="store_true",
                         help="Use built-in static personas instead of generating contextual ones (faster, no extra API call).")
+    parser.add_argument("--scout", action="store_true",
+                        help="Enable scout mode: cheap text-only pre-screen before full vision eval")
+    parser.add_argument("--scout-threshold", type=int, default=3,
+                        help="Scout interest score threshold (1-5, default 3); pages scoring below this are skipped")
     return parser.parse_args()
 
-async def run_with_plan(url, steps, token_budget, email, password, mode):
+async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3):
     from planner import plan
     from agent_test import run
 
@@ -41,12 +45,12 @@ async def run_with_plan(url, steps, token_budget, email, password, mode):
 
     print(f"\n🎯 Selected goal: {chosen}\n")
 
-    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode)
+    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold)
     return total_tokens
 
-async def run_without_plan(url, goal, steps, token_budget, email, password, mode):
+async def run_without_plan(url, goal, steps, token_budget, email, password, mode, scout=False, scout_threshold=3):
     from agent_test import run
-    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode)
+    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold)
     return total_tokens
 
 def _existing_run_names(runs_dir="runs"):
@@ -70,7 +74,7 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return folders[0] if folders else None
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages):
+async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_test import run as agent_run
 
@@ -102,6 +106,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
         tokens = await agent_run(
             url=full_url, goal=goal, max_steps=steps,
             token_budget=token_budget, email=email, password=password, mode=mode,
+            scout=scout, scout_threshold=scout_threshold,
         )
         run_folder = _newest_run_folder(before)
 
@@ -154,6 +159,8 @@ if __name__ == "__main__":
     if args.personas or args.static_personas:
         persona_label = "static" if args.static_personas else "contextual"
         print(f"   Personas: {persona_label}")
+    if args.scout:
+        print(f"   Scout: enabled (threshold {args.scout_threshold}/5)")
     if args.plan:
         print(f"   Plan:  Planner → Agent\n")
     else:
@@ -183,7 +190,8 @@ if __name__ == "__main__":
 
         page_results, total_tokens = asyncio.run(
             run_pages(url, goal, args.steps, args.token_budget,
-                      args.email, args.password, args.mode, pages)
+                      args.email, args.password, args.mode, pages,
+                      scout=args.scout, scout_threshold=args.scout_threshold)
         )
 
         build_index()
@@ -224,9 +232,9 @@ if __name__ == "__main__":
         before = _existing_run_names() if (args.personas or args.static_personas) else None
 
         if args.plan:
-            total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode))
+            total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold))
         else:
-            total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode))
+            total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold))
 
         build_index()
 
