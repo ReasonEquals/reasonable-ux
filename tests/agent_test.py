@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import base64
 import json
 from datetime import datetime
+from urllib.parse import urlparse
 
 load_dotenv()
 client = Anthropic()
@@ -16,7 +17,7 @@ async def screenshot_as_base64(page):
     screenshot = await page.screenshot(type="jpeg", quality=40)
     return base64.b64encode(screenshot).decode("utf-8")
 
-DEFAULT_goal = "Test the login form. Try logging in with valid credentials (username: tomsmith, password: SuperSecretPassword!), then try with invalid credentials and observe the error handling."
+DEFAULT_goal = None
 
 
 def _sanitize_selector(selector):
@@ -31,6 +32,58 @@ def _sanitize_selector(selector):
         blocked = [p for p in parts if ":contains(" in p]
         print(f"⚠️  Stripped blocked selector parts: {blocked}")
     return ", ".join(clean)
+
+
+def _infer_goal_from_url(url: str, mode: str) -> str:
+    """Infer an appropriate test goal from the URL path segment and mode."""
+    path = urlparse(url).path.rstrip("/")
+    segment = path.split("/")[-1].lower() if path else ""
+
+    goals_ux = {
+        "pricing":  "Evaluate whether pricing information is clear, accessible, and compelling for the target buyer.",
+        "faq":      "Evaluate clarity and findability of FAQ content and whether it addresses likely buyer concerns.",
+        "features": "Evaluate whether the features page clearly communicates value to the target buyer and supports conversion.",
+        "about":    "Evaluate whether the about page establishes credibility and trust for a professional audience.",
+        "contact":  "Evaluate whether the contact page makes it easy to reach out and sets clear expectations.",
+        "login":    "Evaluate the login page UX: clarity, ease of use, and friction in the sign-in flow.",
+        "signup":   "Evaluate the signup flow for friction points, clarity of value, and ease of completion.",
+        "register": "Evaluate the registration flow for friction points, clarity of value, and ease of completion.",
+        "terms":    "Evaluate whether the terms page is readable and appropriately reassuring for a professional audience.",
+        "privacy":  "Evaluate whether the privacy policy is readable and appropriately reassuring for a professional audience.",
+        "blog":     "Evaluate the blog page for content quality, navigation clarity, and whether it builds trust with the target buyer.",
+        "demo":     "Evaluate whether the demo page clearly communicates value and makes it easy to request or start a demo.",
+    }
+    goals_qa = {
+        "pricing":  "Verify the pricing page renders correctly and all pricing tiers, CTAs, and interactive elements are functional.",
+        "faq":      "Verify the FAQ page renders correctly and all expandable sections, links, and navigation elements function.",
+        "features": "Verify the features page renders correctly and all interactive elements, images, and links function.",
+        "about":    "Verify the about page renders correctly and all links, images, and media load without errors.",
+        "contact":  "Verify the contact form renders correctly and all fields, validation, and submit controls function.",
+        "login":    "Test the login form with valid and invalid credentials and verify error handling.",
+        "signup":   "Verify the signup form renders correctly and all required fields, validation, and submit controls function.",
+        "register": "Verify the registration form renders correctly and all required fields, validation, and submit controls function.",
+        "terms":    "Verify the terms page renders correctly and all content loads without errors.",
+        "privacy":  "Verify the privacy policy page renders correctly and all content loads without errors.",
+        "blog":     "Verify the blog page renders correctly and all article links, pagination, and navigation function.",
+        "demo":     "Verify the demo page renders correctly and all CTAs, form elements, and interactive components function.",
+    }
+
+    if mode == "ux":
+        return goals_ux.get(segment) or "Evaluate this page for clarity, value proposition, CTA effectiveness, and friction in the user journey."
+    else:
+        return goals_qa.get(segment) or "Verify this page renders correctly and all key interactive elements are functional."
+
+
+def _make_run_dir(url: str, run_type: str) -> str:
+    """Construct and create runs/{domain}/{YYYY-MM-DD_HHMM}_{run_type}/."""
+    hostname = urlparse(url).hostname or url
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+    domain = hostname.replace(".", "_").replace("-", "_")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    run_dir = f"runs/{domain}/{timestamp}_{run_type}"
+    os.makedirs(run_dir, exist_ok=True)
+    return run_dir
 
 
 def _build_prompt(goal, step, max_steps, email, password, mode, url=None):
@@ -324,7 +377,7 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa"):
+async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa"):
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
@@ -332,15 +385,20 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=DEFAULT_goal,
 
         await page.goto(url)
 
+        if not goal:
+            goal = _infer_goal_from_url(url, mode)
+
         conversation = []
         report = []
         tokens_used = 0
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
         if suite_dir:
-            run_dir = f"{suite_dir}/{run_id}_{run_label}"
+            _path = urlparse(url).path.strip("/")
+            page_segment = _path.replace("/", "_") if _path else "homepage"
+            run_dir = f"{suite_dir}/{page_segment}"
         else:
-            run_dir = f"runs/{run_id}_{run_label}"
+            run_dir = _make_run_dir(url, "single_page")
         screenshots_dir = f"{run_dir}/screenshots"
         os.makedirs(screenshots_dir, exist_ok=True)
 
