@@ -5,8 +5,9 @@ from persona_agent import evaluate
 
 async def orchestrate(url: str, report: list, use_static: bool = False) -> list:
     """
-    Generate (or load) personas, then run all evaluate() calls in parallel.
-    Returns list of persona result dicts.
+    Generate (or load) personas, then run evaluate() calls in batches of 2
+    with a 2-second pause between batches to avoid rate limits.
+    Returns list of persona result dicts in original persona order.
     """
     if use_static:
         personas = DEFAULT_PERSONAS
@@ -28,6 +29,12 @@ async def orchestrate(url: str, report: list, use_static: bool = False) -> list:
         personas = await generate_personas(url, summary)
         print(f"   Generated {len(personas)} personas")
 
-    print(f"   Running {len(personas)} persona evaluations in parallel...")
-    results = await asyncio.gather(*[evaluate(p, report, url) for p in personas])
-    return list(results)
+    print(f"   Running {len(personas)} persona evaluations in batches of 2...")
+    results = []
+    for i in range(0, len(personas), 2):
+        batch = personas[i:i + 2]
+        batch_results = await asyncio.gather(*[evaluate(p, report, url) for p in batch])
+        results.extend(batch_results)
+        if i + 2 < len(personas):
+            await asyncio.sleep(2)
+    return results
