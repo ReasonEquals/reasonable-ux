@@ -23,6 +23,10 @@ def parse_args():
                         help="URL paths to test sequentially (e.g. / /pricing /about). Appended to --url. Requires --mode ux.")
     parser.add_argument("--discover", action="store_true",
                         help="Crawl --url to discover internal pages, then run agent on each (UX mode). Overrides --pages if both passed.")
+    parser.add_argument("--personas", action="store_true",
+                        help="Run multi-persona analysis after audit and include in PDF.")
+    parser.add_argument("--static-personas", action="store_true",
+                        help="Use built-in static personas instead of generating contextual ones (faster, no extra API call).")
     return parser.parse_args()
 
 async def run_with_plan(url, steps, token_budget, email, password, mode):
@@ -147,6 +151,9 @@ if __name__ == "__main__":
         print(f"   Discover: enabled" + (" (--pages ignored)" if args.pages else ""))
     elif args.pages:
         print(f"   Pages: {' '.join(args.pages)}")
+    if args.personas or args.static_personas:
+        persona_label = "static" if args.static_personas else "contextual"
+        print(f"   Personas: {persona_label}")
     if args.plan:
         print(f"   Plan:  Planner → Agent\n")
     else:
@@ -192,8 +199,17 @@ if __name__ == "__main__":
             Path("runs").mkdir(exist_ok=True)
             output_path = Path("runs") / f"{safe_domain}_{iso_date}_multi_page.pdf"
 
+            persona_results = None
+            if args.personas or args.static_personas:
+                from persona_orchestrator import orchestrate
+                combined_report = [e for pr in page_results for e in pr["report"]]
+                print(f"\n🧠 Running persona analysis ({persona_label})...")
+                persona_results = asyncio.run(
+                    orchestrate(url, combined_report, use_static=args.static_personas)
+                )
+
             print(f"\n📄 Stitching multi-page report → {output_path}")
-            stitch_reports(page_results, url, output_path)
+            stitch_reports(page_results, url, output_path, persona_results=persona_results)
 
         if total_tokens and total_tokens["total"]:
             print(f"\n📊 Total tokens used this run:")
@@ -202,12 +218,37 @@ if __name__ == "__main__":
             print(f"   Total:  {total_tokens['total']:,}")
 
     else:
+        before = _existing_run_names() if (args.personas or args.static_personas) else None
+
         if args.plan:
             total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode))
         else:
             total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode))
 
         build_index()
+
+        if (args.personas or args.static_personas) and before is not None:
+            run_folder = _newest_run_folder(before)
+            if run_folder and args.mode == "ux":
+                rp = run_folder / "report.json"
+                if rp.exists():
+                    single_report = json.loads(rp.read_text(encoding="utf-8"))
+                    from persona_orchestrator import orchestrate
+                    from generate_report import build_pdf
+                    from datetime import datetime as _dt
+                    from urllib.parse import urlparse as _up
+                    print(f"\n🧠 Running persona analysis ({persona_label})...")
+                    persona_results = asyncio.run(
+                        orchestrate(url, single_report, use_static=args.static_personas)
+                    )
+                    safe_domain = (_up(url).hostname or url).replace(".", "_")
+                    iso_date = _dt.now().strftime("%Y-%m-%d")
+                    output_path = run_folder / f"{safe_domain}_{iso_date}_persona.pdf"
+                    print(f"\n📄 Generating persona report → {output_path}")
+                    build_pdf(run_folder, single_report, url, output_path,
+                              persona_results=persona_results)
+            elif run_folder:
+                print("⚠️  --personas requires --mode ux")
 
         if total_tokens:
             print(f"\n📊 Total tokens used this run:")

@@ -21,7 +21,7 @@ def _filter_links(base_url: str, html: str) -> list:
         if parsed.netloc != base_domain:
             continue
         paths.add(parsed.path or "/")
-    return sorted(paths)
+    return sorted(p for p in paths if not p.startswith("/cdn-cgi/"))
 
 
 def _crawl_with_requests(base_url: str):
