@@ -152,7 +152,7 @@ python generate_report.py --run runs/20260407_143012_evaluate_the_landing --url 
 
 | Flag | Default | Description |
 |---|---|---|
-| `--url` | herokuapp login demo | Target URL |
+| `--url` | **required** | Target URL |
 | `--goal` | auto | Test or evaluation goal |
 | `--steps` | 10 | Max agent steps for single-page runs |
 | `--page-steps` | 12 | Max agent steps per page for `--pages` / `--discover` runs |

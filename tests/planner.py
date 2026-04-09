@@ -79,5 +79,8 @@ async def plan(url: str) -> dict:
 
 if __name__ == "__main__":
     import asyncio
-    url = "https://the-internet.herokuapp.com/login"
-    result = asyncio.run(plan(url))
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--url", type=str, required=True, help="Target URL to plan")
+    args = parser.parse_args()
+    result = asyncio.run(plan(args.url))
