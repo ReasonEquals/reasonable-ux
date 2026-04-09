@@ -35,6 +35,12 @@ The crawler tries `requests` first (fast). If the site blocks the plain user-age
 
 Output lands in `runs/suite_YYYYMMDD_HHMMSS/` with a timestamped PDF so runs never overwrite each other.
 
+### Executive summary
+Every multi-page PDF opens with a one-page executive summary: overall score, top 3 findings, and top 3 recommendations — synthesized by Claude Haiku from the per-page results. Readers opening the report cold get immediate orientation before the detail sections.
+
+### Screenshot embeds
+Each page section in the PDF includes the step 1 screenshot so the reader can see what the agent actually evaluated. Scaled to page width, capped at a readable height. Missing screenshots are skipped silently.
+
 ### Persona analysis
 After the UX audit, run a second-pass analysis through contextually generated user personas. Each persona evaluates the site from their specific goals and concerns and produces a scored writeup. Appended as a section in the PDF.
 
@@ -74,6 +80,8 @@ Pass credentials for sites that require login before the relevant content is acc
 ```bash
 python run.py --url https://yoursite.com --mode ux --email you@example.com --password yourpassword
 ```
+
+For `--pages` runs, authentication happens once up front and the session state is reused across all pages.
 
 ### Token budget
 Cap total tokens per run to control cost. The budget is checked before and after each API call — if the remaining budget would be exceeded, the run wraps up cleanly rather than overrunning.
@@ -146,7 +154,8 @@ python generate_report.py --run runs/20260407_143012_evaluate_the_landing --url 
 |---|---|---|
 | `--url` | herokuapp login demo | Target URL |
 | `--goal` | auto | Test or evaluation goal |
-| `--steps` | 10 | Max agent steps per run |
+| `--steps` | 10 | Max agent steps for single-page runs |
+| `--page-steps` | 12 | Max agent steps per page for `--pages` / `--discover` runs |
 | `--mode` | `qa` | `qa` (pass/fail) or `ux` (scored evaluation) |
 | `--plan` | off | Run planner first to generate test cases |
 | `--pages` | — | Explicit path list to audit (UX mode) |
@@ -184,7 +193,7 @@ Single-page UX runs with `--personas` write the PDF into the individual run fold
 
 - **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Reduced average token usage from ~55,000 to ~8,800 per run (84%) with no measurable impact on test quality.
 - **JPEG at 40%** — screenshots are compressed before encoding. Claude reads the page clearly at this quality level; PNG costs significantly more per image block.
-- **Model tiering** — the planner runs on Sonnet 4.6, the agent on Opus 4.5. Planner work (HTML → test cases) doesn't need the same reasoning depth as vision-based step-by-step decisions.
+- **Model tiering** — the planner runs on Sonnet 4.6, the agent on Opus 4.5, and executive summary generation on Haiku. Planner work (HTML → test cases) doesn't need the same reasoning depth as vision-based step-by-step decisions.
 - **URL anchor** — the target URL is injected into every step prompt. Prevents the agent from hallucinating a different domain and navigating away mid-evaluation.
 - **Click timeout recovery** — if a CSS selector isn't found within 10 seconds, the agent gets a feedback message and continues rather than crashing the run.
 - **Selector blocklist** — `:contains()` is stripped from selectors before Playwright executes them. The model uses it despite being told not to; the blocklist handles it at the dispatch layer.
@@ -209,7 +218,7 @@ Single-page UX runs with `--personas` write the PDF into the individual run fold
 
 | | |
 |---|---|
-| **AI** | Claude API — Opus 4.5 (agent), Sonnet 4.6 (planner + personas) |
+| **AI** | Claude API — Opus 4.5 (agent), Sonnet 4.6 (planner + personas), Haiku 3.5 (exec summary) |
 | **Browser** | Playwright (Chromium) |
 | **Crawler** | requests + BeautifulSoup, Playwright fallback |
 | **PDF** | ReportLab |
