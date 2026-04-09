@@ -135,25 +135,21 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                     await _page.wait_for_load_state("networkidle")
                     print(f"   🌐 Auth page loaded: {_page.url}")
 
-                    # Step 1: fill email — click to focus then type to trigger React events
+                    # Step 1: fill email and click Continue
                     await _page.wait_for_selector('input[type="email"]', timeout=15000)
                     await _page.click('input[type="email"]')
                     await _page.fill('input[type="email"]', email)
-                    await _page.dispatch_event('input[type="email"]', 'input')
-                    await _page.dispatch_event('input[type="email"]', 'change')
-                    # Try clicking Continue button, fall back to Enter key
+                    await _page.wait_for_timeout(300)
                     try:
                         await _page.click('button:has-text("Continue")', timeout=3000)
                     except Exception:
                         await _page.press('input[type="email"]', 'Enter')
-                    await _page.wait_for_timeout(1000)
 
                     # Step 2: wait for password field to appear, fill it and submit
-                    # Try multiple selectors in case type attribute is missing
                     _pw_sel = None
                     for _sel in ('input[type="password"]', 'input[name="password"]', 'input[placeholder*="assword"]'):
                         try:
-                            await _page.wait_for_selector(_sel, timeout=8000)
+                            await _page.wait_for_selector(_sel, timeout=10000)
                             _pw_sel = _sel
                             break
                         except Exception:
@@ -162,12 +158,12 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                         raise Exception("Password field not found after clicking Continue")
                     await _page.click(_pw_sel)
                     await _page.fill(_pw_sel, password)
-                    await _page.dispatch_event(_pw_sel, 'input')
-                    await _page.dispatch_event(_pw_sel, 'change')
                     try:
-                        await _page.click('button[type="submit"]', timeout=3000)
+                        await _page.click('button[type="submit"]', timeout=5000)
                     except Exception:
-                        await _page.press(_pw_sel, 'Enter')
+                        _login_kw = {"login", "auth", "signin"}
+                        if any(k in _page.url.lower() for k in _login_kw):
+                            await _page.press(_pw_sel, 'Enter')
 
                     await _page.wait_for_load_state("networkidle")
                     print(f"   ✅ Auth complete — current URL: {_page.url}")
@@ -314,14 +310,12 @@ if __name__ == "__main__":
                     try:
                         await _page.goto(url)
                         await _page.wait_for_load_state("networkidle")
-                        # Step 1 — fill email (click to focus + dispatch events for React forms)
+                        # Step 1 — fill email and click Continue
                         _email_sel = 'input[type="email"], input[name="email"]'
                         await _page.wait_for_selector(_email_sel, timeout=15000)
                         await _page.locator(_email_sel).first.click()
                         await _page.locator(_email_sel).first.fill(args.email)
-                        await _page.locator(_email_sel).first.dispatch_event('input')
-                        await _page.locator(_email_sel).first.dispatch_event('change')
-                        # Click Continue/Next/Submit to advance the form
+                        await _page.wait_for_timeout(300)
                         _continue_sel = (
                             'button:has-text("Continue"), '
                             'button:has-text("Next"), '
@@ -332,13 +326,12 @@ if __name__ == "__main__":
                             await _page.locator(_continue_sel).first.click(timeout=3000)
                         except Exception:
                             await _page.locator(_email_sel).first.press('Enter')
-                        await _page.wait_for_timeout(1500)
                         # Step 2 — fill password if the field appeared
                         _pw_visible = False
                         _pw_sel = 'input[type="password"]'
                         for _sel in ('input[type="password"]', 'input[name="password"]', 'input[placeholder*="assword"]'):
                             try:
-                                await _page.wait_for_selector(_sel, timeout=5000)
+                                await _page.wait_for_selector(_sel, timeout=8000)
                                 _pw_sel = _sel
                                 _pw_visible = True
                                 break
@@ -347,13 +340,13 @@ if __name__ == "__main__":
                         if _pw_visible:
                             await _page.click(_pw_sel)
                             await _page.fill(_pw_sel, args.password)
-                            await _page.dispatch_event(_pw_sel, 'input')
-                            await _page.dispatch_event(_pw_sel, 'change')
                             _submit_sel = 'button[type="submit"], button:has-text("Sign in")'
                             try:
-                                await _page.locator(_submit_sel).first.click(timeout=3000)
+                                await _page.locator(_submit_sel).first.click(timeout=5000)
                             except Exception:
-                                await _page.press(_pw_sel, 'Enter')
+                                _login_kw = {"login", "auth", "signin"}
+                                if any(k in _page.url.lower() for k in _login_kw):
+                                    await _page.press(_pw_sel, 'Enter')
                             await _page.wait_for_load_state("networkidle")
                         # Step 3 — confirm auth succeeded
                         import asyncio as _asyncio
