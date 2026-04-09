@@ -182,9 +182,11 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
             print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
             continue
 
+        from agent_test import _infer_goal_from_url
+        page_goal = _infer_goal_from_url(full_url, mode)
         before = _existing_run_names()
         tokens = await agent_run(
-            url=full_url, goal=goal, max_steps=steps,
+            url=full_url, goal=page_goal, max_steps=steps,
             token_budget=token_budget, email=email, password=password, mode=mode,
             scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
             storage_state=auth_state_path,

@@ -350,12 +350,21 @@ async def _run_below_fold_analysis(page, run_dir, url):
         return None
 
 
-async def scout_page(url: str) -> dict:
+async def scout_page(url: str, storage_state: str = None) -> dict:
     """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
+    cookie_jar = requests.cookies.RequestsCookieJar()
+    if storage_state:
+        try:
+            with open(storage_state, "r", encoding="utf-8") as f:
+                state = json.load(f)
+            for c in state.get("cookies", []):
+                cookie_jar.set(c["name"], c["value"], domain=c.get("domain", ""), path=c.get("path", "/"))
+        except Exception as e:
+            print(f"⚠️  Could not load cookies from storage state: {e}")
     try:
-        resp = requests.get(url, timeout=10, headers={"User-Agent": "reasonable-ux-scout/1.0"})
+        resp = requests.get(url, timeout=10, headers={"User-Agent": "reasonable-ux-scout/1.0"}, cookies=cookie_jar)
         resp.raise_for_status()
         html = resp.text
     except Exception as e:
@@ -618,7 +627,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
     scout_output_tokens = 0
 
     if scout:
-        scout_result = await scout_page(url)
+        scout_result = await scout_page(url, storage_state=storage_state)
         score = scout_result["interest_score"]
         reason = scout_result["reason"]
         extracted = scout_result["extracted_text"]
