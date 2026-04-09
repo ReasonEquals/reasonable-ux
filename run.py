@@ -177,9 +177,8 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                         print(f"   📸 Debug screenshot: /tmp/auth_debug.png")
                     except Exception:
                         pass
-                    print(f"   ⚠️  Auth attempt failed: {e} — continuing without session state")
                     await _browser.close()
-                    return None
+                    raise RuntimeError(f"Auth failed: {e}")
 
                 _tf = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
                 _auth_path = _tf.name
@@ -187,7 +186,12 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 await _context.storage_state(path=_auth_path)
                 await _browser.close()
                 return _auth_path
-        auth_state_path = await _do_auth()
+        try:
+            auth_state_path = await _do_auth()
+        except RuntimeError as e:
+            print(f"\n❌ {e}")
+            print("   Debug screenshot saved to /tmp/auth_debug.png")
+            sys.exit(1)
         if auth_state_path:
             print(f"   💾 Session saved to {auth_state_path}")
 
