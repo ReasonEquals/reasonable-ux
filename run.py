@@ -264,9 +264,57 @@ if __name__ == "__main__":
     if args.discover:
         if args.pages:
             print("ℹ️  --discover takes precedence; ignoring --pages.")
-        from site_crawler import crawl
-        print(f"\n🔍 Crawling {url} for internal links...")
-        pages = crawl(url)
+        from urllib.parse import urlparse as _up, urljoin as _urljoin
+        _parsed = _up(url)
+        base_url = f"{_parsed.scheme}://{_parsed.netloc}"
+        print(f"\n🔍 Discovering internal pages on {base_url} (authenticated)...")
+
+        async def _auth_crawl():
+            from playwright.async_api import async_playwright as _ap
+            from bs4 import BeautifulSoup
+            _headless = os.environ.get("CI", "false").lower() == "true"
+            async with _ap() as _p:
+                _browser = await _p.chromium.launch(headless=_headless)
+                _context = await _browser.new_context()
+                _page = await _context.new_page()
+                if args.email and args.password:
+                    try:
+                        await _page.goto(url)
+                        await _page.wait_for_load_state("networkidle")
+                        await _page.wait_for_selector('input[type="email"]', timeout=15000)
+                        await _page.fill('input[type="email"]', args.email)
+                        await _page.click('button:has-text("Continue")')
+                        await _page.wait_for_selector('input[type="password"]', timeout=15000)
+                        await _page.fill('input[type="password"]', args.password)
+                        await _page.click('button[type="submit"]')
+                        await _page.wait_for_load_state("networkidle")
+                        print(f"   ✅ Auth complete — {_page.url}")
+                    except Exception as _e:
+                        print(f"   ⚠️  Auth failed: {_e} — crawling unauthenticated")
+                await _page.goto(base_url)
+                await _page.wait_for_load_state("networkidle")
+                html = await _page.content()
+                await _browser.close()
+
+            _exclude = {"auth", "login", "register", "logout", "signin", "sign-in", "sign-out"}
+            soup = BeautifulSoup(html, "html.parser")
+            paths = {"/"}
+            for tag in soup.find_all("a", href=True):
+                href = tag["href"].strip()
+                if not href or href.startswith(("#", "mailto:", "tel:", "javascript:")):
+                    continue
+                _p2 = _up(_urljoin(base_url, href))
+                if _p2.netloc != _parsed.netloc:
+                    continue
+                path = _p2.path or "/"
+                parts = path.lower().strip("/").split("/")
+                if any(part in _exclude for part in parts):
+                    continue
+                paths.add(path)
+            return sorted(p for p in paths if not p.startswith("/cdn-cgi/"))
+
+        pages = asyncio.run(_auth_crawl())
+        url = base_url
         if pages:
             print(f"   Found {len(pages)} path(s): {' '.join(pages)}\n")
         else:
