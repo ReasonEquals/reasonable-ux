@@ -555,7 +555,16 @@ def _exec_summary_content(page_summaries, tech_summary=None):
             max_tokens=768,
             messages=[{"role": "user", "content": prompt}],
         )
-        data = json.loads(msg.content[0].text)
+        raw = msg.content[0].text.strip() if msg.content else ""
+        if not raw:
+            raise ValueError("Empty response from model")
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("```", 2)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.rstrip("`").strip()
+        data = json.loads(raw)
         return (
             data.get("findings", [])[:3],
             data.get("recommendations", [])[:3],
