@@ -325,7 +325,7 @@ if __name__ == "__main__":
             print(f"   Total:  {total_tokens['total']:,}")
 
     else:
-        before = _existing_run_names() if (args.personas or args.static_personas) else None
+        before = _existing_run_names()
 
         if args.plan:
             total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model))
@@ -333,6 +333,16 @@ if __name__ == "__main__":
             total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model))
 
         build_index()
+
+        run_dir_for_pdf = _newest_run_folder(before)
+        if run_dir_for_pdf:
+            rp = run_dir_for_pdf / "report.json"
+            if rp.exists():
+                from generate_report import build_pdf
+                single_report = json.loads(rp.read_text(encoding="utf-8"))
+                pdf_path = run_dir_for_pdf / "report.pdf"
+                build_pdf(run_dir_for_pdf, single_report, url, pdf_path)
+                print(f"📄 PDF report saved: {pdf_path}")
 
         if (args.personas or args.static_personas) and before is not None:
             run_folder = _newest_run_folder(before)
