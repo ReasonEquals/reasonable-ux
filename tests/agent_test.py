@@ -690,6 +690,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                 "scout_skipped": True,
                 "scout_input_tokens": scout_input_tokens,
                 "scout_output_tokens": scout_output_tokens,
+                "console_logs": [],
+                "network_events": [],
             }
 
     # ── Full vision eval ──────────────────────────────────────────────────────
@@ -701,6 +703,31 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
         page = await context.new_page()
 
         await page.goto(url)
+
+        console_logs = []
+        page.on("console", lambda msg: console_logs.append({
+            "type": msg.type,
+            "text": msg.text
+        }))
+
+        network_events = []
+        _pending_requests = {}
+
+        def _on_request(request):
+            _pending_requests[request.url] = asyncio.get_event_loop().time()
+
+        def _on_response(response):
+            start = _pending_requests.pop(response.url, None)
+            duration_ms = round((asyncio.get_event_loop().time() - start) * 1000) if start else None
+            if response.status >= 400 or (duration_ms is not None and duration_ms > 2000):
+                network_events.append({
+                    "url": response.url,
+                    "status": response.status,
+                    "duration_ms": duration_ms
+                })
+
+        page.on("request", _on_request)
+        page.on("response", _on_response)
 
         if not goal:
             goal = _infer_goal_from_url(url, mode)
@@ -886,6 +913,12 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
             except Exception as e:
                 print(f"⚠️  Below-fold analysis failed: {e}")
 
+        # Save console and network logs
+        with open(f"{run_dir}/console.json", "w") as f:
+            json.dump(console_logs, f, indent=2)
+        with open(f"{run_dir}/network.json", "w") as f:
+            json.dump(network_events, f, indent=2)
+
         # Save JSON report
         report_path = f"{run_dir}/report.json"
         with open(report_path, "w", encoding="utf-8") as f:
@@ -911,6 +944,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
             "scout_skipped": False,
             "scout_input_tokens": scout_input_tokens,
             "scout_output_tokens": scout_output_tokens,
+            "console_logs": console_logs,
+            "network_events": network_events,
         }
 
 if __name__ == "__main__":

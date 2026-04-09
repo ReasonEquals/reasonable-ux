@@ -370,6 +370,58 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date, p
             elems.append(adj_t)
             elems.append(Spacer(1, 6))
 
+    # ── Technical Health ──────────────────────────────────────────────────────
+    console_path = run_folder / "console.json"
+    if console_path.exists():
+        try:
+            console_data = json.loads(console_path.read_text(encoding="utf-8"))
+            errors = [e for e in console_data if e.get("type") == "error"]
+            warnings = [e for e in console_data if e.get("type") == "warning"]
+            elems += section_header("Technical Health — Console", st)
+            if not errors and not warnings:
+                elems.append(Paragraph("\u2705 No console errors or warnings detected", st["body"]))
+            else:
+                elems.append(Paragraph(
+                    f"{len(errors)} error(s), {len(warnings)} warning(s) detected",
+                    st["body"],
+                ))
+                for e in errors[:10]:
+                    msg = e.get("text", "")
+                    truncated = (msg[:120] + "\u2026") if len(msg) > 120 else msg
+                    elems.append(Paragraph(f"\u2022 {html.escape(truncated)}", st["bullet"]))
+            elems.append(Spacer(1, 6))
+        except Exception:
+            pass
+
+    # ── Network Health ────────────────────────────────────────────────────────
+    network_path = run_folder / "network.json"
+    if network_path.exists():
+        try:
+            network_data = json.loads(network_path.read_text(encoding="utf-8"))
+            elems += section_header("Technical Health — Network", st)
+            if not network_data:
+                elems.append(Paragraph("\u2705 No failed or slow network requests detected", st["body"]))
+            else:
+                failed = [r for r in network_data if r.get("status", 0) >= 400]
+                slow = [r for r in network_data if (r.get("duration_ms") or 0) > 2000]
+                elems.append(Paragraph(
+                    f"{len(failed)} failed request(s) (\u2265400), {len(slow)} slow request(s) (>2s)",
+                    st["body"],
+                ))
+                for r in network_data[:10]:
+                    url_txt = r.get("url", "")
+                    url_short = (url_txt[:80] + "\u2026") if len(url_txt) > 80 else url_txt
+                    status = r.get("status", "?")
+                    dur = r.get("duration_ms")
+                    dur_txt = f" — {dur}ms" if dur is not None else ""
+                    elems.append(Paragraph(
+                        f"\u2022 {html.escape(url_short)} [{status}]{html.escape(dur_txt)}",
+                        st["bullet"],
+                    ))
+            elems.append(Spacer(1, 6))
+        except Exception:
+            pass
+
     # ── Footer (standalone mode only) ─────────────────────────────────────────
     if not page_label and include_footer:
         elems.append(Spacer(1, 14))
@@ -461,7 +513,7 @@ def add_persona_section(elems, persona_results, st):
 
 
 # ── Executive summary via Claude Haiku ───────────────────────────────────────
-def _exec_summary_content(page_summaries):
+def _exec_summary_content(page_summaries, tech_summary=None):
     """Call Claude Haiku to synthesize top 3 findings and top 3 recommendations."""
     import anthropic
 
@@ -469,25 +521,50 @@ def _exec_summary_content(page_summaries):
         f"- {ps['path']}: score {ps['overall']:.1f}/5, top finding: {ps['top_finding']}"
         for ps in page_summaries
     )
+
+    tech_block = ""
+    if tech_summary:
+        top_urls = ", ".join(tech_summary.get("top_offender_urls", [])[:5]) or "none"
+        tech_block = (
+            f"\n\nTechnical data across all pages: "
+            f"{tech_summary['total_errors']} console errors, "
+            f"{tech_summary['total_warnings']} warnings, "
+            f"{tech_summary['total_failed_requests']} failed network requests, "
+            f"{tech_summary['total_slow_requests']} slow requests (>2s). "
+            f"Top offenders: {top_urls}. "
+            "Use this to add a 'Technical Health' paragraph to the executive summary — "
+            "flag the most significant issues, or note clean results if counts are zero. "
+            "Keep it 2-3 sentences."
+        )
+
     prompt = (
         f"You evaluated {len(page_summaries)} pages of a web application for UX quality.\n\n"
-        f"Page results:\n{pages_text}\n\n"
+        f"Page results:\n{pages_text}"
+        f"{tech_block}\n\n"
         "Synthesize the top 3 most severe UX findings and top 3 most actionable recommendations "
-        "across all pages. Respond ONLY with valid JSON in this exact shape: "
-        '{"findings": ["...", "...", "..."], "recommendations": ["...", "...", "..."]}'
+        "across all pages. Also write a 'technical_health' paragraph (2-3 sentences) about "
+        "console and network health. "
+        "Respond ONLY with valid JSON in this exact shape: "
+        '{"findings": ["...", "...", "..."], "recommendations": ["...", "...", "..."], '
+        '"technical_health": "...", "overall_assessment": "..."}'
     )
     try:
         client = anthropic.Anthropic()
         msg = client.messages.create(
             model="claude-3-5-haiku-20241022",
-            max_tokens=512,
+            max_tokens=768,
             messages=[{"role": "user", "content": prompt}],
         )
         data = json.loads(msg.content[0].text)
-        return data.get("findings", [])[:3], data.get("recommendations", [])[:3]
+        return (
+            data.get("findings", [])[:3],
+            data.get("recommendations", [])[:3],
+            data.get("technical_health", ""),
+            data.get("overall_assessment", ""),
+        )
     except Exception as e:
         print(f"⚠️  Executive summary generation failed: {e}")
-        return [], []
+        return [], [], "", ""
 
 
 # ── PDF builder ───────────────────────────────────────────────────────────────
@@ -576,9 +653,44 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None):
 
     elems = []
 
+    # ── Aggregate technical data across all pages ─────────────────────────────
+    tech_summary = {
+        "total_errors": 0,
+        "total_warnings": 0,
+        "total_failed_requests": 0,
+        "total_slow_requests": 0,
+        "top_offender_urls": [],
+    }
+    url_counts = {}
+    for ps in page_summaries:
+        console_path = ps["run_folder"] / "console.json"
+        if console_path.exists():
+            try:
+                console_data = json.loads(console_path.read_text(encoding="utf-8"))
+                tech_summary["total_errors"] += sum(1 for e in console_data if e.get("type") == "error")
+                tech_summary["total_warnings"] += sum(1 for e in console_data if e.get("type") == "warning")
+            except Exception:
+                pass
+        network_path = ps["run_folder"] / "network.json"
+        if network_path.exists():
+            try:
+                network_data = json.loads(network_path.read_text(encoding="utf-8"))
+                tech_summary["total_failed_requests"] += sum(1 for r in network_data if r.get("status", 0) >= 400)
+                tech_summary["total_slow_requests"] += sum(1 for r in network_data if (r.get("duration_ms") or 0) > 2000)
+                for r in network_data:
+                    u = r.get("url", "")
+                    url_counts[u] = url_counts.get(u, 0) + 1
+            except Exception:
+                pass
+    tech_summary["top_offender_urls"] = [
+        u for u, _ in sorted(url_counts.items(), key=lambda x: -x[1])[:5]
+    ]
+
     # ── Executive summary (first page) ───────────────────────────────────────
     print("🧠 Generating executive summary...")
-    exec_findings, exec_recs = _exec_summary_content(page_summaries)
+    exec_findings, exec_recs, exec_tech_health, exec_overall = _exec_summary_content(
+        page_summaries, tech_summary=tech_summary
+    )
 
     elems.append(Paragraph(hostname or "UX Evaluation", st["site"]))
     elems.append(Paragraph("Executive Summary", ParagraphStyle(
@@ -608,16 +720,39 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None):
     elems.append(exec_score_row)
     elems.append(Spacer(1, 14))
 
+    elems += section_header("UX Summary", st)
     if exec_findings:
-        elems += section_header("Top 3 Findings", st)
+        elems.append(Paragraph("<b>Top 3 Findings</b>", st["body"]))
         for f in exec_findings:
             elems.append(Paragraph(f"\u2022 {html.escape(f)}", st["bullet"]))
-        elems.append(Spacer(1, 10))
-
+        elems.append(Spacer(1, 6))
     if exec_recs:
-        elems += section_header("Top 3 Recommendations", st)
+        elems.append(Paragraph("<b>Top 3 Recommendations</b>", st["body"]))
         for r in exec_recs:
             elems.append(Paragraph(f"\u2192 {html.escape(r)}", st["rec"]))
+        elems.append(Spacer(1, 10))
+
+    elems += section_header("Technical Health", st)
+    if exec_tech_health:
+        elems.append(Paragraph(html.escape(exec_tech_health), st["body"]))
+    else:
+        errors = tech_summary["total_errors"]
+        warnings = tech_summary["total_warnings"]
+        failed = tech_summary["total_failed_requests"]
+        slow = tech_summary["total_slow_requests"]
+        if errors == 0 and warnings == 0 and failed == 0 and slow == 0:
+            elems.append(Paragraph("\u2705 No console errors, warnings, or network issues detected across all pages.", st["body"]))
+        else:
+            elems.append(Paragraph(
+                f"{errors} console error(s), {warnings} warning(s), "
+                f"{failed} failed network request(s), {slow} slow request(s) detected.",
+                st["body"],
+            ))
+    elems.append(Spacer(1, 10))
+
+    if exec_overall:
+        elems += section_header("Overall Assessment", st)
+        elems.append(Paragraph(html.escape(exec_overall), st["body"]))
         elems.append(Spacer(1, 10))
 
     elems.append(PageBreak())
