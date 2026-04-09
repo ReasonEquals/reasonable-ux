@@ -166,11 +166,14 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
             print(f"   💾 Session saved to {auth_state_path}")
 
     for path in pages:
-        path = path if path.startswith("/") else "/" + path
-        full_url = base_url.rstrip("/") + path
+        if path.startswith(("http://", "https://")):
+            full_url = path
+        else:
+            path = path if path.startswith("/") else "/" + path
+            full_url = base_url.rstrip("/") + path
 
         print(f"\n{'='*60}")
-        print(f"🌐 Page: {path}  →  {full_url}")
+        print(f"🌐 Page: {full_url}")
         print(f"{'='*60}")
 
         # HEAD check — skip 4xx paths before spending agent tokens
@@ -356,6 +359,10 @@ if __name__ == "__main__":
             sys.exit(1)
     elif args.pages:
         pages = args.pages
+        if not args.url and pages[0].startswith(("http://", "https://")):
+            from urllib.parse import urlparse as _up
+            _p = _up(pages[0])
+            url = f"{_p.scheme}://{_p.netloc}"
     else:
         pages = None
 
