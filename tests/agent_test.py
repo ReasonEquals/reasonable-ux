@@ -10,6 +10,7 @@ import base64
 import json
 from datetime import datetime
 from urllib.parse import urlparse
+from PIL import Image
 
 load_dotenv()
 client = Anthropic()
@@ -144,6 +145,24 @@ def _sanitize_selector(selector):
     return ", ".join(clean)
 
 
+async def _click_nav_by_label(page, label: str) -> bool:
+    """Find the first visible <a> whose text contains `label` (case-insensitive). Return True on success."""
+    label = label.strip()
+    try:
+        locator = page.get_by_role("link", name=label, exact=False).first
+        await locator.click(timeout=5000)
+        return True
+    except Exception:
+        pass
+    try:
+        escaped = label.replace('"', '\\"')
+        locator = page.locator(f'a:has-text("{escaped}")').first
+        await locator.click(timeout=5000)
+        return True
+    except Exception:
+        return False
+
+
 def _infer_goal_from_url(url: str, mode: str) -> str:
     """Infer an appropriate test goal from the URL path segment and mode."""
     path = urlparse(url).path.rstrip("/")
@@ -196,7 +215,7 @@ def _make_run_dir(url: str, run_type: str) -> str:
     return run_dir
 
 
-def _build_prompt(goal, step, max_steps, email, password, mode, url=None):
+def _build_prompt(goal, step, max_steps, email, password, mode, url=None, persona=None):
     creds_block = ""
     if email or password:
         creds_block = f"\nIf you encounter a login or signup form, use these credentials:\n"
@@ -209,24 +228,16 @@ def _build_prompt(goal, step, max_steps, email, password, mode, url=None):
     url_block = f"\nYou are evaluating {url}. Never navigate to a different domain — if you find yourself on a different domain, use navigate to return to {url}.\n" if url else ""
 
     if mode == "ux":
+        if persona is None:
+            persona_block = """Before evaluating, infer a plausible evaluator persona for this specific site based on the URL, page title, and above-the-fold content visible in the screenshot. The persona must represent a realistic buyer or user for this product — not a deliberately mismatched evaluator. State the persona in your observation AND include it as a top-level 'persona' field in your JSON response (e.g. 'mid-market SaaS buyer comparing project management tools'). Frame your friction_points and recommendations from that persona's perspective."""
+            persona_schema_field = '\n    "persona": "one short sentence naming the persona you inferred for this site",'
+        else:
+            persona_block = f"You are evaluating this site as: {persona}. Your friction_points and recommendations must reflect that perspective."
+            persona_schema_field = ""
+
         return f"""You are a UX evaluator. Your goal is: {goal}
 {creds_block}{url_block}
-You are evaluating this site as a CPA or accountant at a mid-size firm. You have been asked by your firm's tech stack committee to research and vet software options. You care about:
-- Whether the value proposition is immediately clear to someone with an accounting background
-- Whether pricing and trial terms are easy to find and understand
-- Whether the product feels trustworthy and professional enough to recommend to a partner at the firm
-- Whether you could explain what the product does and why it's worth trying in two sentences or less
-
-You are also evaluating this site as a B2B SaaS specialist who has evaluated hundreds of SaaS products and understands how early-stage B2B companies operate. You know that pricing is often intentionally withheld to drive trial signups, that social proof is sparse at the startup stage, and that what matters is whether the value proposition is immediately clear, the trial path is frictionless, and the product feels credible to its target buyer. You evaluate against B2B SaaS norms, not consumer web standards, and only flag things that are genuinely unusual or problematic for the category.
-
-You are also evaluating this site as an experienced SaaS UX designer and web professional who evaluates landing pages and onboarding flows for a living. You care about:
-- Visual hierarchy and whether the information architecture serves the target buyer
-- Whether the above-the-fold content earns the scroll
-- Cognitive friction in the signup flow
-- Whether trust signals are placed effectively for the stage and category
-- Whether the overall design communicates credibility and quality to a professional audience
-
-All three perspectives inform your evaluation: the CPA assesses fit and trustworthiness for the target buyer, the B2B SaaS specialist evaluates against category norms, and the UX designer evaluates craft and execution.
+{persona_block}
 
 Current step: {step + 1}
 
@@ -234,8 +245,8 @@ Navigate the page and evaluate the user experience. Respond in JSON with exactly
 {{
     "observation": "what you see on the page",
     "action": "click | type | navigate | done — navigate requires a full URL starting with http:// or https://; to follow a link use click with its CSS selector instead",
-    "target": "simple CSS selector — prefer id over class over tag (e.g. '#username', 'button[type=submit]', 'input[name=password]') — avoid generic selectors like '.button' or bare 'a' — no :contains() — or URL or null",
-    "value": "text to type or null",
+    "target": "simple CSS selector — prefer id over class over tag (e.g. '#username', 'button[type=submit]', 'input[name=password]') — avoid generic selectors like '.button' or bare 'a' — no :contains() — or URL or null. For clicks on main navigation links, use the format 'nav:<Visible Label>' instead of a CSS selector (e.g. 'nav:Pricing', 'nav:Features'). Use CSS selectors for everything else — form fields, buttons, CTAs, in-page elements.",
+    "value": "text to type or null",{persona_schema_field}
     "cta_clarity": {{"score": 1-5, "note": "Is the primary call-to-action obvious and well-labeled?"}},
     "copy_quality": {{"score": 1-5, "note": "Is the copy clear, concise, and free of confusion?"}},
     "flow_smoothness": {{"score": 1-5, "note": "Does the interaction feel smooth and logical?"}},
@@ -273,7 +284,8 @@ If your goal is complete, use action: done and give a final pass_fail and verdic
 If you are on step {max_steps}, you MUST use action: done with a final pass_fail and verdict — do not continue."""
 
 
-BELOW_FOLD_PROMPT = """You are evaluating this page as a CPA at a mid-size firm vetting software for their tech stack, a B2B SaaS specialist who understands early-stage startup norms, and an experienced SaaS UX designer. The agent that evaluated this page could only see above the fold. Look at the full page and identify anything below the fold that is relevant to the evaluation — additional value propositions, pricing signals, social proof, trust indicators, feature explanations, or UX issues. Return a JSON object with two fields: below_fold_findings (array of strings) and below_fold_score_adjustments (object where each key is a dimension name and each value is {"adjusted_score": <integer 1-5>, "reason": "one sentence explanation"}). Only include adjustments for these three dimensions if applicable: cta_clarity, copy_quality, flow_smoothness."""
+def _build_below_fold_prompt(persona: str) -> str:
+    return f"""You are evaluating this page as: {persona}. The agent that evaluated this page could only see above the fold. Look at the full page and identify anything below the fold that is relevant to the evaluation from this persona's perspective — additional value propositions, pricing signals, social proof, trust indicators, feature explanations, or UX issues. Return a JSON object with two fields: below_fold_findings (array of strings) and below_fold_score_adjustments (object where each key is a dimension name and each value is {{"adjusted_score": <integer 1-5>, "reason": "one sentence explanation"}}). Only include adjustments for these three dimensions if applicable: cta_clarity, copy_quality, flow_smoothness."""
 
 
 def _build_below_fold_html(below_fold):
@@ -314,12 +326,19 @@ def _build_below_fold_html(below_fold):
     </div>"""
 
 
-async def _run_below_fold_analysis(page, run_dir, url):
+async def _run_below_fold_analysis(page, run_dir, url, persona):
     print("\n🔍 Running below-the-fold analysis...")
     await page.goto(url, wait_until="networkidle")
     fp_path = f"{run_dir}/full_page.jpeg"
     await page.screenshot(path=fp_path, full_page=True, type="jpeg", quality=60)
     print(f"📸 Full-page screenshot saved: {fp_path}")
+
+    MAX_HEIGHT = 7500
+    with Image.open(fp_path) as img:
+        if img.height > MAX_HEIGHT:
+            cropped = img.crop((0, 0, img.width, MAX_HEIGHT))
+            cropped.save(fp_path, "JPEG", quality=60)
+            print(f"📐 Cropped full-page screenshot {img.width}x{img.height} → {img.width}x{MAX_HEIGHT}")
 
     with open(fp_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
@@ -334,7 +353,7 @@ async def _run_below_fold_analysis(page, run_dir, url):
                     "type": "image",
                     "source": {"type": "base64", "media_type": "image/jpeg", "data": encoded}
                 },
-                {"type": "text", "text": BELOW_FOLD_PROMPT}
+                {"type": "text", "text": _build_below_fold_prompt(persona)}
             ]
         }]
     )
@@ -621,7 +640,9 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None):
+async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None):
+    if not url:
+        raise ValueError("run() requires a url — no default fallback.")
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
@@ -734,6 +755,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
 
         conversation = []
         report = []
+        persona = None
         tokens_used = 0
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
@@ -790,7 +812,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                     },
                     {
                         "type": "text",
-                        "text": _build_prompt(goal, step, max_steps, email, password, mode, url=url)
+                        "text": _build_prompt(goal, step, max_steps, email, password, mode, url=url, persona=persona)
                     }
                 ]
             })
@@ -824,6 +846,9 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                 clean = raw.replace("```json", "").replace("```", "").strip()
                 decision = json.loads(clean)
 
+                if mode == "ux" and persona is None:
+                    persona = decision.get("persona") or "a plausible buyer or user for this product"
+
                 entry = {
                     "step": step + 1,
                     "screenshot": screenshot_path,
@@ -844,6 +869,8 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                     entry["friction_points"] = decision.get("friction_points", [])
                     entry["recommendations"] = decision.get("recommendations", [])
                     entry["confidence"] = decision.get("confidence", "")
+                    if step == 0:
+                        entry["persona"] = persona
                 else:
                     entry["reasoning"] = decision.get("reasoning", "")
 
@@ -853,19 +880,41 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
                     print(f"\n✅ Agent complete — {decision.get('pass_fail', '').upper()}: {decision.get('verdict', '')}")
                     break
                 elif decision["action"] == "click":
-                    try:
-                        await asyncio.wait_for(page.click(_sanitize_selector(decision["target"])), timeout=10)
-                    except asyncio.TimeoutError:
-                        target = decision["target"]
-                        print(f"⚠️  click target not found: {target!r} — skipping and continuing")
-                        conversation.append({
-                            "role": "user",
-                            "content": [{"type": "text", "text": f"The element '{target}' was not found on the page or did not respond within 10 seconds. Please try a different selector or action."}]
-                        })
-                        continue
+                    target = decision["target"]
+                    if isinstance(target, str) and target.startswith("nav:"):
+                        label = target[len("nav:"):]
+                        ok = await _click_nav_by_label(page, label)
+                        if not ok:
+                            print(f"⚠️  nav link not found for label: {label!r} — skipping and continuing")
+                            conversation.append({
+                                "role": "user",
+                                "content": [{"type": "text", "text": f"No visible navigation link matching '{label}' was found on the page. Please try a different label or action."}]
+                            })
+                            continue
+                    else:
+                        try:
+                            await asyncio.wait_for(page.click(_sanitize_selector(target)), timeout=10)
+                        except asyncio.TimeoutError:
+                            print(f"⚠️  click target not found: {target!r} — skipping and continuing")
+                            conversation.append({
+                                "role": "user",
+                                "content": [{"type": "text", "text": f"The element '{target}' was not found on the page or did not respond within 10 seconds. Please try a different selector or action."}]
+                            })
+                            continue
                 elif decision["action"] == "navigate":
                     target = decision["target"]
-                    if target and not target.startswith("http://") and not target.startswith("https://"):
+                    if isinstance(target, str) and target.startswith("nav:"):
+                        label = target[len("nav:"):]
+                        print(f"⚠️  navigate action received a nav label instead of a URL — converting to nav click: {label!r}")
+                        ok = await _click_nav_by_label(page, label)
+                        if not ok:
+                            print(f"⚠️  nav link not found for label: {label!r} — skipping and continuing")
+                            conversation.append({
+                                "role": "user",
+                                "content": [{"type": "text", "text": f"No visible navigation link matching '{label}' was found on the page. Please try a different label or action."}]
+                            })
+                            continue
+                    elif target and not target.startswith("http://") and not target.startswith("https://"):
                         print(f"⚠️  navigate action received a selector instead of a URL — converting to click: {target!r}")
                         try:
                             await asyncio.wait_for(page.click(_sanitize_selector(target)), timeout=10)
@@ -904,7 +953,7 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
         below_fold = None
         if mode == "ux":
             try:
-                below_fold = await _run_below_fold_analysis(page, run_dir, url)
+                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product")
                 if below_fold:
                     bf_path = f"{run_dir}/below_fold.json"
                     with open(bf_path, "w", encoding="utf-8") as f:
@@ -949,4 +998,26 @@ async def run(url="https://the-internet.herokuapp.com/login", goal=None, max_ste
         }
 
 if __name__ == "__main__":
-    asyncio.run(run())
+    import argparse
+    parser = argparse.ArgumentParser(description="Dev entry point for agent_test.run(). For the full CLI use run.py.")
+    parser.add_argument("--url", type=str, required=True, help="Target URL (required)")
+    parser.add_argument("--goal", type=str, default=None)
+    parser.add_argument("--steps", type=int, default=8)
+    parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"])
+    parser.add_argument("--email", type=str, default=None)
+    parser.add_argument("--password", type=str, default=None)
+    parser.add_argument("--token-budget", type=int, default=None)
+    parser.add_argument("--provider", type=str, default="anthropic", choices=["anthropic", "openai", "google"])
+    parser.add_argument("--model", type=str, default="claude-opus-4-5")
+    args = parser.parse_args()
+    asyncio.run(run(
+        url=args.url,
+        goal=args.goal,
+        max_steps=args.steps,
+        mode=args.mode,
+        email=args.email,
+        password=args.password,
+        token_budget=args.token_budget,
+        provider=args.provider,
+        model=args.model,
+    ))

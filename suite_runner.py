@@ -232,7 +232,7 @@ if __name__ == "__main__":
     import argparse
     import sys
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", type=str, default="https://the-internet.herokuapp.com/login")
+    parser.add_argument("--url", type=str, required=True)
     parser.add_argument("--steps", type=int, default=8)
     parser.add_argument("--token-budget", type=int, default=None, help="Max tokens per test (default: unlimited)")
     parser.add_argument("--email", type=str, default=None, help="Email/username for login or signup forms")

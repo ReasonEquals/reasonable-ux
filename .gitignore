@@ -11,6 +11,9 @@ screenshots/
 reports/
 runs/
 
+# session summaries (private working notes — not shared history)
+session_summaries/
+
 # optional but common
 .pytest_cache/
 .DS_Store

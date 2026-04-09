@@ -1,6 +1,13 @@
 name: QA Suite
 
-on: [workflow_dispatch, pull_request]
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Target URL to test"
+        required: true
+        type: string
+  pull_request:
 
 jobs:
   test:
@@ -22,9 +29,10 @@ jobs:
           playwright install-deps chromium
 
       - name: Run QA suite
+        if: github.event_name == 'workflow_dispatch'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python suite_runner.py --url https://the-internet.herokuapp.com/login --steps 8
+        run: python suite_runner.py --url "${{ inputs.url }}" --steps 8
 
       - name: Upload reports
         if: always()

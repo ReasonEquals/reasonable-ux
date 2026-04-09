@@ -263,7 +263,10 @@ def build_index():
 if __name__ == "__main__":
     args = parse_args()
 
-    url  = args.url  or "https://the-internet.herokuapp.com/login"
+    if not args.url:
+        print("❌ --url is required")
+        sys.exit(2)
+    url  = args.url
     goal = args.goal or "Test the login form with valid and invalid credentials."
 
     print(f"\n🚀 Starting test run")
