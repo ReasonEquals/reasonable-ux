@@ -123,13 +123,15 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
         print(f"\n🔐 Pre-authenticating session for {base_url}...")
         async def _do_auth():
             from playwright.async_api import async_playwright as _async_playwright
+            from urllib.parse import urlparse as _urlparse
+            _origin = _urlparse(base_url).scheme + "://" + _urlparse(base_url).netloc
             _headless = os.environ.get("CI", "false").lower() == "true"
             async with _async_playwright() as _p:
                 _browser = await _p.chromium.launch(headless=_headless)
                 _context = await _browser.new_context()
                 _page = await _context.new_page()
                 try:
-                    await _page.goto(base_url.rstrip("/") + "/auth/login")
+                    await _page.goto(_origin.rstrip("/") + "/auth/login")
                     await _page.wait_for_load_state("networkidle")
                     print(f"   🌐 Auth page loaded: {_page.url}")
 
