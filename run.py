@@ -281,14 +281,48 @@ if __name__ == "__main__":
                     try:
                         await _page.goto(url)
                         await _page.wait_for_load_state("networkidle")
-                        await _page.wait_for_selector('input[type="email"]', timeout=15000)
-                        await _page.fill('input[type="email"]', args.email)
-                        await _page.click('button:has-text("Continue")')
-                        await _page.wait_for_selector('input[type="password"]', timeout=15000)
-                        await _page.fill('input[type="password"]', args.password)
-                        await _page.click('button[type="submit"]')
-                        await _page.wait_for_load_state("networkidle")
-                        print(f"   ✅ Auth complete — {_page.url}")
+                        # Step 1 — fill email
+                        _email_sel = 'input[type="email"], input[name="email"]'
+                        await _page.wait_for_selector(_email_sel, timeout=15000)
+                        await _page.fill(_email_sel, args.email)
+                        # Click Continue/Next/Submit to advance the form
+                        _continue_sel = (
+                            'button[type="submit"], '
+                            'button:has-text("Continue"), '
+                            'button:has-text("Next"), '
+                            'button:has-text("Sign in")'
+                        )
+                        await _page.locator(_continue_sel).first.click()
+                        try:
+                            await _page.wait_for_load_state("networkidle", timeout=5000)
+                        except Exception:
+                            await _page.wait_for_timeout(2000)
+                        # Step 2 — fill password if the field appeared
+                        _pw_visible = False
+                        try:
+                            await _page.wait_for_selector('input[type="password"]', timeout=5000)
+                            _pw_visible = True
+                        except Exception:
+                            pass
+                        if _pw_visible:
+                            await _page.fill('input[type="password"]', args.password)
+                            _submit_sel = 'button[type="submit"], button:has-text("Sign in")'
+                            await _page.locator(_submit_sel).first.click()
+                            await _page.wait_for_load_state("networkidle")
+                        # Step 3 — confirm auth succeeded
+                        import asyncio as _asyncio
+                        _login_keywords = {"login", "auth", "signin", "sign-in"}
+                        _authed = False
+                        for _ in range(20):
+                            _cur = _page.url
+                            if _cur != url and not any(k in _cur.lower() for k in _login_keywords):
+                                _authed = True
+                                break
+                            await _asyncio.sleep(0.5)
+                        if _authed:
+                            print(f"   ✅ Auth complete — {_page.url}")
+                        else:
+                            print(f"   ⚠️  Auth may not have succeeded — {_page.url}")
                     except Exception as _e:
                         print(f"   ⚠️  Auth failed: {_e} — crawling unauthenticated")
                 await _page.goto(base_url)
