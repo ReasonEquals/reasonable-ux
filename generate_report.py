@@ -12,8 +12,10 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     HRFlowable,
+    Image as RLImage,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -183,6 +185,33 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date, p
         elems.append(Paragraph(run_date, st["meta"]))
         elems.append(Spacer(1, 8))
         elems.append(HRFlowable(width="100%", thickness=2, color=NAVY, spaceAfter=14))
+
+    # ── Screenshot embed ──────────────────────────────────────────────────────
+    screenshots_dir = run_folder / "screenshots"
+    screenshot_path = None
+    for ext in ("jpg", "png"):
+        if page_label:
+            candidate = screenshots_dir / f"{page_label.lstrip('/').replace('/', '_')}_step_1.{ext}"
+            if candidate.exists():
+                screenshot_path = candidate
+                break
+        candidate = screenshots_dir / f"step_1.{ext}"
+        if candidate.exists():
+            screenshot_path = candidate
+            break
+
+    if screenshot_path:
+        try:
+            ir = ImageReader(str(screenshot_path))
+            iw, ih = ir.getSize()
+            usable_w = PAGE_W - 2 * MARGIN
+            aspect = ih / iw
+            img_h = min(usable_w * aspect, 120 * mm)
+            img = RLImage(str(screenshot_path), width=usable_w, height=img_h)
+            elems.append(img)
+            elems.append(Spacer(1, 10))
+        except Exception:
+            pass
 
     # ── Overall score ─────────────────────────────────────────────────────────
     elems += section_header("Overall UX Score", st)
@@ -431,6 +460,36 @@ def add_persona_section(elems, persona_results, st):
     elems.append(Spacer(1, 10))
 
 
+# ── Executive summary via Claude Haiku ───────────────────────────────────────
+def _exec_summary_content(page_summaries):
+    """Call Claude Haiku to synthesize top 3 findings and top 3 recommendations."""
+    import anthropic
+
+    pages_text = "\n".join(
+        f"- {ps['path']}: score {ps['overall']:.1f}/5, top finding: {ps['top_finding']}"
+        for ps in page_summaries
+    )
+    prompt = (
+        f"You evaluated {len(page_summaries)} pages of a web application for UX quality.\n\n"
+        f"Page results:\n{pages_text}\n\n"
+        "Synthesize the top 3 most severe UX findings and top 3 most actionable recommendations "
+        "across all pages. Respond ONLY with valid JSON in this exact shape: "
+        '{"findings": ["...", "...", "..."], "recommendations": ["...", "...", "..."]}'
+    )
+    try:
+        client = anthropic.Anthropic()
+        msg = client.messages.create(
+            model="claude-3-5-haiku-20241022",
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        data = json.loads(msg.content[0].text)
+        return data.get("findings", [])[:3], data.get("recommendations", [])[:3]
+    except Exception as e:
+        print(f"⚠️  Executive summary generation failed: {e}")
+        return [], []
+
+
 # ── PDF builder ───────────────────────────────────────────────────────────────
 def build_pdf(run_folder, report, url_hint, output_path, persona_results=None):
     st = styles()
@@ -516,6 +575,52 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None):
     run_date = datetime.now().strftime("%B %-d, %Y")
 
     elems = []
+
+    # ── Executive summary (first page) ───────────────────────────────────────
+    print("🧠 Generating executive summary...")
+    exec_findings, exec_recs = _exec_summary_content(page_summaries)
+
+    elems.append(Paragraph(hostname or "UX Evaluation", st["site"]))
+    elems.append(Paragraph("Executive Summary", ParagraphStyle(
+        "exec_subtitle", fontName="Helvetica", fontSize=13, textColor=MID_GREY,
+        spaceAfter=4, leading=16,
+    )))
+    elems.append(Paragraph(run_date, st["meta"]))
+    elems.append(Paragraph(f"{len(page_summaries)} page(s) evaluated", st["meta"]))
+    elems.append(Spacer(1, 8))
+    elems.append(HRFlowable(width="100%", thickness=2, color=NAVY, spaceAfter=14))
+
+    elems += section_header("Overall Score", st)
+    exec_bar_w = PAGE_W - 2 * MARGIN - 80
+    exec_bar = score_bar(grand_overall, bar_w=exec_bar_w, bar_h=14)
+    exec_score_lbl = Paragraph(f"<b>{grand_overall:.1f} / 5.0</b>", ParagraphStyle(
+        "exec_sl", fontName="Helvetica-Bold", fontSize=14,
+        textColor=score_color(grand_overall), alignment=TA_LEFT,
+    ))
+    exec_score_row = Table([[exec_bar, exec_score_lbl]], colWidths=[exec_bar_w, 80])
+    exec_score_row.setStyle(TableStyle([
+        ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING",   (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 0),
+    ]))
+    elems.append(exec_score_row)
+    elems.append(Spacer(1, 14))
+
+    if exec_findings:
+        elems += section_header("Top 3 Findings", st)
+        for f in exec_findings:
+            elems.append(Paragraph(f"\u2022 {html.escape(f)}", st["bullet"]))
+        elems.append(Spacer(1, 10))
+
+    if exec_recs:
+        elems += section_header("Top 3 Recommendations", st)
+        for r in exec_recs:
+            elems.append(Paragraph(f"\u2192 {html.escape(r)}", st["rec"]))
+        elems.append(Spacer(1, 10))
+
+    elems.append(PageBreak())
 
     # ── Cover: site header ────────────────────────────────────────────────────
     elems.append(Paragraph(hostname or "UX Evaluation", st["site"]))

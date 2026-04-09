@@ -21,6 +21,8 @@ def parse_args():
     parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     parser.add_argument("--pages", nargs="+", type=str, default=None,
                         help="URL paths to test sequentially (e.g. / /pricing /about). Appended to --url. Requires --mode ux.")
+    parser.add_argument("--page-steps", type=int, default=None,
+                        help="Max steps per page for --pages runs (default: 12). Overrides --steps for --pages mode.")
     parser.add_argument("--discover", action="store_true",
                         help="Crawl --url to discover internal pages, then run agent on each (UX mode). Overrides --pages if both passed.")
     parser.add_argument("--personas", action="store_true",
@@ -106,9 +108,11 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
+async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_test import run as agent_run
+
+    effective_steps = page_steps if page_steps is not None else 12
 
     page_results = []
     total_tokens_all = {"input": 0, "output": 0, "total": 0}
@@ -186,7 +190,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
         page_goal = _infer_goal_from_url(full_url, mode)
         before = _existing_run_names()
         tokens = await agent_run(
-            url=full_url, goal=page_goal, max_steps=steps,
+            url=full_url, goal=page_goal, max_steps=effective_steps,
             token_budget=token_budget, email=email, password=password, mode=mode,
             scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
             storage_state=auth_state_path,
@@ -282,7 +286,8 @@ if __name__ == "__main__":
             run_pages(url, goal, args.steps, args.token_budget,
                       args.email, args.password, args.mode, pages,
                       scout=args.scout, scout_threshold=args.scout_threshold,
-                      provider=args.provider, model=args.model)
+                      provider=args.provider, model=args.model,
+                      page_steps=args.page_steps)
         )
 
         build_index()
