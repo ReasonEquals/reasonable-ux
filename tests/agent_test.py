@@ -12,7 +12,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from PIL import Image
 
-load_dotenv()
+load_dotenv(override=True)
 client = Anthropic()
 
 
@@ -723,7 +723,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         context = await browser.new_context(storage_state=storage_state)
         page = await context.new_page()
 
-        await page.goto(url)
+        await page.goto(url, wait_until="domcontentloaded")
 
         console_logs = []
         page.on("console", lambda msg: console_logs.append({
@@ -926,7 +926,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                             })
                             continue
                     else:
-                        await asyncio.wait_for(page.goto(target), timeout=15)
+                        await asyncio.wait_for(page.goto(target, wait_until="domcontentloaded"), timeout=15)
                 elif decision["action"] == "type":
                     await asyncio.wait_for(page.fill(_sanitize_selector(decision["target"]), decision["value"]), timeout=10)
 
@@ -947,7 +947,13 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 print(f"Could not parse action: {e}")
                 break
 
-            await asyncio.sleep(1)
+            # After click/navigate give the page time to settle before next screenshot
+            if decision["action"] in ("click", "navigate"):
+                try:
+                    await asyncio.wait_for(page.wait_for_load_state("domcontentloaded"), timeout=5.0)
+                except Exception:
+                    pass
+            await asyncio.sleep(1.5)
 
         # Below-the-fold analysis (UX mode only)
         below_fold = None

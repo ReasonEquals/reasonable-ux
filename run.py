@@ -257,7 +257,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
 
 
 def build_index():
-    subprocess.run(["python", "build_index.py"])
+    subprocess.run([sys.executable, "build_index.py"])
     print("📊 Dashboard index updated.")
 
 if __name__ == "__main__":
