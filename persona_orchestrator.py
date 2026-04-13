@@ -3,7 +3,7 @@ from personas import DEFAULT_PERSONAS, generate_personas
 from persona_agent import evaluate
 
 
-async def orchestrate(url: str, report: list, use_static: bool = False) -> list:
+async def orchestrate(url: str, report: list, use_static: bool = False, advisor: bool = False) -> list:
     """
     Generate (or load) personas, then run evaluate() calls in batches of 2
     with a 2-second pause between batches to avoid rate limits.
@@ -26,14 +26,14 @@ async def orchestrate(url: str, report: list, use_static: bool = False) -> list:
         summary = " | ".join(parts) if parts else "No summary available."
 
         print("   Generating contextual personas...")
-        personas = await generate_personas(url, summary)
+        personas = await generate_personas(url, summary, advisor=advisor)
         print(f"   Generated {len(personas)} personas")
 
     print(f"   Running {len(personas)} persona evaluations in batches of 2...")
     results = []
     for i in range(0, len(personas), 2):
         batch = personas[i:i + 2]
-        batch_results = await asyncio.gather(*[evaluate(p, report, url) for p in batch])
+        batch_results = await asyncio.gather(*[evaluate(p, report, url, advisor=advisor) for p in batch])
         results.extend(batch_results)
         if i + 2 < len(personas):
             await asyncio.sleep(2)

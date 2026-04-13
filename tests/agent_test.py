@@ -33,20 +33,30 @@ class LLMAdapter:
         else:
             raise ValueError(f"Unknown provider: {provider!r}")
 
-    async def complete(self, messages: list, model: str, max_tokens: int) -> tuple:
-        """Routes to the appropriate provider. Returns (response_text, input_tokens, output_tokens)."""
+    async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None) -> tuple:
+        """Routes to the appropriate provider. Returns (response_text, input_tokens, output_tokens, raw_content).
+        raw_content is the full content block list when advisor tools are active (needed for
+        multi-turn conversation history), None otherwise."""
         if self._provider == "anthropic":
-            return await self._complete_anthropic(messages, model, max_tokens)
+            return await self._complete_anthropic(messages, model, max_tokens, tools=tools)
         elif self._provider == "openai":
-            return await self._complete_openai(messages, model, max_tokens)
+            text, in_tok, out_tok = await self._complete_openai(messages, model, max_tokens)
+            return (text, in_tok, out_tok, None)
         elif self._provider == "google":
-            return await self._complete_google(messages, model, max_tokens)
+            text, in_tok, out_tok = await self._complete_google(messages, model, max_tokens)
+            return (text, in_tok, out_tok, None)
 
-    async def _complete_anthropic(self, messages, model, max_tokens):
-        response = await self._client.messages.create(
-            model=model, max_tokens=max_tokens, messages=messages
-        )
-        return (response.content[0].text, response.usage.input_tokens, response.usage.output_tokens)
+    async def _complete_anthropic(self, messages, model, max_tokens, tools=None):
+        kwargs = dict(model=model, max_tokens=max_tokens, messages=messages)
+        if tools:
+            kwargs["tools"] = tools
+            kwargs["betas"] = ["advisor-tool-2026-03-01"]
+            response = await self._client.beta.messages.create(**kwargs)
+        else:
+            response = await self._client.messages.create(**kwargs)
+        text = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
+        raw_content = response.content if tools else None
+        return (text, response.usage.input_tokens, response.usage.output_tokens, raw_content)
 
     @staticmethod
     def _anthropic_to_openai_messages(messages) -> list:
@@ -326,7 +336,7 @@ def _build_below_fold_html(below_fold):
     </div>"""
 
 
-async def _run_below_fold_analysis(page, run_dir, url, persona):
+async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
     print("\n🔍 Running below-the-fold analysis...")
     await page.goto(url, wait_until="networkidle")
     fp_path = f"{run_dir}/full_page.jpeg"
@@ -343,7 +353,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona):
     with open(fp_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
 
-    response = client.messages.create(
+    kwargs = dict(
         model="claude-sonnet-4-6",
         max_tokens=2048,
         messages=[{
@@ -357,8 +367,14 @@ async def _run_below_fold_analysis(page, run_dir, url, persona):
             ]
         }]
     )
+    if advisor:
+        kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+        kwargs["betas"] = ["advisor-tool-2026-03-01"]
+        response = client.beta.messages.create(**kwargs)
+    else:
+        response = client.messages.create(**kwargs)
 
-    raw = response.content[0].text
+    raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
     print(f"💰 Below-fold analysis tokens: {response.usage.input_tokens + response.usage.output_tokens:,}")
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
@@ -473,7 +489,7 @@ Respond with a JSON object with exactly these two fields:
 
 
 def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
-    final_status = report[-1].get("pass_fail", "unknown").upper()
+    final_status = report[-1].get("pass_fail", "unknown").upper() if report else "UNKNOWN"
     status_color = "#2ecc71" if final_status == "PASS" else "#e74c3c" if final_status == "FAIL" else "#f39c12"
 
     shared_style = """
@@ -640,9 +656,12 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </html>"""
 
 
-async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None):
+async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None, advisor: bool = False):
     if not url:
         raise ValueError("run() requires a url — no default fallback.")
+    if advisor and provider == "anthropic" and model == "claude-opus-4-5":
+        model = "claude-sonnet-4-6"
+        print("🧠 Advisor mode: switching executor to claude-sonnet-4-6 (Opus 4.5 does not support advisor tool)")
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
@@ -817,7 +836,11 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 ]
             })
 
-            raw, _in_tok, _out_tok = await adapter.complete(conversation, model, 1024)
+            advisor_tools = None
+            if advisor and provider == "anthropic":
+                advisor_tools = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+            step_budget = 2048 if advisor else 1024
+            raw, _in_tok, _out_tok, _raw_content = await adapter.complete(conversation, model, step_budget, tools=advisor_tools)
             tokens_used += _in_tok + _out_tok
             print(raw)
             if token_budget:
@@ -839,11 +862,16 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
             conversation.append({
                 "role": "assistant",
-                "content": raw
+                "content": _raw_content if _raw_content else raw
             })
 
             try:
                 clean = raw.replace("```json", "").replace("```", "").strip()
+                # Extract JSON object even if surrounded by preamble text (common with advisor)
+                brace_start = clean.find("{")
+                brace_end = clean.rfind("}")
+                if brace_start != -1 and brace_end != -1:
+                    clean = clean[brace_start:brace_end + 1]
                 decision = json.loads(clean)
 
                 if mode == "ux" and persona is None:
@@ -959,7 +987,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         below_fold = None
         if mode == "ux":
             try:
-                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product")
+                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
                 if below_fold:
                     bf_path = f"{run_dir}/below_fold.json"
                     with open(bf_path, "w", encoding="utf-8") as f:
@@ -1015,6 +1043,7 @@ if __name__ == "__main__":
     parser.add_argument("--token-budget", type=int, default=None)
     parser.add_argument("--provider", type=str, default="anthropic", choices=["anthropic", "openai", "google"])
     parser.add_argument("--model", type=str, default="claude-opus-4-5")
+    parser.add_argument("--advisor", action="store_true", help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
     args = parser.parse_args()
     asyncio.run(run(
         url=args.url,
@@ -1026,4 +1055,5 @@ if __name__ == "__main__":
         token_budget=args.token_budget,
         provider=args.provider,
         model=args.model,
+        advisor=args.advisor,
     ))
