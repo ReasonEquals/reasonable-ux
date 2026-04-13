@@ -37,9 +37,11 @@ def parse_args():
                         help="LLM provider for the agent (default: anthropic)")
     parser.add_argument("--model", default="claude-opus-4-5",
                         help="Model name to use (default: claude-opus-4-5)")
+    parser.add_argument("--advisor", action="store_true",
+                        help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
     return parser.parse_args()
 
-async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
+async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
     from planner import plan
     from agent_test import run
 
@@ -51,12 +53,12 @@ async def run_with_plan(url, steps, token_budget, email, password, mode, scout=F
 
     print(f"\n🎯 Selected goal: {chosen}\n")
 
-    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model)
+    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
 
-async def run_without_plan(url, goal, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
+async def run_without_plan(url, goal, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
     from agent_test import run
-    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model)
+    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
 
 def _existing_run_names(runs_dir="runs"):
@@ -108,7 +110,7 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None):
+async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None, advisor: bool = False):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_test import run as agent_run
 
@@ -222,7 +224,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
             url=full_url, goal=page_goal, max_steps=effective_steps,
             token_budget=token_budget, email=email, password=password, mode=mode,
             scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
-            storage_state=auth_state_path,
+            storage_state=auth_state_path, advisor=advisor,
         )
         run_folder = _newest_run_folder(before)
 
@@ -415,7 +417,7 @@ if __name__ == "__main__":
                       args.email, args.password, args.mode, pages,
                       scout=args.scout, scout_threshold=args.scout_threshold,
                       provider=args.provider, model=args.model,
-                      page_steps=args.page_steps)
+                      page_steps=args.page_steps, advisor=args.advisor)
         )
 
         build_index()
@@ -440,7 +442,7 @@ if __name__ == "__main__":
                 combined_report = [e for pr in page_results for e in pr["report"]]
                 print(f"\n🧠 Running persona analysis ({persona_label})...")
                 persona_results = asyncio.run(
-                    orchestrate(url, combined_report, use_static=args.static_personas)
+                    orchestrate(url, combined_report, use_static=args.static_personas, advisor=args.advisor)
                 )
 
             print(f"\n📄 Stitching multi-page report → {output_path}")
@@ -456,9 +458,9 @@ if __name__ == "__main__":
         before = _existing_run_names()
 
         if args.plan:
-            total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model))
+            total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model, advisor=args.advisor))
         else:
-            total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model))
+            total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model, advisor=args.advisor))
 
         build_index()
 
@@ -484,7 +486,7 @@ if __name__ == "__main__":
                     from urllib.parse import urlparse as _up
                     print(f"\n🧠 Running persona analysis ({persona_label})...")
                     persona_results = asyncio.run(
-                        orchestrate(url, single_report, use_static=args.static_personas)
+                        orchestrate(url, single_report, use_static=args.static_personas, advisor=args.advisor)
                     )
                     safe_domain = (_up(url).hostname or url).replace(".", "_")
                     _now = _dt.now()

@@ -6,7 +6,7 @@ load_dotenv()
 client = Anthropic()
 
 
-async def evaluate(persona: dict, report: list, url: str) -> dict:
+async def evaluate(persona: dict, report: list, url: str, advisor: bool = False) -> dict:
     """
     Re-evaluate the UX through a specific persona's lens.
     Returns { persona_name, persona_description, score, key_findings, recommendations }.
@@ -39,12 +39,18 @@ Return ONLY a JSON object with exactly these fields:
 Return nothing but the JSON object. No markdown, no explanation."""
 
     try:
-        response = client.messages.create(
+        kwargs = dict(
             model="claude-sonnet-4-6",
             max_tokens=1500,
             messages=[{"role": "user", "content": prompt}],
         )
-        raw = response.content[0].text.strip()
+        if advisor:
+            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+            kwargs["betas"] = ["advisor-tool-2026-03-01"]
+            response = client.beta.messages.create(**kwargs)
+        else:
+            response = client.messages.create(**kwargs)
+        raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
         clean = raw.replace("```json", "").replace("```", "").strip()
         result = json.loads(clean)
         result.setdefault("persona_name", persona["name"])

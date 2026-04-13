@@ -59,7 +59,7 @@ DEFAULT_PERSONAS = [
 ]
 
 
-async def generate_personas(url, summary):
+async def generate_personas(url, summary, advisor=False):
     load_dotenv()
     client = Anthropic()
 
@@ -84,13 +84,19 @@ Each persona object must have exactly these fields:
 Return only the JSON array, nothing else."""
 
     try:
-        response = client.messages.create(
+        kwargs = dict(
             model="claude-sonnet-4-6",
             max_tokens=1500,
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
-        raw = response.content[0].text.strip()
+        if advisor:
+            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+            kwargs["betas"] = ["advisor-tool-2026-03-01"]
+            response = client.beta.messages.create(**kwargs)
+        else:
+            response = client.messages.create(**kwargs)
+        raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
         clean = raw.replace("```json", "").replace("```", "").strip()
         return json.loads(clean)
     except Exception as e:
