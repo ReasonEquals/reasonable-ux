@@ -14,6 +14,12 @@ runs/
 # session summaries (private working notes — not shared history)
 session_summaries/
 
+# obsidian vault copies (snapshotted ~weekly, not source of truth)
+vault_storage_artifacts/
+
+# claude code per-machine permission allowlist (local, not shared)
+.claude/settings.local.json
+
 # optional but common
 .pytest_cache/
 .DS_Store
