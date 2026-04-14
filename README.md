@@ -12,7 +12,7 @@ Built to explore what LLM-driven browser agents can actually do in practice — 
 
 **QA mode (default)** — the planner scrapes the target page, generates prioritized test cases, and the agent executes them in a real browser. At each step: screenshot → Claude → action → repeat. Reports are JSON + HTML with per-step reasoning and pass/fail verdicts.
 
-**UX mode (`--mode ux`)** — instead of pass/fail, the agent evaluates the page through three simultaneous lenses: a CPA vetting software for their firm, a B2B SaaS specialist evaluating against category norms, and an experienced SaaS UX designer. Each step produces scores (1–5) across CTA clarity, copy quality, and flow smoothness, plus friction points with specific actionable recommendations.
+**UX mode (`--mode ux`)** — instead of pass/fail, the agent evaluates the page as an **inferred persona**. On step 1 it looks at the screenshot, URL, and page title and picks a plausible evaluator (e.g. "mid-market SaaS buyer comparing project management tools"); that persona is threaded through the remaining steps and the below-fold pass. Each step produces scores (1–5) across CTA clarity, copy quality, and flow smoothness, plus friction points with specific actionable recommendations.
 
 After the agent loop completes, a second pass takes a full-page screenshot and sends it to Claude in a single call to surface anything below the fold — pricing signals, social proof, feature depth, trust indicators. Findings and score adjustments merge into the report.
 
@@ -90,6 +90,33 @@ Cap total tokens per run to control cost. The budget is checked before and after
 python run.py --url https://yoursite.com --mode ux --token-budget 30000
 ```
 
+### Scout mode
+Pre-screen pages with a cheap text-only pass before spending vision tokens. Scout fetches the page with `requests`, extracts title, headings, meta description, and visible body text, and asks Claude Haiku to rate interest 1–5. Pages scoring below the threshold are skipped.
+
+```bash
+python run.py --url https://yoursite.com --mode ux --discover --scout --scout-threshold 3
+```
+
+### Advisor mode
+Wrap the executor with Claude Opus 4.6 as an `advisor` tool for higher-judgment decisions — e.g. deciding whether a friction point is substantive or cosmetic before it lands in the report. Anthropic-only. Enabling `--advisor` auto-switches the executor to Sonnet 4.6, since Opus 4.5 doesn't support the advisor tool format.
+
+```bash
+python run.py --url https://yoursite.com --mode ux --advisor
+```
+
+### Multi-provider executor
+The agent runs on Claude (Opus 4.5) by default, but the `LLMAdapter` normalizes calls across Anthropic, OpenAI, and Google Gemini. Switch providers and models via flags:
+
+```bash
+# OpenAI
+python run.py --url https://yoursite.com --mode ux --provider openai --model gpt-4o
+
+# Google
+python run.py --url https://yoursite.com --mode ux --provider google --model gemini-2.5-pro
+```
+
+Scout, planner, exec summary, and advisor always run on Claude regardless of the `--provider` setting.
+
 ### Dashboard
 All runs are indexed into `runs/index.json` and `runs/suite_index.json` after each run. Open `dashboard.html` locally to browse run history.
 
@@ -141,11 +168,20 @@ python run.py --url https://yoursite.com --mode ux --token-budget 50000
 # Full suite (planner → all test cases → suite report)
 python suite_runner.py --url https://yoursite.com --token-budget 15000
 
+# Scout pre-screen before spending vision tokens
+python run.py --url https://yoursite.com --mode ux --discover --scout
+
+# With Opus advisor tool
+python run.py --url https://yoursite.com --mode ux --advisor
+
+# Non-Claude executor (OpenAI or Google)
+python run.py --url https://yoursite.com --mode ux --provider openai --model gpt-4o
+
 # Generate PDF from latest UX run
 python generate_report.py --url https://yoursite.com
 
 # Generate PDF from specific run folder
-python generate_report.py --run runs/20260407_143012_evaluate_the_landing --url https://yoursite.com
+python generate_report.py --run runs/linear_app/2026-04-12_1430_single_page --url https://linear.app
 ```
 
 ### All flags
@@ -165,36 +201,62 @@ python generate_report.py --run runs/20260407_143012_evaluate_the_landing --url 
 | `--email` | — | Credential for login/signup forms |
 | `--password` | — | Credential for login/signup forms |
 | `--token-budget` | unlimited | Max tokens per run |
+| `--scout` | off | Pre-screen pages with text-only Haiku before vision eval |
+| `--scout-threshold` | 3 | Scout interest threshold (1–5); pages below are skipped |
+| `--provider` | `anthropic` | Executor provider: `anthropic`, `openai`, or `google` |
+| `--model` | `claude-opus-4-5` | Model name for the executor |
+| `--advisor` | off | Enable Opus 4.6 advisor tool (Anthropic only; auto-switches executor to Sonnet 4.6) |
 
 ---
 
 ## Output structure
 
+Single-page runs land under `runs/<domain_with_underscores>/<YYYY-MM-DD_HHMM>_<run_type>/`:
+
 ```
 runs/
-  suite_20260408_143012/          # multi-page run folder
-    20260408_143015_evaluate_/    # per-page agent run
+  yoursite_com/
+    2026-04-12_1430_single_page/
       report.json
       report.html
-      below_fold.json
+      report.pdf
       screenshots/
-      full_page.jpeg
-    yoursite_com_2026-04-08_14-30-12_multi_page.pdf
-  index.json                      # dashboard index
-  suite_index.json
+        step_1.png
+        step_2.png
+        ...
+      full_page.jpeg        # UX mode only — cropped to 7500px
+      below_fold.json       # UX mode only
+      console.json          # captured console messages
+      network.json          # 4xx+ responses and >2s requests
 ```
 
-Single-page UX runs with `--personas` write the PDF into the individual run folder:
-`runs/20260408_143015_evaluate_/yoursite_com_2026-04-08_14-30-15_persona.pdf`
+`<run_type>` is `single_page` for direct runs and `suite` for `suite_runner.py`.
+
+Multi-page (`--pages` / `--discover`) runs use a separate suite folder at the top level:
+
+```
+runs/
+  suite_20260408_143012/
+    homepage/               # one subfolder per page, structured as above
+    pricing/
+    features/
+    yoursite_com_2026-04-08_14-30-12_multi_page.pdf
+  index.json                # backs dashboard.html
+```
+
+`runs/index.json` is regenerated by `build_index.py` after every run.
 
 ---
 
 ## Engineering decisions
 
 - **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Reduced average token usage from ~55,000 to ~8,800 per run (84%) with no measurable impact on test quality.
-- **JPEG at 40%** — screenshots are compressed before encoding. Claude reads the page clearly at this quality level; PNG costs significantly more per image block.
-- **Model tiering** — the planner runs on Sonnet 4.6, the agent on Opus 4.5, and executive summary generation on Haiku. Planner work (HTML → test cases) doesn't need the same reasoning depth as vision-based step-by-step decisions.
+- **JPEG tiers** — per-step screenshots at quality 40; full-page below-fold screenshots at quality 60 (tuned against text-heavy pages). PNG costs significantly more per image block.
+- **Full-page crop at 7500px** — the below-fold analysis takes a full-page screenshot and crops in place to 7500px tall before sending, staying under Claude Vision's 8000px cap.
+- **Model tiering** — executor on Opus 4.5 (default), planner and personas on Sonnet 4.6, scout and exec summary on Haiku 4.5, optional advisor on Opus 4.6. Planner work (HTML → test cases) and text-only scout don't need the same reasoning depth as vision-based step-by-step decisions.
 - **URL anchor** — the target URL is injected into every step prompt. Prevents the agent from hallucinating a different domain and navigating away mid-evaluation.
+- **`nav:<Label>` for nav clicks** — the UX prompt instructs the agent to emit `"target": "nav:Pricing"` for main-navigation links instead of CSS selectors. Dispatch routes through Playwright's `get_by_role("link", name=…)` and bypasses the CSS selector sanitizer entirely. Replaces brittle guesses like `a[href*='#pricing']` that only worked on well-structured sites.
+- **Persona inference on step 1** — in UX mode, step 1 asks the agent to pick a plausible evaluator persona from the screenshot + URL + title and emit it as a top-level field. The persona is then threaded through steps 2–N and the below-fold pass. Avoids the mismatch of scoring a tax-software landing page through a generic "B2B SaaS evaluator" lens.
 - **Click timeout recovery** — if a CSS selector isn't found within 10 seconds, the agent gets a feedback message and continues rather than crashing the run.
 - **Selector blocklist** — `:contains()` is stripped from selectors before Playwright executes them. The model uses it despite being told not to; the blocklist handles it at the dispatch layer.
 - **Post-response token budget check** — budget is checked before and after each API call. Prevents overruns where a single step consumes more than the remaining budget.
@@ -218,7 +280,7 @@ Single-page UX runs with `--personas` write the PDF into the individual run fold
 
 | | |
 |---|---|
-| **AI** | Claude API — Opus 4.5 (agent), Sonnet 4.6 (planner + personas), Haiku 3.5 (exec summary) |
+| **AI** | Claude API — Opus 4.5 (executor, default), Sonnet 4.6 (planner + personas), Haiku 4.5 (scout + exec summary), Opus 4.6 (optional advisor). OpenAI and Google also supported as executor via `--provider`. |
 | **Browser** | Playwright (Chromium) |
 | **Crawler** | requests + BeautifulSoup, Playwright fallback |
 | **PDF** | ReportLab |
