@@ -1,7 +1,8 @@
+import json
+
 import anthropic
 from dotenv import load_dotenv
 from playwright.async_api import async_playwright
-import json
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -63,23 +64,23 @@ HTML:
 async def plan(url: str) -> dict:
     print(f"🔍 Scraping {url}...")
     html = await scrape_page(url)
-    
+
     print("🧠 Analyzing page structure...")
     plan = extract_testable_elements(html, url)
-    
+
     print(f"\n📋 Page: {plan['page_summary']}")
     print(f"   Found {len(plan['testable_elements'])} testable elements")
     print(f"   Generated {len(plan['suggested_test_cases'])} test cases\n")
-    
+
     for i, tc in enumerate(plan['suggested_test_cases']):
         priority_icon = "🔴" if tc['priority'] == "high" else "🟡" if tc['priority'] == "medium" else "🟢"
         print(f"   {priority_icon} [{tc['priority'].upper()}] {tc['goal']}")
-    
+
     return plan
 
 if __name__ == "__main__":
-    import asyncio
     import argparse
+    import asyncio
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", type=str, required=True, help="Target URL to plan")
     args = parser.parse_args()

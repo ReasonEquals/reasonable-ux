@@ -1,16 +1,17 @@
 import asyncio
-import os
-import requests
-from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright
-import anthropic
-from anthropic import Anthropic
-from dotenv import load_dotenv
 import base64
 import json
+import os
 from datetime import datetime
 from urllib.parse import urlparse
+
+import anthropic
+import requests
+from anthropic import Anthropic
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from PIL import Image
+from playwright.async_api import async_playwright
 
 load_dotenv(override=True)
 client = Anthropic()
@@ -228,7 +229,7 @@ def _make_run_dir(url: str, run_type: str) -> str:
 def _build_prompt(goal, step, max_steps, email, password, mode, url=None, persona=None):
     creds_block = ""
     if email or password:
-        creds_block = f"\nIf you encounter a login or signup form, use these credentials:\n"
+        creds_block = "\nIf you encounter a login or signup form, use these credentials:\n"
         if email:
             creds_block += f"  Email/Username: {email}\n"
         if password:

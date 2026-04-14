@@ -3,9 +3,10 @@ site_crawler.py — fast internal-link discovery with requests fallback to Playw
 Returns a sorted list of same-domain path strings.
 """
 import asyncio
+from urllib.parse import urljoin, urlparse
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urljoin
 
 
 def _filter_links(base_url: str, html: str) -> list:
