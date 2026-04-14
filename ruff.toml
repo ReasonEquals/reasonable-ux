@@ -1,0 +1,6 @@
+[lint]
+select = ["E", "F", "W", "S", "B", "I"]
+ignore = ["E501"]  # line length — Claude handles contextually
+
+[lint.per-file-ignores]
+"tests/*" = ["S101"]  # allow assert in test files
