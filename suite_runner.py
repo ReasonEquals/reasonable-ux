@@ -1,16 +1,15 @@
 import asyncio
-import os
 import json
-import sys
+import os
 import subprocess
-from datetime import datetime
+import sys
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
 async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, email: str = None, password: str = None, mode: str = "qa", scout: bool = False, scout_threshold: int = 3, provider: str = "anthropic", model: str = "claude-opus-4-5"):
+    from agent_test import _make_run_dir, run
     from planner import plan
-    from agent_test import run, _make_run_dir
 
     suite_dir = Path(_make_run_dir(url, "suite"))
     suite_id = suite_dir.name
@@ -215,7 +214,7 @@ async def run_suite(url: str, max_steps: int = 8, token_budget: int = None, emai
     print(f"\n{'='*60}")
     print(f"📊 Suite complete: {passed}/{total} passed")
     if scout:
-        print(f"\n🔍 Scout summary:")
+        print("\n🔍 Scout summary:")
         print(f"   Scout-only (skipped):  {scout_only_count}")
         print(f"   Fully evaluated:       {full_eval_count}")
         scout_total = scout_input_total + scout_output_total

@@ -1,6 +1,7 @@
 import asyncio
-from personas import DEFAULT_PERSONAS, generate_personas
+
 from persona_agent import evaluate
+from personas import DEFAULT_PERSONAS, generate_personas
 
 
 async def orchestrate(url: str, report: list, use_static: bool = False, advisor: bool = False) -> list:

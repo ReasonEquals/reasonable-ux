@@ -1,7 +1,6 @@
 import argparse
 import html
 import json
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -10,18 +9,20 @@ from urllib.parse import urlparse
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     HRFlowable,
-    Image as RLImage,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
+)
+from reportlab.platypus import (
+    Image as RLImage,
 )
 
 # ── Palette ───────────────────────────────────────────────────────────────────

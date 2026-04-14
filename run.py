@@ -1,11 +1,12 @@
-import asyncio
 import argparse
+import asyncio
 import json
-import requests
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
+
+import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
@@ -42,8 +43,8 @@ def parse_args():
     return parser.parse_args()
 
 async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
-    from planner import plan
     from agent_test import run
+    from planner import plan
 
     test_plan = await plan(url)
 
@@ -97,8 +98,6 @@ def _newest_run_folder(before_names, runs_dir="runs"):
         return folders
 
     current = all_run_folders()
-    new_folders = {k: v for k, v in current.items()
-                   if v.name not in before_names and str(v.parent) != str(runs_path) or v.name not in before_names}
 
     # Find folders whose names weren't in before_names
     new_by_name = {k: v for k, v in current.items() if v.name not in before_names}
@@ -121,11 +120,16 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
 
     import tempfile
     auth_state_path = None
+    auth_debug_path = None
     if email and password:
+        auth_debug_path = os.path.join(
+            tempfile.gettempdir(), f"reasonable-ux_auth_debug_{os.getpid()}.png"
+        )
         print(f"\n🔐 Pre-authenticating session for {base_url}...")
         async def _do_auth():
-            from playwright.async_api import async_playwright as _async_playwright
             from urllib.parse import urlparse as _urlparse
+
+            from playwright.async_api import async_playwright as _async_playwright
             _origin = _urlparse(base_url).scheme + "://" + _urlparse(base_url).netloc
             _headless = os.environ.get("CI", "false").lower() == "true"
             async with _async_playwright() as _p:
@@ -154,7 +158,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                             await _page.wait_for_selector(_sel, timeout=10000)
                             _pw_sel = _sel
                             break
-                        except Exception:
+                        except Exception:  # noqa: S112 — intentional selector fallback loop
                             continue
                     if _pw_sel is None:
                         raise Exception("Password field not found after clicking Continue")
@@ -171,12 +175,12 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                     print(f"   ✅ Auth complete — current URL: {_page.url}")
                 except Exception as e:
                     try:
-                        await _page.screenshot(path="/tmp/auth_debug.png")
-                        print(f"   📸 Debug screenshot: /tmp/auth_debug.png")
-                    except Exception:
+                        await _page.screenshot(path=auth_debug_path)
+                        print(f"   📸 Debug screenshot: {auth_debug_path}")
+                    except Exception:  # noqa: S110 — best-effort debug capture; ignore if page is unreachable
                         pass
                     await _browser.close()
-                    raise RuntimeError(f"Auth failed: {e}")
+                    raise RuntimeError(f"Auth failed: {e}") from e
 
                 _tf = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
                 _auth_path = _tf.name
@@ -188,72 +192,73 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
             auth_state_path = await _do_auth()
         except RuntimeError as e:
             print(f"\n❌ {e}")
-            print("   Debug screenshot saved to /tmp/auth_debug.png")
+            print(f"   Debug screenshot saved to {auth_debug_path}")
             sys.exit(1)
         if auth_state_path:
             print(f"   💾 Session saved to {auth_state_path}")
 
-    for path in pages:
-        if path.startswith(("http://", "https://")):
-            full_url = path
-        else:
-            path = path if path.startswith("/") else "/" + path
-            full_url = base_url.rstrip("/") + path
-
-        print(f"\n{'='*60}")
-        print(f"🌐 Page: {full_url}")
-        print(f"{'='*60}")
-
-        # HEAD check — skip 4xx paths before spending agent tokens
-        try:
-            head = requests.head(
-                full_url, timeout=8, allow_redirects=True,
-                headers={"User-Agent": "reasonable-ux/1.0"},
-            )
-            if 400 <= head.status_code < 500 and head.status_code != 405:
-                print(f"⚠️  Skipping {path} — HEAD returned {head.status_code}")
-                continue
-        except requests.RequestException as e:
-            print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
-            continue
-
-        from agent_test import _infer_goal_from_url
-        page_goal = _infer_goal_from_url(full_url, mode)
-        before = _existing_run_names()
-        tokens = await agent_run(
-            url=full_url, goal=page_goal, max_steps=effective_steps,
-            token_budget=token_budget, email=email, password=password, mode=mode,
-            scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
-            storage_state=auth_state_path, advisor=advisor,
-        )
-        run_folder = _newest_run_folder(before)
-
-        if tokens:
-            total_tokens_all["input"]  += tokens["input"]
-            total_tokens_all["output"] += tokens["output"]
-            total_tokens_all["total"]  += tokens["total"]
-
-        if run_folder:
-            rp = run_folder / "report.json"
-            if rp.exists():
-                report = json.loads(rp.read_text(encoding="utf-8"))
-                page_results.append({
-                    "path":       path,
-                    "url":        full_url,
-                    "run_folder": run_folder,
-                    "report":     report,
-                })
-                print(f"   📂 Collected results from {run_folder.name}")
+    try:
+        for path in pages:
+            if path.startswith(("http://", "https://")):
+                full_url = path
             else:
-                print(f"⚠️  No report.json found in {run_folder}")
-        else:
-            print(f"⚠️  Could not locate run folder for {path}")
+                path = path if path.startswith("/") else "/" + path
+                full_url = base_url.rstrip("/") + path
 
-    if auth_state_path:
-        try:
-            os.unlink(auth_state_path)
-        except Exception:
-            pass
+            print(f"\n{'='*60}")
+            print(f"🌐 Page: {full_url}")
+            print(f"{'='*60}")
+
+            # HEAD check — skip 4xx paths before spending agent tokens
+            try:
+                head = requests.head(
+                    full_url, timeout=8, allow_redirects=True,
+                    headers={"User-Agent": "reasonable-ux/1.0"},
+                )
+                if 400 <= head.status_code < 500 and head.status_code != 405:
+                    print(f"⚠️  Skipping {path} — HEAD returned {head.status_code}")
+                    continue
+            except requests.RequestException as e:
+                print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
+                continue
+
+            from agent_test import _infer_goal_from_url
+            page_goal = _infer_goal_from_url(full_url, mode)
+            before = _existing_run_names()
+            tokens = await agent_run(
+                url=full_url, goal=page_goal, max_steps=effective_steps,
+                token_budget=token_budget, email=email, password=password, mode=mode,
+                scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
+                storage_state=auth_state_path, advisor=advisor,
+            )
+            run_folder = _newest_run_folder(before)
+
+            if tokens:
+                total_tokens_all["input"]  += tokens["input"]
+                total_tokens_all["output"] += tokens["output"]
+                total_tokens_all["total"]  += tokens["total"]
+
+            if run_folder:
+                rp = run_folder / "report.json"
+                if rp.exists():
+                    report = json.loads(rp.read_text(encoding="utf-8"))
+                    page_results.append({
+                        "path":       path,
+                        "url":        full_url,
+                        "run_folder": run_folder,
+                        "report":     report,
+                    })
+                    print(f"   📂 Collected results from {run_folder.name}")
+                else:
+                    print(f"⚠️  No report.json found in {run_folder}")
+            else:
+                print(f"⚠️  Could not locate run folder for {path}")
+    finally:
+        if auth_state_path:
+            try:
+                os.unlink(auth_state_path)
+            except OSError as e:
+                print(f"⚠️  Could not remove auth state tempfile {auth_state_path}: {e}")
 
     return page_results, total_tokens_all
 
@@ -271,7 +276,7 @@ if __name__ == "__main__":
     url  = args.url
     goal = args.goal or "Test the login form with valid and invalid credentials."
 
-    print(f"\n🚀 Starting test run")
+    print("\n🚀 Starting test run")
     print(f"   URL:   {url}")
     print(f"   Steps: {args.steps}")
     print(f"   Mode:  {args.mode.upper()}")
@@ -280,7 +285,7 @@ if __name__ == "__main__":
     if args.email:
         print(f"   Email: {args.email}")
     if args.discover:
-        print(f"   Discover: enabled" + (" (--pages ignored)" if args.pages else ""))
+        print("   Discover: enabled" + (" (--pages ignored)" if args.pages else ""))
     elif args.pages:
         print(f"   Pages: {' '.join(args.pages)}")
     if args.personas or args.static_personas:
@@ -290,7 +295,7 @@ if __name__ == "__main__":
         print(f"   Scout: enabled (threshold {args.scout_threshold}/5)")
     print(f"   Provider: {args.provider}  Model: {args.model}")
     if args.plan:
-        print(f"   Plan:  Planner → Agent\n")
+        print("   Plan:  Planner → Agent\n")
     else:
         print(f"   Goal:  {goal}\n")
 
@@ -298,14 +303,15 @@ if __name__ == "__main__":
     if args.discover:
         if args.pages:
             print("ℹ️  --discover takes precedence; ignoring --pages.")
-        from urllib.parse import urlparse as _up, urljoin as _urljoin
+        from urllib.parse import urljoin as _urljoin
+        from urllib.parse import urlparse as _up
         _parsed = _up(url)
         base_url = f"{_parsed.scheme}://{_parsed.netloc}"
         print(f"\n🔍 Discovering internal pages on {base_url} (authenticated)...")
 
         async def _auth_crawl():
-            from playwright.async_api import async_playwright as _ap
             from bs4 import BeautifulSoup
+            from playwright.async_api import async_playwright as _ap
             _headless = os.environ.get("CI", "false").lower() == "true"
             async with _ap() as _p:
                 _browser = await _p.chromium.launch(headless=_headless)
@@ -340,7 +346,7 @@ if __name__ == "__main__":
                                 _pw_sel = _sel
                                 _pw_visible = True
                                 break
-                            except Exception:
+                            except Exception:  # noqa: S112 — intentional selector fallback loop
                                 continue
                         if _pw_visible:
                             await _page.click(_pw_sel)
@@ -423,9 +429,10 @@ if __name__ == "__main__":
         build_index()
 
         if page_results:
-            from generate_report import stitch_reports
             from datetime import datetime
             from urllib.parse import urlparse
+
+            from generate_report import stitch_reports
 
             hostname = urlparse(url).hostname or url.replace("https://", "").replace("http://", "")
             safe_domain = hostname.replace(".", "_")
@@ -449,7 +456,7 @@ if __name__ == "__main__":
             stitch_reports(page_results, url, output_path, persona_results=persona_results)
 
         if total_tokens and total_tokens["total"]:
-            print(f"\n📊 Total tokens used this run:")
+            print("\n📊 Total tokens used this run:")
             print(f"   Input:  {total_tokens['input']:,}")
             print(f"   Output: {total_tokens['output']:,}")
             print(f"   Total:  {total_tokens['total']:,}")
@@ -480,10 +487,11 @@ if __name__ == "__main__":
                 rp = run_folder / "report.json"
                 if rp.exists():
                     single_report = json.loads(rp.read_text(encoding="utf-8"))
-                    from persona_orchestrator import orchestrate
-                    from generate_report import build_pdf
                     from datetime import datetime as _dt
                     from urllib.parse import urlparse as _up
+
+                    from generate_report import build_pdf
+                    from persona_orchestrator import orchestrate
                     print(f"\n🧠 Running persona analysis ({persona_label})...")
                     persona_results = asyncio.run(
                         orchestrate(url, single_report, use_static=args.static_personas, advisor=args.advisor)
@@ -500,7 +508,7 @@ if __name__ == "__main__":
                 print("⚠️  --personas requires --mode ux")
 
         if total_tokens:
-            print(f"\n📊 Total tokens used this run:")
+            print("\n📊 Total tokens used this run:")
             print(f"   Input:  {total_tokens['input']:,}")
             print(f"   Output: {total_tokens['output']:,}")
             print(f"   Total:  {total_tokens['total']:,}")
