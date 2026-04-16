@@ -163,7 +163,7 @@ async def _click_nav_by_label(page, label: str) -> bool:
         locator = page.get_by_role("link", name=label, exact=False).first
         await locator.click(timeout=5000)
         return True
-    except Exception:
+    except Exception:  # noqa: S110 — first locator attempt fails silently, falls through
         pass
     try:
         escaped = label.replace('"', '\\"')
@@ -516,7 +516,6 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
         rows = ""
         for entry in report:
             if entry.get("action") == "scout_skip":
-                score = entry.get("interest_score", "?")
                 rows += f"""
             <tr>
                 <td>{entry['step']}</td>
@@ -535,8 +534,8 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
             pf = entry.get("pass_fail", "").upper()
             pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
 
-            def score_cell(field):
-                obj = entry.get(field)
+            def score_cell(field, _entry=entry):
+                obj = _entry.get(field)
                 if not obj:
                     return "—"
                 s = obj.get("score", 0)
@@ -980,7 +979,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             if decision["action"] in ("click", "navigate"):
                 try:
                     await asyncio.wait_for(page.wait_for_load_state("domcontentloaded"), timeout=5.0)
-                except Exception:
+                except Exception:  # noqa: S110 — page may already be loaded, timeout is expected
                     pass
             await asyncio.sleep(1.5)
 
@@ -1008,6 +1007,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
         print(f"\n📄 JSON report saved: {report_path}")
+
+        if mode == "ux" and persona:
+            from persona_library import save_inferred
+            save_inferred(url, persona, run_dir)
 
         # Build HTML report
         html = _build_html_report(report, goal, run_id, run_label, mode, below_fold=below_fold)

@@ -6,6 +6,9 @@ venv/
 __pycache__/
 *.pyc
 
+# persona library (accumulated across runs, not source-controlled)
+personas_library.json
+
 # test artifacts
 screenshots/
 reports/

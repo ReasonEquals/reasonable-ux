@@ -98,7 +98,10 @@ Return only the JSON array, nothing else."""
             response = client.messages.create(**kwargs)
         raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
         clean = raw.replace("```json", "").replace("```", "").strip()
-        return json.loads(clean)
+        parsed = json.loads(clean)
+        from persona_library import save_generated
+        save_generated(url, parsed)
+        return parsed
     except Exception as e:
         print(f"⚠️  Persona generation failed: {e} — using DEFAULT_PERSONAS fallback")
         return DEFAULT_PERSONAS
