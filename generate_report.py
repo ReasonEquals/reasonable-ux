@@ -574,12 +574,24 @@ def _render_pdf_via_playwright(html_str, run_folder, output_path):
 
 
 # ── PDF builder (single-page) ─────────────────────────────────────────────────
+def _date_from_run_folder(run_folder) -> str:
+    """Parse 'YYYY-MM-DD_HHMM_run_type' folder name into 'Month DD, YYYY'.
+    Falls back to today if the folder name doesn't match."""
+    try:
+        name = Path(run_folder).name
+        stamp = "_".join(name.split("_")[:2])
+        return datetime.strptime(stamp, "%Y-%m-%d_%H%M").strftime("%B %d, %Y")
+    except (ValueError, AttributeError, IndexError):
+        return datetime.now().strftime("%B %d, %Y")
+
+
 def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *, compact=False):
     import report_data as _rd
     normalized = _rd.load(
         report,
         personas=_resolve_personas(run_folder, persona_results),
         site={"name": url_hint, "url": url_hint},
+        date=_date_from_run_folder(run_folder),
     )
     _rewrite_screenshot_paths(normalized, run_folder)
     if not compact:

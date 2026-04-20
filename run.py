@@ -11,21 +11,19 @@ import requests
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="reasons-qagent orchestrator")
+    parser = argparse.ArgumentParser(description="reasonable-ux orchestrator", allow_abbrev=False)
     parser.add_argument("--url", type=str, help="Target URL to test")
     parser.add_argument("--goal", type=str, help="Test goal for the agent")
     parser.add_argument("--steps", type=int, default=10, help="Max steps (default: 10)")
     parser.add_argument("--token-budget", type=int, default=None, help="Max tokens per test (default: unlimited)")
-    parser.add_argument("--plan", action="store_true", help="Run planner first to generate test cases")
     parser.add_argument("--email", type=str, default=None, help="Email/username for login or signup forms")
     parser.add_argument("--password", type=str, default=None, help="Password for login or signup forms")
-    parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"], help="Test mode: qa (functional pass/fail) or ux (UX quality evaluation)")
     parser.add_argument("--pages", nargs="+", type=str, default=None,
-                        help="URL paths to test sequentially (e.g. / /pricing /about). Appended to --url. Requires --mode ux.")
+                        help="URL paths to test sequentially (e.g. / /pricing /about). Appended to --url.")
     parser.add_argument("--page-steps", type=int, default=None,
                         help="Max steps per page for --pages runs (default: 12). Overrides --steps for --pages mode.")
     parser.add_argument("--discover", action="store_true",
-                        help="Crawl --url to discover internal pages, then run agent on each (UX mode). Overrides --pages if both passed.")
+                        help="Crawl --url to discover internal pages, then run agent on each. Overrides --pages if both passed.")
     parser.add_argument("--personas", action="store_true",
                         help="Run multi-persona analysis after audit and include in PDF.")
     parser.add_argument("--static-personas", action="store_true",
@@ -44,24 +42,9 @@ def parse_args():
                         help="Render PDF using the compact 5-page skim template instead of the full deep-dive.")
     return parser.parse_args()
 
-async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
+async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
     from agent_test import run
-    from planner import plan
-
-    test_plan = await plan(url)
-
-    high_priority = [tc for tc in test_plan["suggested_test_cases"] if tc["priority"] == "high"]
-    candidates = high_priority or test_plan["suggested_test_cases"]
-    chosen = candidates[0]["goal"]
-
-    print(f"\n🎯 Selected goal: {chosen}\n")
-
-    total_tokens = await run(url=url, goal=chosen, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
-    return total_tokens
-
-async def run_without_plan(url, goal, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
-    from agent_test import run
-    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, mode=mode, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
+    total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
 
 def _existing_run_names(runs_dir="runs"):
@@ -111,7 +94,7 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, mode, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None, advisor: bool = False):
+async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None, advisor: bool = False):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_test import run as agent_run
 
@@ -225,11 +208,11 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, mode, 
                 continue
 
             from agent_test import _infer_goal_from_url
-            page_goal = _infer_goal_from_url(full_url, mode)
+            page_goal = _infer_goal_from_url(full_url)
             before = _existing_run_names()
             tokens = await agent_run(
                 url=full_url, goal=page_goal, max_steps=effective_steps,
-                token_budget=token_budget, email=email, password=password, mode=mode,
+                token_budget=token_budget, email=email, password=password,
                 scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
                 storage_state=auth_state_path, advisor=advisor,
             )
@@ -276,12 +259,11 @@ if __name__ == "__main__":
         print("❌ --url is required")
         sys.exit(2)
     url  = args.url
-    goal = args.goal or "Test the login form with valid and invalid credentials."
+    goal = args.goal or "Evaluate this page for clarity, value proposition, CTA effectiveness, and friction in the user journey."
 
     print("\n🚀 Starting test run")
     print(f"   URL:   {url}")
     print(f"   Steps: {args.steps}")
-    print(f"   Mode:  {args.mode.upper()}")
     if args.token_budget:
         print(f"   Budget: {args.token_budget:,} tokens")
     if args.email:
@@ -296,10 +278,7 @@ if __name__ == "__main__":
     if args.scout:
         print(f"   Scout: enabled (threshold {args.scout_threshold}/5)")
     print(f"   Provider: {args.provider}  Model: {args.model}")
-    if args.plan:
-        print("   Plan:  Planner → Agent\n")
-    else:
-        print(f"   Goal:  {goal}\n")
+    print(f"   Goal:  {goal}\n")
 
     # ── Resolve pages list ────────────────────────────────────────────────────
     if args.discover:
@@ -416,13 +395,9 @@ if __name__ == "__main__":
         pages = None
 
     if pages:
-        if args.mode != "ux":
-            print("ℹ️  --pages/--discover requires UX mode; switching to --mode ux.")
-            args.mode = "ux"
-
         page_results, total_tokens = asyncio.run(
             run_pages(url, goal, args.steps, args.token_budget,
-                      args.email, args.password, args.mode, pages,
+                      args.email, args.password, pages,
                       scout=args.scout, scout_threshold=args.scout_threshold,
                       provider=args.provider, model=args.model,
                       page_steps=args.page_steps, advisor=args.advisor)
@@ -466,10 +441,7 @@ if __name__ == "__main__":
     else:
         before = _existing_run_names()
 
-        if args.plan:
-            total_tokens = asyncio.run(run_with_plan(url, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model, advisor=args.advisor))
-        else:
-            total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, args.mode, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model, advisor=args.advisor))
+        total_tokens = asyncio.run(run_without_plan(url, goal, args.steps, args.token_budget, args.email, args.password, scout=args.scout, scout_threshold=args.scout_threshold, provider=args.provider, model=args.model, advisor=args.advisor))
 
         build_index()
 
@@ -485,7 +457,7 @@ if __name__ == "__main__":
 
         if (args.personas or args.static_personas) and before is not None:
             run_folder = _newest_run_folder(before)
-            if run_folder and args.mode == "ux":
+            if run_folder:
                 rp = run_folder / "report.json"
                 if rp.exists():
                     single_report = json.loads(rp.read_text(encoding="utf-8"))
@@ -506,8 +478,6 @@ if __name__ == "__main__":
                     print(f"\n📄 Generating persona report → {output_path}")
                     build_pdf(run_folder, single_report, url, output_path,
                               persona_results=persona_results, compact=args.compact)
-            elif run_folder:
-                print("⚠️  --personas requires --mode ux")
 
         if total_tokens:
             print("\n📊 Total tokens used this run:")

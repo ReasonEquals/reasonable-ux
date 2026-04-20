@@ -6,6 +6,7 @@ templates introduced in Phase C of the ReportLab → HTML+Playwright migration.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from urllib.parse import urlparse
 
@@ -35,7 +36,6 @@ SEVERITY_META: list[dict[str, Any]] = [
 DEFAULT_PERSONAS: list[dict[str, Any]] = [
     {
         "id": "team-lead",
-        "name": "Maya Chen",
         "role": "Design Team Lead",
         "company": "Series B fintech · 40-person design org",
         "archetype": "Evaluator",
@@ -57,7 +57,6 @@ DEFAULT_PERSONAS: list[dict[str, Any]] = [
     },
     {
         "id": "ic-designer",
-        "name": "Jordan Park",
         "role": "Senior Product Designer",
         "company": "Late-stage marketplace · design of 12",
         "archetype": "Practitioner",
@@ -79,7 +78,6 @@ DEFAULT_PERSONAS: list[dict[str, Any]] = [
     },
     {
         "id": "founder",
-        "name": "Priya Sharma",
         "role": "Founder / Product Generalist",
         "company": "Pre-seed · team of 4",
         "archetype": "Outsider",
@@ -281,7 +279,7 @@ def load(
         "recommendations": {"all": prioritized, "quickWins": quick_wins, "strategic": strategic},
         "severityMeta": SEVERITY_META,
         "meta": {
-            "date": opts.get("date") or "April 12, 2026",
+            "date": opts.get("date") or datetime.now().strftime("%B %d, %Y"),
             "evaluator": opts.get("evaluator") or "ReasonableUX",
             "duration": opts.get("duration") or f"{len(steps)} steps · ~{len(steps) * 2} min walkthrough",
         },

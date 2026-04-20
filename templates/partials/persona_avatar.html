@@ -1,14 +1,17 @@
 {#
-  persona_avatar.html — colored circle + 2-letter initials.
+  persona_avatar.html — colored circle + 2-letter initials derived from archetype.
   Locals:
-    persona (dict) — needs `name` + `color`
+    persona (dict) — needs `archetype` (+ `role` fallback) + `color`
     size    (int, default 48)
 #}
 {%- set _size = size if size is defined else 48 -%}
-{%- set parts = persona.name.split(' ') -%}
-{%- set initials -%}
-{%- for p in parts[:2] -%}{{ p[0] }}{%- endfor -%}
-{%- endset -%}
+{%- set _archetype_initials = {"Evaluator": "EV", "Practitioner": "PR", "Outsider": "OU"} -%}
+{%- set _arch = persona.archetype or "" -%}
+{%- if _arch in _archetype_initials -%}
+  {%- set initials = _archetype_initials[_arch] -%}
+{%- else -%}
+  {%- set initials = (persona.role or "?")[:2] | upper -%}
+{%- endif -%}
 <div aria-hidden="true" style="
     width: {{ _size }}px; height: {{ _size }}px;
     border-radius: 50%;

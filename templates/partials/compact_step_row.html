@@ -23,7 +23,7 @@
         {{ "%02d" | format(step.index) }}
       </span>
       <span style="font-weight: 600; font-size: 10.5pt;">{{ step.pageLabel }}</span>
-      <span class="caption" style="white-space: nowrap;">· {{ persona.name }}</span>
+      <span class="caption" style="white-space: nowrap;">· {{ persona.role }}</span>
       <div style="margin-left: auto; white-space: nowrap;">
         {% with level=step.severity, severityMeta=severityMeta %}{% include "partials/severity_chip.html" %}{% endwith %}
       </div>

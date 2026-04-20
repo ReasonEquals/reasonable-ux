@@ -1,7 +1,7 @@
 {#
   persona_card_standard.html — single-row persona card.
   Locals:
-    persona (dict) — id, name, role, company, goal, archetype, color
+    persona (dict) — id, role, company, goal, archetype, color
 #}
 <div class="card" style="
     display: flex; gap: 14px; padding: 14px;
@@ -12,11 +12,10 @@
   {% with size = 52 %}{% include "partials/persona_avatar.html" %}{% endwith %}
   <div style="flex: 1; min-width: 0;">
     <div style="display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;">
-      <h3 style="margin: 0;">{{ persona.name }}</h3>
-      <span class="caption">{{ persona.role }}</span>
+      <h3 style="margin: 0;">{{ persona.role }}</h3>
+      <span class="caption">{{ persona.archetype }}</span>
     </div>
     <div class="caption mt-1" style="color: var(--muted);">{{ persona.company }}</div>
     <p style="margin: 8px 0 6px; font-size: 9.5pt; line-height: 1.45;">{{ persona.goal }}</p>
-    <div class="chip accent" style="margin-top: 4px;">{{ persona.archetype }}</div>
   </div>
 </div>
