@@ -211,7 +211,11 @@ def load(
         flow = (s.get("flow_smoothness") or {}).get("score")
         subs = {"cta": cta, "copy": copy, "flow": flow}
         avg = _average([cta, copy, flow])
-        severity = scores_to_severity(avg)
+        agent_sev = s.get("severity")
+        if isinstance(agent_sev, int) and not isinstance(agent_sev, bool) and 0 <= agent_sev <= 4:
+            severity = agent_sev
+        else:
+            severity = scores_to_severity(avg)
         step_idx = s.get("step") if s.get("step") is not None else i + 1
         friction = [
             {"id": f"s{step_idx}-f{fi}", "text": text, "severity": severity, "stepIndex": step_idx}
