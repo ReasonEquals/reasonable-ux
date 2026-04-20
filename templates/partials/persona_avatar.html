@@ -1,0 +1,22 @@
+{#
+  persona_avatar.html — colored circle + 2-letter initials.
+  Locals:
+    persona (dict) — needs `name` + `color`
+    size    (int, default 48)
+#}
+{%- set _size = size if size is defined else 48 -%}
+{%- set parts = persona.name.split(' ') -%}
+{%- set initials -%}
+{%- for p in parts[:2] -%}{{ p[0] }}{%- endfor -%}
+{%- endset -%}
+<div aria-hidden="true" style="
+    width: {{ _size }}px; height: {{ _size }}px;
+    border-radius: 50%;
+    background: {{ persona.color }};
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: {{ (_size * 0.38) | round(1) }}px;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;">{{ initials }}</div>

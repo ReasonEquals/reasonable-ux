@@ -1,0 +1,47 @@
+{#
+  persona_matrix.html — cross-persona table.
+  Locals:
+    steps        (list[dict])
+    personas     (list[dict])
+    severityMeta (list[dict])
+#}
+{%- set _persona_by_id = {} -%}
+{%- for p in personas -%}{% set _ = _persona_by_id.update({p.id: p}) %}{%- endfor -%}
+<table class="xtable">
+  <thead>
+    <tr>
+      <th style="width: 22%;">Page</th>
+      <th style="width: 20%;">Persona</th>
+      <th style="width: 14%;">Severity</th>
+      <th>Top friction</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in steps %}
+    {% set p = _persona_by_id.get(s.personaId) or personas[0] %}
+    <tr>
+      <td>
+        <div style="font-weight: 600;">{{ s.pageLabel }}</div>
+        <div class="caption">Step {{ "%02d" | format(s.index) }}</div>
+      </td>
+      <td>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: {{ p.color }};"></span>
+          <div>
+            <div style="font-weight: 600; font-size: 9pt;">{{ p.name }}</div>
+            <div class="caption">{{ p.archetype }}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        {% with level=s.severity, severityMeta=severityMeta %}{% include "partials/severity_chip.html" %}{% endwith %}
+      </td>
+      <td>
+        <div style="font-size: 9pt; line-height: 1.4;">
+          {% if s.friction and s.friction[0] %}{{ s.friction[0].text }}{% else %}—{% endif %}
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

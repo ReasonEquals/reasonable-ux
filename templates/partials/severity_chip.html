@@ -1,0 +1,10 @@
+{#
+  severity_chip.html — outlined chip "{glyph} {N} · {Label}".
+  Locals:
+    level       (int 0-4)
+    severityMeta(list[dict]) — SEVERITY_META from report_data
+#}
+{%- set m = severityMeta[level] -%}
+<span class="chip" style="color: {{ m.tone }}; border-color: {{ m.tone }}; white-space: nowrap;">
+  <span class="sev-glyph sev-{{ level }}"></span>{{ m.short }} · {{ m.label }}
+</span>

@@ -17,6 +17,9 @@ runs/
 # session summaries (private working notes — not shared history)
 session_summaries/
 
+# raw design-mode hand-offs (source-of-truth lives in templates/ after split)
+design_bundle/
+
 # obsidian vault copies (snapshotted ~weekly, not source of truth)
 vault_storage_artifacts/
 

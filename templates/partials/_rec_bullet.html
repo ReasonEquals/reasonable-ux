@@ -1,0 +1,16 @@
+{#
+  _rec_bullet.html — single recommendation line inside the 2×2 grid.
+  Locals:
+    n     (int)
+    rec   (dict) — text, stepIndex
+    badge (str)  — "QUICK WIN" | "STRATEGIC" | "POLISH" | "DEFER"
+#}
+<div style="display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: baseline;">
+  <span class="mono caption">{{ "%02d" | format(n) }}</span>
+  <div>
+    <div style="font-size: 9pt; line-height: 1.35;">{{ rec.text }}</div>
+    <div class="caption" style="margin-top: 2px; letter-spacing: 0.1em; text-transform: uppercase; font-size: 6.5pt; color: var(--muted);">
+      {{ badge }} · step {{ rec.stepIndex }}
+    </div>
+  </div>
+</div>

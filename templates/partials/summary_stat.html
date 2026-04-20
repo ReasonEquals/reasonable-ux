@@ -1,0 +1,22 @@
+{#
+  summary_stat.html — stat tile.
+  Locals:
+    label (str)
+    value (str/number)
+    sub   (str, optional) — e.g. "/ 5"
+#}
+<div style="
+    border: 1px solid var(--rule);
+    padding: 10px 12px;
+    background: var(--paper-elev);
+    border-radius: 4px;">
+  <div class="eyebrow" style="margin-bottom: 2px;">{{ label }}</div>
+  <div style="
+      font-family: var(--font-display);
+      font-size: 22pt;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.02em;">
+    {{ value }}{% if sub %}<span style="font-size: 10pt; color: var(--muted); margin-left: 3px;">{{ sub }}</span>{% endif %}
+  </div>
+</div>

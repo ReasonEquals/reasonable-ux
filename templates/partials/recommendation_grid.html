@@ -1,0 +1,50 @@
+{#
+  recommendation_grid.html — 2×2 impact × effort grid.
+  Locals:
+    recommendations (dict) — report.recommendations ({ all, quickWins, strategic })
+#}
+{%- set recs = recommendations.all[:12] -%}
+{%- set hi_lo = [] -%}{% for r in recs if r.impact >= 3 and r.effort <= 2 %}{% set _ = hi_lo.append(r) %}{% endfor %}
+{%- set hi_hi = [] -%}{% for r in recs if r.impact >= 3 and r.effort > 2 %}{% set _ = hi_hi.append(r) %}{% endfor %}
+{%- set lo_lo = [] -%}{% for r in recs if r.impact < 3 and r.effort <= 2 %}{% set _ = lo_lo.append(r) %}{% endfor %}
+{%- set lo_hi = [] -%}{% for r in recs if r.impact < 3 and r.effort > 2 %}{% set _ = lo_hi.append(r) %}{% endfor %}
+
+<div>
+  <div style="
+      display: grid;
+      grid-template-columns: 60px 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--rule);
+      background: var(--paper-elev);
+      border-radius: 4px;
+      overflow: hidden;">
+
+    <div></div>
+    <div class="eyebrow" style="padding: 8px 12px; border-bottom: 1px solid var(--rule); border-left: 1px solid var(--rule-soft); background: var(--paper);">Low effort</div>
+    <div class="eyebrow" style="padding: 8px 12px; border-bottom: 1px solid var(--rule); border-left: 1px solid var(--rule-soft); background: var(--paper);">High effort</div>
+
+    <div class="eyebrow" style="padding: 10px 6px; writing-mode: vertical-rl; transform: rotate(180deg); border-right: 1px solid var(--rule); background: var(--paper); text-align: center;">High impact</div>
+    <div style="padding: 10px 12px; border-left: 1px solid var(--rule-soft); border-top: 1px solid var(--rule-soft); background: var(--accent-tint); min-height: 110px; display: flex; flex-direction: column; gap: 6px;">
+      {% for r in hi_lo[:4] %}
+        {% with n=loop.index, rec=r, badge="QUICK WIN" %}{% include "partials/_rec_bullet.html" %}{% endwith %}
+      {% else %}<span class="caption">—</span>{% endfor %}
+    </div>
+    <div style="padding: 10px 12px; border-left: 1px solid var(--rule-soft); border-top: 1px solid var(--rule-soft); min-height: 110px; display: flex; flex-direction: column; gap: 6px;">
+      {% for r in hi_hi[:4] %}
+        {% with n=loop.index, rec=r, badge="STRATEGIC" %}{% include "partials/_rec_bullet.html" %}{% endwith %}
+      {% else %}<span class="caption">—</span>{% endfor %}
+    </div>
+
+    <div class="eyebrow" style="padding: 10px 6px; writing-mode: vertical-rl; transform: rotate(180deg); border-right: 1px solid var(--rule); background: var(--paper); text-align: center;">Low impact</div>
+    <div style="padding: 10px 12px; border-left: 1px solid var(--rule-soft); border-top: 1px solid var(--rule-soft); min-height: 110px; display: flex; flex-direction: column; gap: 6px;">
+      {% for r in lo_lo[:3] %}
+        {% with n=loop.index, rec=r, badge="POLISH" %}{% include "partials/_rec_bullet.html" %}{% endwith %}
+      {% else %}<span class="caption">—</span>{% endfor %}
+    </div>
+    <div style="padding: 10px 12px; border-left: 1px solid var(--rule-soft); border-top: 1px solid var(--rule-soft); background: var(--rule-soft); min-height: 110px; display: flex; flex-direction: column; gap: 6px;">
+      {% for r in lo_hi[:3] %}
+        {% with n=loop.index, rec=r, badge="DEFER" %}{% include "partials/_rec_bullet.html" %}{% endwith %}
+      {% else %}<span class="caption">—</span>{% endfor %}
+    </div>
+  </div>
+</div>

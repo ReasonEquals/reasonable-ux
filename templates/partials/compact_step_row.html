@@ -1,0 +1,49 @@
+{#
+  compact_step_row.html — 120px thumb + meta + top recommendation.
+  Locals:
+    step         (dict)
+    persona      (dict)
+    severityMeta (list[dict])
+#}
+<div style="
+    display: grid;
+    grid-template-columns: 120px 1fr 180px;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule-soft);
+    align-items: start;">
+  <div>
+    {% with src=step.screenshot, label=step.pageLabel, url="…/" ~ (step.pageLabel | lower), aspect="4 / 3" %}
+      {% include "partials/screenshot.html" %}
+    {% endwith %}
+  </div>
+  <div style="min-width: 0;">
+    <div style="display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; flex-wrap: wrap;">
+      <span class="mono" style="font-size: 9pt; color: {{ persona.color }}; font-weight: 600;">
+        {{ "%02d" | format(step.index) }}
+      </span>
+      <span style="font-weight: 600; font-size: 10.5pt;">{{ step.pageLabel }}</span>
+      <span class="caption" style="white-space: nowrap;">· {{ persona.name }}</span>
+      <div style="margin-left: auto; white-space: nowrap;">
+        {% with level=step.severity, severityMeta=severityMeta %}{% include "partials/severity_chip.html" %}{% endwith %}
+      </div>
+    </div>
+    {% if step.verdict %}
+    <div style="font-size: 9pt; line-height: 1.45; color: var(--ink-soft);">{{ step.verdict }}</div>
+    {% endif %}
+    <div class="mt-2" style="display: flex; flex-wrap: wrap; gap: 4px;">
+      {% for f in step.friction[:2] %}
+      <span class="chip" style="font-size: 7pt; text-transform: none; letter-spacing: 0;">
+        <span class="sev-glyph sev-{{ f.severity }}"></span>
+        {{ f.text[:60] }}{% if f.text | length > 60 %}…{% endif %}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0;">
+    <div class="caption" style="white-space: nowrap;">Top recommendation</div>
+    <div style="font-size: 8.5pt; line-height: 1.4;">
+      {% if step.recommendations %}{{ step.recommendations[0].text }}{% endif %}
+    </div>
+  </div>
+</div>
