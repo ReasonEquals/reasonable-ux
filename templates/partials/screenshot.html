@@ -1,0 +1,27 @@
+{#
+  screenshot.html — browser chrome + <img> (or placeholder) + callout hook.
+  Locals:
+    src    (str, optional) — image path relative to the rendered HTML file
+    label  (str, optional)
+    url    (str, optional)
+    aspect (str, optional) — e.g. "16 / 10" or "4 / 3"; defaults to 16/10
+  Phase C renders the <img> only. Callout pins require coordinate data we
+  don't produce yet (see BACKLOG_V1_PLUS.md). The {% block callouts %}
+  below is a hook for Phase E / v1+.
+#}
+{%- set _aspect = aspect or "16 / 10" -%}
+<div class="shot browser" style="aspect-ratio: {{ _aspect }};">
+  <div class="chrome">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="url">{{ url or "—" }}</span>
+  </div>
+  <div class="canvas">
+    {%- if src %}
+    <img src="{{ src }}" alt="{{ label or 'screenshot' }}"
+         style="width: 100%; height: 100%; object-fit: cover; object-position: top;" />
+    {%- else %}
+    <span class="placeholder-label">{{ label or "Screenshot placeholder" }}</span>
+    {%- endif %}
+    {% block callouts %}{% endblock %}
+  </div>
+</div>

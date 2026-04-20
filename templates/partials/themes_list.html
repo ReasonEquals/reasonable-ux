@@ -1,0 +1,25 @@
+{#
+  themes_list.html — top 5 ranked themes with pull-quote example + hit count.
+  Locals:
+    themes (list[dict])
+#}
+<div style="display: flex; flex-direction: column; gap: 8px;">
+  {% for t in themes[:5] %}
+  <div style="
+      display: grid; grid-template-columns: 28px 1fr 40px;
+      align-items: baseline; gap: 10px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--rule-soft);">
+    <span class="mono text-muted" style="font-size: 9pt;">{{ "%02d" | format(loop.index) }}</span>
+    <div>
+      <div style="font-weight: 600; font-size: 10pt;">{{ t.label }}</div>
+      {% if t.examples and t.examples[0] %}
+      {% set ex = t.examples[0].text %}
+      <div class="caption" style="margin-top: 2px;">
+        &ldquo;{{ ex[:110] }}{% if ex | length > 110 %}…{% endif %}&rdquo;
+      </div>
+      {% endif %}
+    </div>
+    <div class="mono" style="text-align: right; font-size: 11pt; color: var(--accent);">{{ t.hits }}&times;</div>
+  </div>
+  {% endfor %}
+</div>

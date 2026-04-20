@@ -40,6 +40,8 @@ def parse_args():
                         help="Model name to use (default: claude-opus-4-5)")
     parser.add_argument("--advisor", action="store_true",
                         help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
+    parser.add_argument("--compact", action="store_true",
+                        help="Render PDF using the compact 5-page skim template instead of the full deep-dive.")
     return parser.parse_args()
 
 async def run_with_plan(url, steps, token_budget, email, password, mode, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
@@ -478,7 +480,7 @@ if __name__ == "__main__":
                 from generate_report import build_pdf
                 single_report = json.loads(rp.read_text(encoding="utf-8"))
                 pdf_path = run_dir_for_pdf / "report.pdf"
-                build_pdf(run_dir_for_pdf, single_report, url, pdf_path)
+                build_pdf(run_dir_for_pdf, single_report, url, pdf_path, compact=args.compact)
                 print(f"📄 PDF report saved: {pdf_path}")
 
         if (args.personas or args.static_personas) and before is not None:
@@ -503,7 +505,7 @@ if __name__ == "__main__":
                     output_path = run_folder / f"{safe_domain}_{iso_date}_{iso_time}_persona.pdf"
                     print(f"\n📄 Generating persona report → {output_path}")
                     build_pdf(run_folder, single_report, url, output_path,
-                              persona_results=persona_results)
+                              persona_results=persona_results, compact=args.compact)
             elif run_folder:
                 print("⚠️  --personas requires --mode ux")
 

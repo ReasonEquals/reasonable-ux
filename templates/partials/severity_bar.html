@@ -1,0 +1,12 @@
+{#
+  severity_bar.html — stacked horizontal 5-bucket bar.
+  Locals:
+    counts       (list[int]) — metrics.frictionBySeverity
+    severityMeta (list[dict])
+#}
+{%- set total = (counts | sum) or 1 -%}
+<div class="sev-bar" title="Friction by severity: {{ counts | join(', ') }}">
+  {%- for c in counts %}
+  <span style="width: {{ (c / total) * 100 }}%; background: {{ severityMeta[loop.index0].tone }};"></span>
+  {%- endfor %}
+</div>

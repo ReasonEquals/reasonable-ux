@@ -1,0 +1,26 @@
+{#
+  page.html — page container.
+  Locals:
+    cover      (bool, optional) — cover pages skip head/foot and padding
+    title      (str, optional)  — page-head left label
+    site       (str, optional)  — page-head right label
+    folio_left (str, optional)  — page-foot left label
+    folio_right(str, optional)  — page-foot right label
+    extra_class(str, optional)
+  Uses `caller()` for the body via {% call %}.
+#}
+<section class="page{% if cover %} cover{% endif %}{% if extra_class %} {{ extra_class }}{% endif %}">
+  {%- if not cover and (title or site) %}
+  <header class="page-head">
+    <span class="small-caps text-muted">{{ title or "" }}</span>
+    <span class="small-caps text-muted">{{ site or "" }}</span>
+  </header>
+  {%- endif %}
+  <div class="page-body">{{ caller() }}</div>
+  {%- if not cover and (folio_left or folio_right) %}
+  <footer class="page-foot">
+    <span class="folio">{{ folio_left or "" }}</span>
+    <span class="folio">{{ folio_right or "" }}</span>
+  </footer>
+  {%- endif %}
+</section>

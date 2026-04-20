@@ -1,0 +1,15 @@
+{#
+  score_ring.html — conic-gradient ring with {value}/{max} center.
+  Locals:
+    value (float)
+    max   (int, default 5)
+    label (str, optional)
+#}
+{%- set _max = max if max is defined else 5 -%}
+{%- set pct = (value / _max) * 100 -%}
+<div style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px;">
+  <div class="score-ring" style="--val: {{ pct }};">
+    <span>{{ value }}<small>/{{ _max }}</small></span>
+  </div>
+  {%- if label %}<span class="caption" style="margin-top: 2px;">{{ label }}</span>{% endif %}
+</div>

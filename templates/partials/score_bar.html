@@ -1,0 +1,16 @@
+{#
+  score_bar.html — label + hairline bar + numeric value.
+  Locals:
+    label (str)
+    value (float)
+    max   (int, default 5)
+#}
+{%- set _max = max if max is defined else 5 -%}
+{%- set pct = (value / _max) * 100 -%}
+<div style="display: flex; align-items: center; gap: 10px; width: 100%;">
+  <span class="caption" style="width: 110px; color: var(--ink-soft);">{{ label }}</span>
+  <div style="flex: 1; height: 4px; background: var(--rule-soft); border-radius: 2px; overflow: hidden;">
+    <div style="width: {{ pct }}%; height: 100%; background: var(--accent);"></div>
+  </div>
+  <span class="mono" style="width: 32px; text-align: right; font-size: 9pt;">{{ "%.1f" | format(value) }}</span>
+</div>

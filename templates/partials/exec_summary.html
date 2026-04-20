@@ -1,0 +1,35 @@
+{#
+  exec_summary.html — stat tiles + subscores + severity distribution.
+  Locals:
+    metrics      (dict)
+    severityMeta (list[dict])
+#}
+<div>
+  <div class="grid g-4 gap-4 mb-4">
+    {% with label="Overall UX score", value=metrics.overall, sub="/ 5" %}{% include "partials/summary_stat.html" %}{% endwith %}
+    {% with label="Personas evaluated", value=metrics.personasCount, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
+    {% with label="Friction points", value=metrics.totalFriction, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
+    {% with label="Recommendations", value=metrics.totalRecs, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
+  </div>
+  <div class="grid gap-4" style="grid-template-columns: 1.2fr 1fr;">
+    <div>
+      <div class="eyebrow mb-2">Subscores</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        {% with label="CTA clarity", value=metrics.avgScores.cta %}{% include "partials/score_bar.html" %}{% endwith %}
+        {% with label="Copy quality", value=metrics.avgScores['copy'] %}{% include "partials/score_bar.html" %}{% endwith %}
+        {% with label="Flow smoothness", value=metrics.avgScores.flow %}{% include "partials/score_bar.html" %}{% endwith %}
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow mb-2">Severity distribution</div>
+      {% with counts=metrics.frictionBySeverity %}{% include "partials/severity_bar.html" %}{% endwith %}
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+        {% for m in severityMeta %}
+        <span class="caption" style="display: inline-flex; align-items: center; margin-right: 6px;">
+          <span class="sev-glyph sev-{{ loop.index0 }}"></span>{{ metrics.frictionBySeverity[loop.index0] }} {{ m.label | lower }}
+        </span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
