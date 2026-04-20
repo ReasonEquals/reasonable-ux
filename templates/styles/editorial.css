@@ -1,0 +1,109 @@
+/* editorial.css — warm off-white paper, deep ink, single purple accent.
+   Evokes NYT/Economist long-form — serif display, dense body, restrained color. */
+
+:root,
+[data-aesthetic="editorial"] {
+  --paper: #f6f2ea;
+  --paper-elev: #fbf8f1;
+  --ink: #1a1614;
+  --ink-soft: #3a332d;
+  --muted: #6b645c;
+  --rule: #d4ccc0;
+  --rule-soft: #e6dfd3;
+  --accent: #5a1e94;           /* deep plum */
+  --accent-soft: #7b2cbf;
+  --accent-tint: #ede3f5;
+  --critical: #7e1a1a;
+  --warn: #9a5a1a;
+
+  --font-display: "Fraunces", "Source Serif Pro", "Iowan Old Style", Georgia, serif;
+  --font-body: "Source Serif Pro", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.ed-body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 10.5pt;
+  line-height: 1.55;
+  font-feature-settings: "onum" 1, "pnum" 1;
+}
+.ed-body h1, .ed-body h2, .ed-body h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ed-body h1 { font-size: 38pt; line-height: 1.02; letter-spacing: -0.025em; }
+.ed-body h2 { font-size: 22pt; line-height: 1.08; }
+.ed-body h3 { font-size: 13pt; line-height: 1.2; }
+.ed-body .eyebrow {
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.ed-body .rule { border: 0; border-top: 1px solid var(--rule); margin: 1.5rem 0; }
+.ed-body .rule-thick { border: 0; border-top: 2px solid var(--ink); margin: 1rem 0; }
+.ed-body .drop-cap::first-letter {
+  font-family: var(--font-display);
+  font-size: 4.5em;
+  float: left;
+  line-height: 0.85;
+  padding: 0.1em 0.08em 0 0;
+  color: var(--accent);
+  font-weight: 500;
+}
+.ed-body .pull-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18pt;
+  line-height: 1.25;
+  color: var(--ink);
+  border-left: 3px solid var(--accent);
+  padding: 0.2em 0 0.2em 1em;
+  margin: 1.2em 0;
+}
+.ed-body .byline {
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.ed-body .caption {
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.ed-body .small-caps {
+  font-family: var(--font-sans);
+  font-size: 8.5pt;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ed-body .chip {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink-soft);
+  background: var(--paper-elev);
+}
+.ed-body .chip.accent { color: var(--accent); border-color: var(--accent); }
+.ed-body .folio {
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
