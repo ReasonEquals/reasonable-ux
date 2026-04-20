@@ -8,7 +8,7 @@ from report_data import DEFAULT_PERSONAS
 _ACCENT_COLORS = ["#7b2cbf", "#2c7bbf", "#bf2c7b"]
 _ARCHETYPES = ["Evaluator", "Practitioner", "Outsider"]
 _REQUIRED_FIELDS = (
-    "id", "name", "role", "company", "archetype", "goal", "jtbd",
+    "id", "role", "company", "archetype", "goal", "jtbd",
     "frustrations", "success", "techSavvy", "context", "quote", "color",
 )
 
@@ -88,10 +88,9 @@ archetypes evaluating this specific product. The three archetypes must be:
   2. "Practitioner" — the IC who would actually use it day-to-day
   3. "Outsider"     — someone newer to this category or coming from an adjacent context
 
-Each persona MUST be a JSON object with EXACTLY these fields:
+Each persona MUST be a JSON object with EXACTLY these fields (NO personal names — use role as identifier):
 - id: string (kebab-case slug, e.g. "team-lead")
-- name: string (realistic full name, e.g. "Maya Chen")
-- role: string (job title)
+- role: string (job title — this is the persona's identifier)
 - company: string (stage/size + context, e.g. "Series B fintech · 40-person team")
 - archetype: one of "Evaluator", "Practitioner", "Outsider"
 - goal: string (one sentence — what they want from this product)

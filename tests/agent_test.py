@@ -174,8 +174,8 @@ async def _click_nav_by_label(page, label: str) -> bool:
         return False
 
 
-def _infer_goal_from_url(url: str, mode: str) -> str:
-    """Infer an appropriate test goal from the URL path segment and mode."""
+def _infer_goal_from_url(url: str) -> str:
+    """Infer an appropriate UX evaluation goal from the URL path segment."""
     path = urlparse(url).path.rstrip("/")
     segment = path.split("/")[-1].lower() if path else ""
 
@@ -193,25 +193,8 @@ def _infer_goal_from_url(url: str, mode: str) -> str:
         "blog":     "Evaluate the blog page for content quality, navigation clarity, and whether it builds trust with the target buyer.",
         "demo":     "Evaluate whether the demo page clearly communicates value and makes it easy to request or start a demo.",
     }
-    goals_qa = {
-        "pricing":  "Verify the pricing page renders correctly and all pricing tiers, CTAs, and interactive elements are functional.",
-        "faq":      "Verify the FAQ page renders correctly and all expandable sections, links, and navigation elements function.",
-        "features": "Verify the features page renders correctly and all interactive elements, images, and links function.",
-        "about":    "Verify the about page renders correctly and all links, images, and media load without errors.",
-        "contact":  "Verify the contact form renders correctly and all fields, validation, and submit controls function.",
-        "login":    "Test the login form with valid and invalid credentials and verify error handling.",
-        "signup":   "Verify the signup form renders correctly and all required fields, validation, and submit controls function.",
-        "register": "Verify the registration form renders correctly and all required fields, validation, and submit controls function.",
-        "terms":    "Verify the terms page renders correctly and all content loads without errors.",
-        "privacy":  "Verify the privacy policy page renders correctly and all content loads without errors.",
-        "blog":     "Verify the blog page renders correctly and all article links, pagination, and navigation function.",
-        "demo":     "Verify the demo page renders correctly and all CTAs, form elements, and interactive components function.",
-    }
 
-    if mode == "ux":
-        return goals_ux.get(segment) or "Evaluate this page for clarity, value proposition, CTA effectiveness, and friction in the user journey."
-    else:
-        return goals_qa.get(segment) or "Verify this page renders correctly and all key interactive elements are functional."
+    return goals_ux.get(segment) or "Evaluate this page for clarity, value proposition, CTA effectiveness, and friction in the user journey."
 
 
 def _make_run_dir(url: str, run_type: str) -> str:
@@ -226,7 +209,7 @@ def _make_run_dir(url: str, run_type: str) -> str:
     return run_dir
 
 
-def _build_prompt(goal, step, max_steps, email, password, mode, url=None, persona=None):
+def _build_prompt(goal, step, max_steps, email, password, url=None, persona=None):
     creds_block = ""
     if email or password:
         creds_block = "\nIf you encounter a login or signup form, use these credentials:\n"
@@ -238,15 +221,14 @@ def _build_prompt(goal, step, max_steps, email, password, mode, url=None, person
 
     url_block = f"\nYou are evaluating {url}. Never navigate to a different domain — if you find yourself on a different domain, use navigate to return to {url}.\n" if url else ""
 
-    if mode == "ux":
-        if persona is None:
-            persona_block = """Before evaluating, infer a plausible evaluator persona for this specific site based on the URL, page title, and above-the-fold content visible in the screenshot. The persona must represent a realistic buyer or user for this product — not a deliberately mismatched evaluator. State the persona in your observation AND include it as a top-level 'persona' field in your JSON response (e.g. 'mid-market SaaS buyer comparing project management tools'). Frame your friction_points and recommendations from that persona's perspective."""
-            persona_schema_field = '\n    "persona": "one short sentence naming the persona you inferred for this site",'
-        else:
-            persona_block = f"You are evaluating this site as: {persona}. Your friction_points and recommendations must reflect that perspective."
-            persona_schema_field = ""
+    if persona is None:
+        persona_block = """Before evaluating, infer a plausible evaluator persona for this specific site based on the URL, page title, and above-the-fold content visible in the screenshot. The persona must represent a realistic buyer or user for this product — not a deliberately mismatched evaluator. State the persona in your observation AND include it as a top-level 'persona' field in your JSON response (e.g. 'mid-market SaaS buyer comparing project management tools'). Frame your friction_points and recommendations from that persona's perspective."""
+        persona_schema_field = '\n    "persona": "one short sentence naming the persona you inferred for this site",'
+    else:
+        persona_block = f"You are evaluating this site as: {persona}. Your friction_points and recommendations must reflect that perspective."
+        persona_schema_field = ""
 
-        return f"""You are a UX evaluator. Your goal is: {goal}
+    return f"""You are a UX evaluator. Your goal is: {goal}
 {creds_block}{url_block}
 {persona_block}
 
@@ -274,25 +256,6 @@ pass_fail should reflect overall UX quality: pass if average score >= 3, fail if
 
 If your goal is complete, use action: done and give final scores and verdict.
 If you are on step {max_steps}, you MUST use action: done — do not continue."""
-
-    # Default: qa mode
-    return f"""You are a QA agent. Your goal is: {goal}
-{creds_block}{url_block}
-Current step: {step + 1}
-
-Respond in JSON with exactly this shape:
-{{
-    "observation": "what you see on the page",
-    "action": "click | type | navigate | done — navigate requires a full URL starting with http:// or https://; to follow a link use click with its CSS selector instead",
-    "target": "simple CSS selector — prefer id over class over tag (e.g. '#username', 'button[type=submit]', 'input[name=password]') — avoid generic selectors like '.button' or bare 'a' — no :contains() — or URL or null",
-    "value": "text to type or null",
-    "reasoning": "why you chose this action",
-    "pass_fail": "pass | fail | in_progress",
-    "verdict": "one sentence summary of test status so far"
-}}
-
-If your goal is complete, use action: done and give a final pass_fail and verdict.
-If you are on step {max_steps}, you MUST use action: done with a final pass_fail and verdict — do not continue."""
 
 
 def _build_below_fold_prompt(persona: str) -> str:
@@ -489,7 +452,7 @@ Respond with a JSON object with exactly these two fields:
         }
 
 
-def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
+def _build_html_report(report, goal, run_id, run_label, below_fold=None):
     final_status = report[-1].get("pass_fail", "unknown").upper() if report else "UNKNOWN"
     status_color = "#2ecc71" if final_status == "PASS" else "#e74c3c" if final_status == "FAIL" else "#f39c12"
 
@@ -512,61 +475,60 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
         .friction { color: #f39c12; font-size: 12px; }
     """
 
-    if mode == "ux":
-        rows = ""
-        for entry in report:
-            if entry.get("action") == "scout_skip":
-                rows += f"""
-            <tr>
-                <td>{entry['step']}</td>
-                <td style="color:#888;font-size:11px">scout skip</td>
-                <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
-                <td style="color:#888">scout_skip</td>
-                <td>—</td><td>—</td><td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td>—</td>
-                <td style="color:#888;font-weight:bold">SKIP</td>
-                <td>{entry.get('verdict','')}</td>
-            </tr>"""
-                continue
-
-            pf = entry.get("pass_fail", "").upper()
-            pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
-
-            def score_cell(field, _entry=entry):
-                obj = _entry.get(field)
-                if not obj:
-                    return "—"
-                s = obj.get("score", 0)
-                cls = f"s{min(max(int(s), 1), 5)}"
-                return f'<span class="score {cls}">{s}/5</span><br><span style="color:#aaa;font-size:11px">{obj.get("note","")}</span>'
-
-            friction = entry.get("friction_points", [])
-            friction_html = "".join(f'<div class="friction">• {f}</div>' for f in friction) if friction else "—"
-            recs = entry.get("recommendations", [])
-            recs_html = "".join(f'<div style="color:#00d4ff;font-size:11px">→ {r}</div>' for r in recs) if recs else ""
-
-            conf = entry.get("confidence", "")
-            conf_color = "#2ecc71" if conf == "high" else "#f39c12" if conf == "medium" else "#e74c3c" if conf == "low" else "#888"
-
+    rows = ""
+    for entry in report:
+        if entry.get("action") == "scout_skip":
             rows += f"""
-            <tr>
-                <td>{entry['step']}</td>
-                <td><img src="screenshots/step_{entry['step']}.png" width="200"/></td>
-                <td>{entry['observation']}</td>
-                <td>{entry['action']}</td>
-                <td>{score_cell('cta_clarity')}</td>
-                <td>{score_cell('copy_quality')}</td>
-                <td>{score_cell('flow_smoothness')}</td>
-                <td>{entry.get('first_impression', '—')}</td>
-                <td>{friction_html}{recs_html}</td>
-                <td style="color:{conf_color};font-weight:bold">{conf.upper() if conf else "—"}</td>
-                <td style="color:{pf_color};font-weight:bold">{pf}</td>
-                <td>{entry.get('verdict','')}</td>
-            </tr>"""
+        <tr>
+            <td>{entry['step']}</td>
+            <td style="color:#888;font-size:11px">scout skip</td>
+            <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
+            <td style="color:#888">scout_skip</td>
+            <td>—</td><td>—</td><td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td style="color:#888;font-weight:bold">SKIP</td>
+            <td>{entry.get('verdict','')}</td>
+        </tr>"""
+            continue
 
-        return f"""<!DOCTYPE html>
+        pf = entry.get("pass_fail", "").upper()
+        pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
+
+        def score_cell(field, _entry=entry):
+            obj = _entry.get(field)
+            if not obj:
+                return "—"
+            s = obj.get("score", 0)
+            cls = f"s{min(max(int(s), 1), 5)}"
+            return f'<span class="score {cls}">{s}/5</span><br><span style="color:#aaa;font-size:11px">{obj.get("note","")}</span>'
+
+        friction = entry.get("friction_points", [])
+        friction_html = "".join(f'<div class="friction">• {f}</div>' for f in friction) if friction else "—"
+        recs = entry.get("recommendations", [])
+        recs_html = "".join(f'<div style="color:#00d4ff;font-size:11px">→ {r}</div>' for r in recs) if recs else ""
+
+        conf = entry.get("confidence", "")
+        conf_color = "#2ecc71" if conf == "high" else "#f39c12" if conf == "medium" else "#e74c3c" if conf == "low" else "#888"
+
+        rows += f"""
+        <tr>
+            <td>{entry['step']}</td>
+            <td><img src="screenshots/step_{entry['step']}.png" width="200"/></td>
+            <td>{entry['observation']}</td>
+            <td>{entry['action']}</td>
+            <td>{score_cell('cta_clarity')}</td>
+            <td>{score_cell('copy_quality')}</td>
+            <td>{score_cell('flow_smoothness')}</td>
+            <td>{entry.get('first_impression', '—')}</td>
+            <td>{friction_html}{recs_html}</td>
+            <td style="color:{conf_color};font-weight:bold">{conf.upper() if conf else "—"}</td>
+            <td style="color:{pf_color};font-weight:bold">{pf}</td>
+            <td>{entry.get('verdict','')}</td>
+        </tr>"""
+
+    return f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -599,64 +561,8 @@ def _build_html_report(report, goal, run_id, run_label, mode, below_fold=None):
 </body>
 </html>"""
 
-    # Default: qa mode
-    rows = ""
-    for entry in report:
-        if entry.get("action") == "scout_skip":
-            rows += f"""
-        <tr>
-            <td>{entry['step']}</td>
-            <td style="color:#888;font-size:11px">scout skip</td>
-            <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
-            <td>scout_skip</td>
-            <td style="color:#888">{entry.get('reasoning','')}</td>
-            <td style="color:#888;font-weight:bold">SKIP</td>
-            <td>{entry.get('verdict','')}</td>
-        </tr>"""
-            continue
 
-        pf = entry.get("pass_fail", "").upper()
-        pf_color = "#2ecc71" if pf == "PASS" else "#e74c3c" if pf == "FAIL" else "#f39c12"
-        rows += f"""
-        <tr>
-            <td>{entry['step']}</td>
-            <td><img src="screenshots/step_{entry['step']}.png" width="200"/></td>
-            <td>{entry['observation']}</td>
-            <td>{entry['action']}</td>
-            <td>{entry['reasoning']}</td>
-            <td style="color:{pf_color};font-weight:bold">{pf}</td>
-            <td>{entry.get('verdict','')}</td>
-        </tr>"""
-
-    return f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>QA Report — {run_label} — {run_id}</title>
-    <style>{shared_style}</style>
-</head>
-<body>
-    <h1>🧪 QA Agent Report</h1>
-    <div class="goal"><strong>goal:</strong> {goal}</div>
-    <p class="meta"><strong>Run ID:</strong> {run_id}</p>
-    <p class="status" style="color:{status_color}">Final Status: {final_status}</p>
-    <table>
-        <tr>
-            <th>Step</th>
-            <th>Screenshot</th>
-            <th>Observation</th>
-            <th>Action</th>
-            <th>Reasoning</th>
-            <th>Pass/Fail</th>
-            <th>Verdict</th>
-        </tr>
-        {rows}
-    </table>
-</body>
-</html>"""
-
-
-async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, mode="qa", scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None, advisor: bool = False):
+async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None, advisor: bool = False):
     if not url:
         raise ValueError("run() requires a url — no default fallback.")
     if advisor and provider == "anthropic" and model == "claude-opus-4-5":
@@ -677,7 +583,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
         if score < scout_threshold:
             if not goal:
-                goal = _infer_goal_from_url(url, mode)
+                goal = _infer_goal_from_url(url)
             run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
             run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
             if suite_dir:
@@ -699,17 +605,14 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 "interest_score": score,
                 "input_tokens": scout_input_tokens,
                 "output_tokens": scout_output_tokens,
+                "cta_clarity": None,
+                "copy_quality": None,
+                "flow_smoothness": None,
+                "first_impression": "",
+                "friction_points": [],
+                "recommendations": [],
+                "confidence": "low",
             }
-            if mode == "ux":
-                scout_entry["cta_clarity"] = None
-                scout_entry["copy_quality"] = None
-                scout_entry["flow_smoothness"] = None
-                scout_entry["first_impression"] = ""
-                scout_entry["friction_points"] = []
-                scout_entry["recommendations"] = []
-                scout_entry["confidence"] = "low"
-            else:
-                scout_entry["reasoning"] = f"Scout score {score}/5 below threshold {scout_threshold}. No full evaluation performed."
 
             report = [scout_entry]
             report_path = f"{run_dir}/report.json"
@@ -717,7 +620,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 json.dump(report, f, indent=2)
             print(f"\n📄 JSON report saved: {report_path}")
 
-            html = _build_html_report(report, goal, run_id, run_label, mode)
+            html = _build_html_report(report, goal, run_id, run_label)
             html_path = f"{run_dir}/report.html"
             with open(html_path, "w", encoding="utf-8") as f:
                 f.write(html)
@@ -770,7 +673,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         page.on("response", _on_response)
 
         if not goal:
-            goal = _infer_goal_from_url(url, mode)
+            goal = _infer_goal_from_url(url)
 
         conversation = []
         report = []
@@ -831,7 +734,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     },
                     {
                         "type": "text",
-                        "text": _build_prompt(goal, step, max_steps, email, password, mode, url=url, persona=persona)
+                        "text": _build_prompt(goal, step, max_steps, email, password, url=url, persona=persona)
                     }
                 ]
             })
@@ -874,7 +777,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     clean = clean[brace_start:brace_end + 1]
                 decision = json.loads(clean)
 
-                if mode == "ux" and persona is None:
+                if persona is None:
                     persona = decision.get("persona") or "a plausible buyer or user for this product"
 
                 entry = {
@@ -886,21 +789,17 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     "pass_fail": decision.get("pass_fail", "in_progress"),
                     "verdict": decision.get("verdict", ""),
                     "input_tokens": _in_tok,
-                    "output_tokens": _out_tok
+                    "output_tokens": _out_tok,
+                    "cta_clarity": decision.get("cta_clarity"),
+                    "copy_quality": decision.get("copy_quality"),
+                    "flow_smoothness": decision.get("flow_smoothness"),
+                    "first_impression": decision.get("first_impression", ""),
+                    "friction_points": decision.get("friction_points", []),
+                    "recommendations": decision.get("recommendations", []),
+                    "confidence": decision.get("confidence", ""),
                 }
-
-                if mode == "ux":
-                    entry["cta_clarity"] = decision.get("cta_clarity")
-                    entry["copy_quality"] = decision.get("copy_quality")
-                    entry["flow_smoothness"] = decision.get("flow_smoothness")
-                    entry["first_impression"] = decision.get("first_impression", "")
-                    entry["friction_points"] = decision.get("friction_points", [])
-                    entry["recommendations"] = decision.get("recommendations", [])
-                    entry["confidence"] = decision.get("confidence", "")
-                    if step == 0:
-                        entry["persona"] = persona
-                else:
-                    entry["reasoning"] = decision.get("reasoning", "")
+                if step == 0:
+                    entry["persona"] = persona
 
                 report.append(entry)
 
@@ -983,18 +882,17 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     pass
             await asyncio.sleep(1.5)
 
-        # Below-the-fold analysis (UX mode only)
+        # Below-the-fold analysis
         below_fold = None
-        if mode == "ux":
-            try:
-                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
-                if below_fold:
-                    bf_path = f"{run_dir}/below_fold.json"
-                    with open(bf_path, "w", encoding="utf-8") as f:
-                        json.dump(below_fold, f, indent=2)
-                    print(f"📄 Below-fold analysis saved: {bf_path}")
-            except Exception as e:
-                print(f"⚠️  Below-fold analysis failed: {e}")
+        try:
+            below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
+            if below_fold:
+                bf_path = f"{run_dir}/below_fold.json"
+                with open(bf_path, "w", encoding="utf-8") as f:
+                    json.dump(below_fold, f, indent=2)
+                print(f"📄 Below-fold analysis saved: {bf_path}")
+        except Exception as e:
+            print(f"⚠️  Below-fold analysis failed: {e}")
 
         # Save console and network logs
         with open(f"{run_dir}/console.json", "w") as f:
@@ -1008,12 +906,12 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             json.dump(report, f, indent=2)
         print(f"\n📄 JSON report saved: {report_path}")
 
-        if mode == "ux" and persona:
+        if persona:
             from persona_library import save_inferred
             save_inferred(url, persona, run_dir)
 
         # Build HTML report
-        html = _build_html_report(report, goal, run_id, run_label, mode, below_fold=below_fold)
+        html = _build_html_report(report, goal, run_id, run_label, below_fold=below_fold)
         html_path = f"{run_dir}/report.html"
         with open(html_path, "w", encoding="utf-8") as f:
             f.write(html)
@@ -1037,11 +935,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Dev entry point for agent_test.run(). For the full CLI use run.py.")
+    parser = argparse.ArgumentParser(description="Dev entry point for agent_test.run(). For the full CLI use run.py.", allow_abbrev=False)
     parser.add_argument("--url", type=str, required=True, help="Target URL (required)")
     parser.add_argument("--goal", type=str, default=None)
     parser.add_argument("--steps", type=int, default=8)
-    parser.add_argument("--mode", type=str, default="qa", choices=["qa", "ux"])
     parser.add_argument("--email", type=str, default=None)
     parser.add_argument("--password", type=str, default=None)
     parser.add_argument("--token-budget", type=int, default=None)
@@ -1053,7 +950,6 @@ if __name__ == "__main__":
         url=args.url,
         goal=args.goal,
         max_steps=args.steps,
-        mode=args.mode,
         email=args.email,
         password=args.password,
         token_budget=args.token_budget,
