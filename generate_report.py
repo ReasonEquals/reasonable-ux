@@ -18,9 +18,9 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     HRFlowable,
-    PageBreak,
+    PageBreak,  # noqa: F401 — kept for _page_elems / Phase F cleanup
     Paragraph,
-    SimpleDocTemplate,
+    SimpleDocTemplate,  # noqa: F401 — kept for Phase F cleanup
     Spacer,
     Table,
     TableStyle,
@@ -114,7 +114,7 @@ def find_latest_ux_run(runs_dir="runs"):
             data = json.loads(rp.read_text(encoding="utf-8"))
             if data and "cta_clarity" in data[0]:
                 candidates.append((folder, data))
-        except Exception:
+        except Exception:  # noqa: S112 — skip unreadable run folders
             continue
     if not candidates:
         sys.exit("No UX mode runs found in runs/")
@@ -273,7 +273,7 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date,
             img_h = min(usable_w * (ih / iw), 100 * mm)
             elems.append(RLImage(str(screenshot_path), width=usable_w, height=img_h))
             elems.append(Spacer(1, 10))
-        except Exception:
+        except Exception:  # noqa: S110 — best-effort screenshot embed
             pass
 
     # Scores
@@ -327,7 +327,7 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date,
                 for f in findings:
                     elems.append(Paragraph(f"\u2022 {html.escape(f)}", st["bullet"]))
                 elems.append(Spacer(1, 6))
-        except Exception:
+        except Exception:  # noqa: S110 — best-effort below-fold read
             pass
 
     # Step log
@@ -353,7 +353,7 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date,
                 for e in errors[:5]:
                     msg = e.get("text", "")
                     tech_lines.append(f"  \u2022 {(msg[:100] + '\u2026') if len(msg) > 100 else msg}")
-        except Exception:
+        except Exception:  # noqa: S110 — best-effort console log read
             pass
 
     if network_path.exists():
@@ -365,7 +365,7 @@ def _page_elems(run_folder, report, url_hint, st, overall, averages, run_date,
                 tech_lines.append("\u2705 No failed or slow network requests")
             else:
                 tech_lines.append(f"\u26a0\ufe0f {len(failed)} failed request(s) (\u2265400), {len(slow)} slow request(s) (>2s)")
-        except Exception:
+        except Exception:  # noqa: S110 — best-effort network log read
             pass
 
     if tech_lines:
@@ -594,177 +594,113 @@ def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *
         date=_date_from_run_folder(run_folder),
     )
     _rewrite_screenshot_paths(normalized, run_folder)
-    if not compact:
-        raise NotImplementedError(
-            "Full template arrives in Phase E; use --compact for now."
-        )
-    html_str = _render_jinja("compact.html.j2", normalized)
+    template_name = "compact.html.j2" if compact else "full.html.j2"
+    html_str = _render_jinja(template_name, normalized)
     _render_pdf_via_playwright(html_str, Path(run_folder), Path(output_path))
     print(f"✅ PDF saved: {output_path}")
 
 
 # ── Multi-page PDF stitcher ───────────────────────────────────────────────────
 def stitch_reports(page_results, base_url, output_path, persona_results=None):
-    st  = styles()
-    doc = SimpleDocTemplate(
-        str(output_path), pagesize=A4,
-        leftMargin=MARGIN, rightMargin=MARGIN,
-        topMargin=MARGIN,  bottomMargin=MARGIN,
-        title="Multi-Page UX Evaluation Report", author="reasonable-ux",
-    )
+    """Render the full template over a merged view of every page's steps.
 
-    # Compute per-page scores and collect verdicts
+    Preserves `_exec_summary_content` — its output becomes the `execSummary`
+    context key the full template renders on the exec-summary and appendix
+    pages. Personas resolve in priority order: persona_results → the most
+    recent page's personas.json → DEFAULT_PERSONAS.
+    """
+    import contextlib
+
+    import report_data as _rd
+
     page_summaries = []
-    all_scores     = []
     for pr in page_results:
-        overall_page, averages_page = avg_scores(pr["report"])
-        all_scores.append(overall_page)
-
+        overall_page, _ = avg_scores(pr["report"])
         top_finding = next(
-            (fp for e in pr["report"] for fp in e.get("friction_points", []) if fp), ""
+            (fp for e in pr["report"] for fp in e.get("friction_points", []) if fp), "",
         )
         if not top_finding:
-            top_finding = next((e.get("first_impression", "") for e in pr["report"] if e.get("first_impression")), "")
-
+            top_finding = next(
+                (e.get("first_impression", "") for e in pr["report"] if e.get("first_impression")),
+                "",
+            )
         verdict = next(
-            (e.get("verdict", "") for e in reversed(pr["report"]) if e.get("action") == "done" and e.get("verdict")),
+            (e.get("verdict", "") for e in reversed(pr["report"])
+             if e.get("action") == "done" and e.get("verdict")),
             next((e.get("verdict", "") for e in reversed(pr["report"]) if e.get("verdict")), ""),
         )
-
         page_summaries.append({
-            "path":       pr["path"],
-            "url":        pr["url"],
-            "run_folder": pr["run_folder"],
-            "report":     pr["report"],
-            "overall":    overall_page,
-            "averages":   averages_page,
-            "run_date":   derive_date(pr["run_folder"]),
-            "top_finding":top_finding,
-            "verdict":    verdict,
+            "path":        pr["path"],
+            "url":         pr["url"],
+            "run_folder":  pr["run_folder"],
+            "overall":     overall_page,
+            "top_finding": top_finding,
+            "verdict":     verdict,
         })
 
-    grand_overall = sum(all_scores) / len(all_scores) if all_scores else 0
-    grand_averages = {
-        dim: sum(ps["averages"].get(dim, 0) for ps in page_summaries) / len(page_summaries)
-        for dim in ("cta_clarity", "copy_quality", "flow_smoothness")
-    }
-    hostname = urlparse(base_url).hostname or base_url.replace("https://", "").replace("http://", "")
-    run_date = datetime.now().strftime("%B %-d, %Y")
-
-    # Aggregate tech data
-    tech = {"total_errors": 0, "total_warnings": 0, "total_failed_requests": 0, "total_slow_requests": 0, "top_offender_urls": []}
+    tech = {"total_errors": 0, "total_warnings": 0,
+            "total_failed_requests": 0, "total_slow_requests": 0,
+            "top_offender_urls": []}
     url_counts = {}
     for ps in page_summaries:
-        if (ps["run_folder"] / "console.json").exists():
-            try:
-                cd = json.loads((ps["run_folder"] / "console.json").read_text(encoding="utf-8"))
+        console_path = ps["run_folder"] / "console.json"
+        network_path = ps["run_folder"] / "network.json"
+        if console_path.exists():
+            with contextlib.suppress(OSError, json.JSONDecodeError):
+                cd = json.loads(console_path.read_text(encoding="utf-8"))
                 tech["total_errors"]   += sum(1 for e in cd if e.get("type") == "error")
                 tech["total_warnings"] += sum(1 for e in cd if e.get("type") == "warning")
-            except Exception:
-                pass
-        if (ps["run_folder"] / "network.json").exists():
-            try:
-                nd = json.loads((ps["run_folder"] / "network.json").read_text(encoding="utf-8"))
+        if network_path.exists():
+            with contextlib.suppress(OSError, json.JSONDecodeError):
+                nd = json.loads(network_path.read_text(encoding="utf-8"))
                 tech["total_failed_requests"] += sum(1 for r in nd if r.get("status", 0) >= 400)
                 tech["total_slow_requests"]   += sum(1 for r in nd if (r.get("duration_ms") or 0) > 2000)
                 for r in nd:
                     u = r.get("url", "")
                     url_counts[u] = url_counts.get(u, 0) + 1
-            except Exception:
-                pass
     tech["top_offender_urls"] = [u for u, _ in sorted(url_counts.items(), key=lambda x: -x[1])[:5]]
 
-    # Executive summary
     print("🧠 Generating executive summary...")
-    exec_findings, exec_recs, exec_tech_health, exec_overall = _exec_summary_content(page_summaries, tech_summary=tech)
+    exec_findings, exec_recs, exec_tech_health, exec_overall = _exec_summary_content(
+        page_summaries, tech_summary=tech,
+    )
 
-    elems = []
+    # Merge every page's raw steps into one ordered list. _derive_label keys
+    # off each step's per-URL field (batch 20e), so page labels stay accurate.
+    raw_steps = []
+    for pr in page_results:
+        raw_steps.extend(pr["report"])
 
-    # ── SUMMARY PAGE ─────────────────────────────────────────────────────────
-    elems.append(Paragraph(hostname or "UX Evaluation", st["site"]))
-    elems.append(Paragraph("UX Evaluation Report", st["subtitle"]))
-    elems.append(Paragraph(run_date, st["meta"]))
-    elems.append(Paragraph(f"{len(page_summaries)} page(s) evaluated", st["meta"]))
-    elems.append(Spacer(1, 6))
-    elems.append(HRFlowable(width="100%", thickness=2, color=NAVY, spaceAfter=12))
+    hostname = (urlparse(base_url).hostname
+                or base_url.replace("https://", "").replace("http://", ""))
 
-    elems += section_header("Overall Score", st)
-    elems += _dim_bars(grand_averages, grand_overall, st)
-    elems.append(Spacer(1, 10))
+    latest_run_folder = (
+        max((ps["run_folder"] for ps in page_summaries),
+            key=lambda f: f.stat().st_mtime)
+        if page_summaries else None
+    )
+    run_date = (
+        _date_from_run_folder(latest_run_folder)
+        if latest_run_folder
+        else datetime.now().strftime("%B %d, %Y")
+    )
 
-    if exec_overall:
-        elems.append(Paragraph(html.escape(exec_overall), st["body"]))
-        elems.append(Spacer(1, 8))
+    normalized = _rd.load(
+        raw_steps,
+        personas=_resolve_personas(latest_run_folder, persona_results),
+        site={"name": hostname, "url": base_url},
+        date=run_date,
+    )
+    normalized["execSummary"] = {
+        "findings":          exec_findings,
+        "recommendations":   exec_recs,
+        "technicalHealth":   exec_tech_health,
+        "overallAssessment": exec_overall,
+    }
+    _rewrite_screenshot_paths(normalized, latest_run_folder)
 
-    if exec_findings:
-        elems += section_header("What We Found", st)
-        for f in exec_findings:
-            elems.append(Paragraph(f"\u2022 {html.escape(f)}", st["bullet"]))
-        elems.append(Spacer(1, 8))
-
-    if exec_recs:
-        elems += section_header("What We Recommend", st)
-        for r in exec_recs:
-            elems.append(Paragraph(f"\u2192 {html.escape(r)}", st["rec"]))
-        elems.append(Spacer(1, 10))
-
-    # Pages at a glance
-    elems += section_header("Pages Evaluated", st)
-    usable_w = PAGE_W - 2 * MARGIN
-    pg_col_w = [60, 45, usable_w - 105]
-    pg_data  = [[Paragraph("Page", st["th"]), Paragraph("Score", st["th"]), Paragraph("Verdict", st["th"])]]
-    for ps in page_summaries:
-        c   = score_color(ps["overall"])
-        txt = ps["verdict"] or ps["top_finding"]
-        pg_data.append([
-            Paragraph(ps["path"], st["td_left"]),
-            Paragraph(f'<font color="#{c.hexval()[2:].upper()}"><b>{ps["overall"]:.1f}/5</b></font>', st["td"]),
-            Paragraph(html.escape((txt[:160] + "\u2026") if len(txt) > 160 else txt), st["td_left"]),
-        ])
-    pg_t = Table(pg_data, colWidths=pg_col_w, repeatRows=1)
-    pg_t.setStyle(TableStyle([
-        ("BACKGROUND",    (0, 0), (-1, 0),  NAVY),
-        ("ROWBACKGROUNDS",(0, 1), (-1, -1), [WHITE, colors.HexColor("#f5f5f5")]),
-        ("GRID",          (0, 0), (-1, -1), 0.5, colors.HexColor("#cccccc")),
-        ("VALIGN",        (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING",    (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("LEFTPADDING",   (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING",  (0, 0), (-1, -1), 6),
-    ]))
-    elems.append(pg_t)
-    elems.append(Spacer(1, 10))
-
-    # Tech health on summary page
-    elems += section_header("Technical Health", st)
-    if exec_tech_health:
-        elems.append(Paragraph(html.escape(exec_tech_health), st["body"]))
-    else:
-        e, w, f, s = tech["total_errors"], tech["total_warnings"], tech["total_failed_requests"], tech["total_slow_requests"]
-        if e == 0 and w == 0 and f == 0 and s == 0:
-            elems.append(Paragraph("\u2705 No console errors, warnings, or network issues detected.", st["body"]))
-        else:
-            elems.append(Paragraph(f"{e} console error(s), {w} warning(s), {f} failed request(s), {s} slow request(s).", st["body"]))
-
-    # ── PER-PAGE DETAIL ───────────────────────────────────────────────────────
-    for ps in page_summaries:
-        elems.append(PageBreak())
-        elems += _page_elems(
-            ps["run_folder"], ps["report"], ps["url"],
-            st, ps["overall"], ps["averages"], ps["run_date"],
-            page_label=ps["path"],
-        )
-
-    # Persona section
-    if persona_results:
-        elems.append(PageBreak())
-        add_persona_section(elems, persona_results, st)
-
-    elems.append(Spacer(1, 14))
-    elems.append(HRFlowable(width="100%", thickness=0.5, color=LIGHT_GREY, spaceAfter=6))
-    elems.append(Paragraph("Generated by reasonable-ux · claude-opus-4-5", st["footer"]))
-
-    doc.build(elems)
+    html_str = _render_jinja("full.html.j2", normalized)
+    _render_pdf_via_playwright(html_str, latest_run_folder, Path(output_path))
     print(f"✅ Multi-page PDF saved: {output_path}")
 
 

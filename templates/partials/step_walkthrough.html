@@ -1,0 +1,101 @@
+{#
+  step_walkthrough.html — full-report per-step page body.
+  Display-number in persona color + severity chip + 2-col screenshot / observation
+  + mini scores + numbered friction + recommendations list.
+  Pin coordinates on the screenshot are out of scope for v1 (see screenshot.html);
+  friction numbers show in the list beside the image instead.
+  Locals:
+    step         (dict)
+    persona      (dict)
+    severityMeta (list[dict])
+#}
+<div style="border-top: 2px solid var(--ink); padding-top: 12px;">
+
+  <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+    <span style="
+        font-family: var(--font-display);
+        font-size: 28pt;
+        color: {{ persona.color }};
+        font-weight: 500;
+        line-height: 1;">{{ "%02d" | format(step.index) }}</span>
+    <div style="flex: 1;">
+      <div class="eyebrow" style="color: {{ persona.color }};">{{ persona.role }} · {{ persona.archetype }}</div>
+      <h3 style="margin: 0; font-size: 14pt;">{{ step.pageLabel }}</h3>
+    </div>
+    {% with level=step.severity, severityMeta=severityMeta %}{% include "partials/severity_chip.html" %}{% endwith %}
+  </div>
+
+  <div class="grid gap-4 mt-3" style="grid-template-columns: 1.15fr 1fr;">
+    <div>
+      {% with src=step.screenshot, label="Step " ~ step.index ~ " — " ~ step.pageLabel, url="…/" ~ (step.pageLabel | lower), aspect="16 / 10" %}
+        {% include "partials/screenshot.html" %}
+      {% endwith %}
+    </div>
+    <div>
+      {% if step.observation %}
+      <div class="eyebrow mb-1">Observation</div>
+      <p style="margin: 0; font-size: 9pt; line-height: 1.5;">{{ step.observation }}</p>
+      {% endif %}
+
+      {% if step.verdict %}
+      <div class="eyebrow mt-3 mb-1">Verdict</div>
+      <p style="margin: 0; font-size: 9.5pt; line-height: 1.4; font-style: italic; color: var(--ink-soft);">{{ step.verdict }}</p>
+      {% endif %}
+
+      <div class="grid g-3 gap-2 mt-3">
+        {% for k, lbl in [('cta', 'CTA'), ('copy', 'Copy'), ('flow', 'Flow')] %}
+        <div style="border: 1px solid var(--rule); padding: 6px 8px; border-radius: 3px; background: var(--paper);">
+          <div class="caption" style="font-size: 7pt; letter-spacing: 0.08em; text-transform: uppercase;">{{ lbl }}</div>
+          <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+            <span style="font-family: var(--font-display); font-size: 16pt; font-weight: 500; line-height: 1;">
+              {{ step.subs[k] if step.subs[k] is not none else "—" }}
+            </span>
+            <span class="caption">/ 5</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if step.friction or step.recommendations %}
+  <div class="grid gap-4 mt-4" style="grid-template-columns: 1fr 1fr;">
+    {% if step.friction %}
+    <div>
+      <div class="eyebrow mb-2">
+        <span class="sev-glyph sev-{{ step.severity }}"></span>
+        Friction points
+      </div>
+      <ol style="margin: 0; padding-left: 0; list-style: none;">
+        {% for f in step.friction[:4] %}
+        <li style="
+            display: grid;
+            grid-template-columns: 22px 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 9pt;
+            line-height: 1.4;">
+          <span class="callout sev-{{ f.severity }}"
+                style="position: static; transform: none; width: 18px; height: 18px; font-size: 9pt; box-shadow: none;">
+            {{ loop.index }}
+          </span>
+          <span>{{ f.text }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+    {% if step.recommendations %}
+    <div>
+      <div class="eyebrow mb-2 text-accent">Recommendations</div>
+      <ul style="margin: 0; padding-left: 14px; font-size: 9pt; line-height: 1.45;">
+        {% for r in step.recommendations %}
+        <li style="margin-bottom: 5px;">{{ r.text }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>

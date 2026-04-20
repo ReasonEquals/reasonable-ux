@@ -1,0 +1,413 @@
+{#
+  full.html.j2 — 10-section full UX evaluation report.
+  Sections: cover → contents → exec summary → methodology → persona pages
+            → walkthrough pages → matrix → 2×2 recs → quick wins → appendix.
+  Context produced by generate_report.build_pdf / stitch_reports via
+  report_data.load(...). Optional top-level `execSummary` dict
+  ({findings, recommendations, technicalHealth, overallAssessment}) is
+  populated only on the multi-page stitch path.
+#}
+<!doctype html>
+<html lang="en" data-aesthetic="editorial">
+<head>
+  <meta charset="utf-8">
+  <title>UX Evaluation — {{ site.name }}</title>
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/page.css">
+  <link rel="stylesheet" href="styles/editorial.css">
+</head>
+<body>
+<div class="ed-body" data-aesthetic="editorial">
+
+{#— 01 · Cover —#}
+<section class="page cover" style="height: 11in; padding: 0;">
+  <div style="
+      position: absolute; inset: 0;
+      display: grid; grid-template-rows: 1fr auto;
+      padding: 0.75in 0.75in 0.6in;
+      background: var(--paper-elev);">
+    <div style="
+        position: absolute; left: 0.75in; right: 0.75in; top: 0.6in;
+        display: flex; justify-content: space-between; align-items: baseline;
+        border-bottom: 1px solid var(--rule); padding-bottom: 8px;">
+      <span class="small-caps">ReasonableUX · Full Report</span>
+      <span class="small-caps">{{ meta.date }}</span>
+    </div>
+
+    <div style="margin-top: 56px;">
+      <div class="eyebrow">Multi-persona UX evaluation</div>
+      <div style="height: 18px;"></div>
+      <h1 style="margin: 0; max-width: 9.5em;">
+        {{ site.name }}<span style="color: var(--accent);">.</span>
+      </h1>
+      <div style="
+          margin-top: 18px;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 14pt;
+          color: var(--muted);
+          max-width: 38ch;
+          line-height: 1.3;">
+        A {{ metrics.personasCount }}-persona walkthrough across {{ metrics.stepsCount }} steps,
+        surfacing {{ metrics.totalFriction }} friction points and {{ metrics.totalRecs }} prioritized fixes.
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 20px;">
+      <div style="display: flex;">
+        {% for p in personas %}
+        <div style="margin-left: {% if loop.first %}0{% else %}-10px{% endif %};">
+          {% with persona=p, size=44 %}{% include "partials/persona_avatar.html" %}{% endwith %}
+        </div>
+        {% endfor %}
+      </div>
+      <div style="text-align: right;">
+        <div class="eyebrow">Prepared by</div>
+        <div style="font-family: var(--font-display); font-size: 14pt; font-weight: 500;">{{ meta.evaluator }}</div>
+        <div class="caption">{{ meta.date }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{#— 02 · Contents —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">Contents</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <h2 style="margin: 8px 0 18px;">Contents</h2>
+    {% set _contents = [
+      ("01", "Executive summary", "Scores, themes, opening take"),
+      ("02", "Methodology", "What we did, how we scored"),
+      ("03", "Personas", (personas | length ~ " evaluators · goals, frustrations, JTBD")),
+      ("04", "Walkthroughs", (steps | length ~ " annotated step-by-step flows")),
+      ("05", "Cross-persona matrix", "Every friction across every persona"),
+      ("06", "Recommendations", "Prioritized by impact × effort"),
+      ("07", "Quick wins", "What to ship in one sprint"),
+      ("A", "Appendix", "Raw scores, severity scale, confidence notes"),
+    ] %}
+    <div style="display: flex; flex-direction: column;">
+      {% for n, t, sub in _contents %}
+      <div style="
+          display: grid; grid-template-columns: 56px 1fr auto;
+          align-items: baseline; gap: 14px;
+          padding: 10px 0; border-bottom: 1px solid var(--rule-soft);">
+        <span class="mono text-muted">{{ n }}</span>
+        <div>
+          <div style="font-size: 12pt; font-weight: 500;">{{ t }}</div>
+          <div class="caption">{{ sub }}</div>
+        </div>
+        <span class="mono text-muted caption">§{{ n }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <footer class="page-foot">
+    <span class="folio">Contents</span>
+    <span class="folio">ii</span>
+  </footer>
+</section>
+
+{#— 03 · Executive summary —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">01 · Executive summary</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <h2 style="margin-top: 0;">Executive summary</h2>
+    <div class="byline caption mb-4" style="color: var(--muted);">
+      {{ meta.evaluator }} · {{ meta.date }} · {{ meta.duration }}
+    </div>
+    {% include "partials/exec_summary.html" %}
+
+    {% if execSummary and execSummary.overallAssessment %}
+    <hr class="rule" style="margin-top: 20px;">
+    <p style="font-size: 10.5pt; line-height: 1.55; margin-top: 16px; max-width: 62ch;">
+      {{ execSummary.overallAssessment }}
+    </p>
+    {% endif %}
+
+    {% if execSummary and execSummary.findings %}
+    <div class="eyebrow mt-4 mb-2">Top findings</div>
+    <ul style="margin: 0; padding-left: 16px; font-size: 10pt; line-height: 1.5;">
+      {% for f in execSummary.findings %}<li style="margin-bottom: 4px;">{{ f }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if themes %}
+    <hr class="rule" style="margin-top: 24px;">
+    <div class="eyebrow mb-2">Friction themes, ranked</div>
+    {% include "partials/themes_list.html" %}
+    {% endif %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">01 · Executive summary</span>
+    <span class="folio">01</span>
+  </footer>
+</section>
+
+{#— 04 · Methodology —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">02 · Methodology</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <h2 style="margin-top: 0;">Methodology</h2>
+    <div class="grid g-2 gap-6 mt-4">
+      <div>
+        <div class="eyebrow mb-2">What we did</div>
+        <p style="margin: 0; font-size: 10pt; line-height: 1.5;">
+          We ran {{ personas | length }} personas through a walkthrough of {{ site.name }}. Each persona
+          narrated observations, verdicts, and friction in their own voice. We captured
+          {{ steps | length }} discrete steps, each scored on CTA clarity, copy quality, and
+          flow smoothness (1–5).
+        </p>
+        <div class="eyebrow mt-3 mb-2">What we did not do</div>
+        <p style="margin: 0; font-size: 10pt; line-height: 1.5;">
+          No logged-in product. No moderated interviews with real users. This is a heuristic
+          evaluation — a fast, directional read on the public-facing experience.
+        </p>
+      </div>
+      <div>
+        <div class="eyebrow mb-2">Severity scale (Nielsen)</div>
+        {% set _sev_desc = [
+          "Noticeable but doesn't affect use",
+          "Low priority, fix if time permits",
+          "Meaningful usability problem",
+          "Major — most users will hit it",
+          "Catastrophic — blocks the primary task",
+        ] %}
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          {% for m in severityMeta %}
+          <div style="
+              display: grid; grid-template-columns: 28px 80px 1fr;
+              align-items: baseline; gap: 8px; padding: 4px 0;
+              border-bottom: 1px solid var(--rule-soft);">
+            <span class="sev-glyph sev-{{ loop.index0 }}" style="width: 14px; height: 14px;"></span>
+            <span style="font-weight: 600; font-size: 10pt;">{{ m.short }} · {{ m.label }}</span>
+            <span class="caption">{{ _sev_desc[loop.index0] }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="eyebrow mt-4 mb-2">Score aggregation</div>
+        <p style="margin: 0; font-size: 9.5pt; line-height: 1.45;">
+          Per-step severity is derived from the average of the three subscores. Recommendations
+          inherit the severity of the friction they address as their impact signal; effort is
+          heuristically estimated from scope.
+        </p>
+      </div>
+    </div>
+  </div>
+  <footer class="page-foot">
+    <span class="folio">02 · Methodology</span>
+    <span class="folio">iii</span>
+  </footer>
+</section>
+
+{#— 05 · Personas (one page each) —#}
+{% for p in personas %}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">03.{{ loop.index }} · {{ p.role }}</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Persona · {{ "%02d" | format(loop.index) }} of {{ "%02d" | format(personas | length) }}</div>
+    <h2 style="margin: 0 0 16px;">
+      {{ p.role }}<span style="color: var(--muted); font-weight: 300; font-size: 0.55em; margin-left: 12px;">{{ p.archetype }}</span>
+    </h2>
+    {% with persona=p %}{% include "partials/persona_card_rich.html" %}{% endwith %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">03.{{ loop.index }} · {{ p.role }}</span>
+    <span class="folio">{{ loop.index }} of {{ personas | length }}</span>
+  </footer>
+</section>
+{% endfor %}
+
+{#— 06 · Walkthroughs (one page per step) —#}
+{% set _persona_by_id = {} %}
+{% for p in personas %}{% set _ = _persona_by_id.update({p.id: p}) %}{% endfor %}
+{% for s in steps %}
+{% set persona = _persona_by_id.get(s.personaId) or personas[0] %}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">04.{{ "%02d" | format(loop.index) }} · {{ persona.role }}</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Walkthrough</div>
+    <h2 style="margin: 0 0 10px;">
+      {{ persona.role }} on <span style="color: var(--accent);">{{ s.pageLabel | lower }}</span>
+    </h2>
+    {% with step=s, persona=persona, severityMeta=severityMeta %}
+      {% include "partials/step_walkthrough.html" %}
+    {% endwith %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">04.{{ "%02d" | format(loop.index) }} · {{ persona.role }}</span>
+    <span class="folio">Step {{ "%02d" | format(s.index) }}</span>
+  </footer>
+</section>
+{% endfor %}
+
+{#— 07 · Cross-persona matrix —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">05 · Cross-persona matrix</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Issue × persona</div>
+    <h2 style="margin: 0 0 6px;">Every friction, every persona</h2>
+    <p class="caption mb-4" style="max-width: 70ch;">
+      One row per evaluated step. Severity reflects the lowest subscore on that page — a fast
+      read for where to spend the next sprint.
+    </p>
+    {% include "partials/persona_matrix.html" %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">05 · Cross-persona matrix</span>
+    <span class="folio">—</span>
+  </footer>
+</section>
+
+{#— 08 · Prioritized recommendations (2×2 grid) —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">06 · Recommendations</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Recommendations</div>
+    <h2 style="margin: 0 0 6px;">Where to spend the next sprint</h2>
+    <p class="caption mb-4" style="max-width: 70ch;">
+      Impact is inferred from severity of the friction the recommendation addresses; effort is
+      inferred from scope. Start top-left.
+    </p>
+    {% include "partials/recommendation_grid.html" %}
+
+    {% if execSummary and execSummary.recommendations %}
+    <div class="eyebrow mt-4 mb-2">Synthesized top recommendations</div>
+    <ul style="margin: 0; padding-left: 16px; font-size: 10pt; line-height: 1.5;">
+      {% for r in execSummary.recommendations %}<li style="margin-bottom: 4px;">{{ r }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">06 · Recommendations</span>
+    <span class="folio">Impact × effort</span>
+  </footer>
+</section>
+
+{#— 09 · Quick wins —#}
+{% set _wins = [] %}
+{% for r in recommendations.all if r.effort <= 2 and r.impact >= 2 %}{% set _ = _wins.append(r) %}{% endfor %}
+{% set wins = _wins[:8] %}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">07 · Quick wins</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Ship this sprint</div>
+    <h2 style="margin: 0 0 6px;">{{ wins | length }} small fixes, high payoff</h2>
+    <p class="caption mb-4" style="max-width: 70ch;">
+      Copy edits, tooltips, and layout nudges. None require new design exploration.
+    </p>
+    {% set _persona_by_id2 = {} %}
+    {% for p in personas %}{% set _ = _persona_by_id2.update({p.id: p}) %}{% endfor %}
+    {% if wins %}
+    <ol style="margin: 0; padding: 0; list-style: none;">
+      {% for r in wins %}
+      {% set rp = _persona_by_id2.get(r.persona) or personas[0] %}
+      <li style="
+          display: grid; grid-template-columns: 48px 1fr auto;
+          gap: 16px; align-items: baseline;
+          padding: 12px 0;
+          border-top: {% if loop.first %}1px solid var(--ink){% else %}1px solid var(--rule-soft){% endif %};">
+        <span style="font-family: var(--font-display); font-size: 20pt; font-weight: 500; color: var(--accent); line-height: 1;">
+          {{ "%02d" | format(loop.index) }}
+        </span>
+        <div>
+          <div style="font-size: 10.5pt; line-height: 1.4; font-weight: 500;">{{ r.text }}</div>
+          <div class="caption mt-1">Step {{ r.stepIndex }} · {{ rp.role }}</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="caption">impact × effort</div>
+          <div class="mono" style="font-size: 10pt; color: var(--accent);">
+            {{ "●" * r.impact }}{{ "○" * (4 - r.impact if r.impact < 4 else 0) }} ×
+            {{ "●" * r.effort }}{{ "○" * (4 - r.effort if r.effort < 4 else 0) }}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="caption">No quick wins identified at this severity threshold.</p>
+    {% endif %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">07 · Quick wins</span>
+    <span class="folio">One-sprint fixes</span>
+  </footer>
+</section>
+
+{#— 10 · Appendix —#}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">A · Appendix</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    <div class="eyebrow mb-1">Appendix A</div>
+    <h2 style="margin: 0 0 12px;">Raw scores &amp; confidence</h2>
+    <table class="xtable">
+      <thead>
+        <tr>
+          <th>Step</th><th>Page</th><th>CTA</th><th>Copy</th><th>Flow</th>
+          <th>Avg</th><th>Severity</th><th>Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in steps %}
+        <tr>
+          <td class="mono">{{ "%02d" | format(s.index) }}</td>
+          <td>{{ s.pageLabel }}</td>
+          <td class="mono">{{ s.subs.cta if s.subs.cta is not none else "—" }}</td>
+          <td class="mono">{{ s.subs['copy'] if s.subs['copy'] is not none else "—" }}</td>
+          <td class="mono">{{ s.subs.flow if s.subs.flow is not none else "—" }}</td>
+          <td class="mono" style="font-weight: 600;">{{ "%.2f" | format(s.avg) }}</td>
+          <td>
+            <span class="sev-glyph sev-{{ s.severity }}"></span>{{ severityMeta[s.severity].label }}
+          </td>
+          <td class="caption">{{ s.confidence or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if execSummary and execSummary.technicalHealth %}
+    <div class="eyebrow mt-4 mb-2">Technical health</div>
+    <p style="margin: 0; font-size: 9.5pt; line-height: 1.45; max-width: 70ch;">
+      {{ execSummary.technicalHealth }}
+    </p>
+    {% endif %}
+    <div class="caption mt-4" style="max-width: 70ch;">
+      Confidence reflects the evaluator's own certainty at each step. Use it to weight
+      recommendations: high-confidence criticism on frequently visited pages deserves
+      fastest action.
+    </div>
+  </div>
+  <footer class="page-foot">
+    <span class="folio">A · Appendix</span>
+    <span class="folio">—</span>
+  </footer>
+</section>
+
+</div>
+</body>
+</html>
