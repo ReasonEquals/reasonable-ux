@@ -645,7 +645,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         context = await browser.new_context(storage_state=storage_state)
         page = await context.new_page()
 
-        await page.goto(url, wait_until="domcontentloaded")
+        try:
+            await page.goto(url, wait_until="networkidle", timeout=20000)
+        except Exception:  # noqa: S110 — networkidle can time out on long-polling sites; DOM is already loaded enough to screenshot
+            pass
 
         console_logs = []
         page.on("console", lambda msg: console_logs.append({
@@ -711,7 +714,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             screenshot_path = f"{screenshots_dir}/step_{step + 1}.png"
             await page.screenshot(path=screenshot_path)
             encoded = await screenshot_as_base64(page)
-            print(f"📸 Screenshot saved: {screenshot_path}")
+            step_url = page.url
+            print(f"📸 Screenshot saved: {screenshot_path} ({step_url})")
 
 # Strip images from previous messages to reduce token cost
             for msg in conversation:
@@ -783,6 +787,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 entry = {
                     "step": step + 1,
                     "screenshot": screenshot_path,
+                    "url": step_url,
                     "observation": decision["observation"],
                     "action": decision["action"],
                     "target": decision.get("target"),
@@ -853,7 +858,11 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                             })
                             continue
                     else:
-                        await asyncio.wait_for(page.goto(target, wait_until="domcontentloaded"), timeout=15)
+                        try:
+                            await asyncio.wait_for(page.goto(target, wait_until="networkidle"), timeout=20)
+                        except asyncio.TimeoutError:
+                            # networkidle can linger on long-polling sites; fall back to whatever's loaded
+                            pass
                 elif decision["action"] == "type":
                     await asyncio.wait_for(page.fill(_sanitize_selector(decision["target"]), decision["value"]), timeout=10)
 
@@ -877,8 +886,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             # After click/navigate give the page time to settle before next screenshot
             if decision["action"] in ("click", "navigate"):
                 try:
-                    await asyncio.wait_for(page.wait_for_load_state("domcontentloaded"), timeout=5.0)
-                except Exception:  # noqa: S110 — page may already be loaded, timeout is expected
+                    await asyncio.wait_for(page.wait_for_load_state("networkidle"), timeout=15.0)
+                except Exception:  # noqa: S110 — networkidle can linger on long-polling sites, fall through
                     pass
             await asyncio.sleep(1.5)
 

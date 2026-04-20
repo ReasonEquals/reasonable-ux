@@ -128,18 +128,37 @@ def _derive_site(raw_steps: list[dict]) -> dict[str, str]:
     return {"name": "site under review", "url": ""}
 
 
+_PATH_LABELS = {
+    "": "Home",
+    "pricing": "Pricing",
+    "features": "Features",
+    "product": "Product",
+    "products": "Products",
+    "signup": "Signup",
+    "sign-up": "Signup",
+    "register": "Signup",
+    "login": "Login",
+    "signin": "Login",
+    "sign-in": "Login",
+    "dashboard": "Dashboard",
+    "about": "About",
+    "contact": "Contact",
+    "blog": "Blog",
+    "faq": "FAQ",
+    "demo": "Demo",
+}
+
+
 def _derive_label(step: dict) -> str:
-    obs = (step.get("observation") or "").lower()
-    if "pricing" in obs:
-        return "Pricing"
-    if "homepage" in obs or "home page" in obs or "hero" in obs:
+    url = step.get("url")
+    if url:
+        path = urlparse(url).path.strip("/")
+        segment = path.split("/")[-1].lower() if path else ""
+        if segment in _PATH_LABELS:
+            return _PATH_LABELS[segment]
+        if segment:
+            return segment.replace("-", " ").replace("_", " ").title()
         return "Home"
-    if "product" in obs:
-        return "Products"
-    if "sign" in obs and "up" in obs:
-        return "Signup"
-    if "dashboard" in obs:
-        return "Dashboard"
     return f"Step {step.get('step')}"
 
 
