@@ -40,12 +40,24 @@ def parse_args():
                         help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
     parser.add_argument("--compact", action="store_true",
                         help="Render PDF using the compact 5-page skim template instead of the full deep-dive.")
+    parser.add_argument("--theme", choices=["editorial", "technical", "studio"], default="editorial",
+                        help="Visual theme for the PDF (default: editorial).")
     return parser.parse_args()
 
 async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
     from agent_test import run
     total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
+
+def _pdf_filename(domain, now, *, scope, compact, theme, persona):
+    """Unified PDF naming: {domain}_{YYYY-MM-DD}_{HHMMSS}_{scope}_{template}_{theme}[_persona].pdf"""
+    safe_domain = domain.replace(".", "_")
+    date = now.strftime("%Y-%m-%d")
+    time = now.strftime("%H%M%S")
+    template = "compact" if compact else "full"
+    suffix = "_persona" if persona else ""
+    return f"{safe_domain}_{date}_{time}_{scope}_{template}_{theme}{suffix}.pdf"
+
 
 def _existing_run_names(runs_dir="runs"):
     runs_path = Path(runs_dir)
@@ -412,13 +424,9 @@ if __name__ == "__main__":
             from generate_report import stitch_reports
 
             hostname = urlparse(url).hostname or url.replace("https://", "").replace("http://", "")
-            safe_domain = hostname.replace(".", "_")
             now = datetime.now()
-            iso_date = now.strftime("%Y-%m-%d")
-            iso_time = now.strftime("%H-%M-%S")
             suite_folder = Path("runs") / f"suite_{now.strftime('%Y%m%d_%H%M%S')}"
             suite_folder.mkdir(parents=True, exist_ok=True)
-            output_path = suite_folder / f"{safe_domain}_{iso_date}_{iso_time}_multi_page.pdf"
 
             persona_results = None
             if args.personas or args.static_personas:
@@ -429,8 +437,12 @@ if __name__ == "__main__":
                     orchestrate(url, combined_report, use_static=args.static_personas, advisor=args.advisor)
                 )
 
+            output_path = suite_folder / _pdf_filename(
+                hostname, now, scope="multi", compact=args.compact,
+                theme=args.theme, persona=bool(persona_results),
+            )
             print(f"\n📄 Stitching multi-page report → {output_path}")
-            stitch_reports(page_results, url, output_path, persona_results=persona_results)
+            stitch_reports(page_results, url, output_path, persona_results=persona_results, theme=args.theme)
 
         if total_tokens and total_tokens["total"]:
             print("\n📊 Total tokens used this run:")
@@ -449,10 +461,17 @@ if __name__ == "__main__":
         if run_dir_for_pdf:
             rp = run_dir_for_pdf / "report.json"
             if rp.exists():
+                from datetime import datetime as _dt
+                from urllib.parse import urlparse as _up
+
                 from generate_report import build_pdf
                 single_report = json.loads(rp.read_text(encoding="utf-8"))
-                pdf_path = run_dir_for_pdf / "report.pdf"
-                build_pdf(run_dir_for_pdf, single_report, url, pdf_path, compact=args.compact)
+                _hostname = _up(url).hostname or url.replace("https://", "").replace("http://", "")
+                pdf_path = run_dir_for_pdf / _pdf_filename(
+                    _hostname, _dt.now(), scope="single", compact=args.compact,
+                    theme=args.theme, persona=False,
+                )
+                build_pdf(run_dir_for_pdf, single_report, url, pdf_path, compact=args.compact, theme=args.theme)
                 print(f"📄 PDF report saved: {pdf_path}")
 
         if (args.personas or args.static_personas) and before is not None:
@@ -470,14 +489,14 @@ if __name__ == "__main__":
                     persona_results = asyncio.run(
                         orchestrate(url, single_report, use_static=args.static_personas, advisor=args.advisor)
                     )
-                    safe_domain = (_up(url).hostname or url).replace(".", "_")
-                    _now = _dt.now()
-                    iso_date = _now.strftime("%Y-%m-%d")
-                    iso_time = _now.strftime("%H-%M-%S")
-                    output_path = run_folder / f"{safe_domain}_{iso_date}_{iso_time}_persona.pdf"
+                    _hostname = _up(url).hostname or url.replace("https://", "").replace("http://", "")
+                    output_path = run_folder / _pdf_filename(
+                        _hostname, _dt.now(), scope="single", compact=args.compact,
+                        theme=args.theme, persona=True,
+                    )
                     print(f"\n📄 Generating persona report → {output_path}")
                     build_pdf(run_folder, single_report, url, output_path,
-                              persona_results=persona_results, compact=args.compact)
+                              persona_results=persona_results, compact=args.compact, theme=args.theme)
 
         if total_tokens:
             print("\n📊 Total tokens used this run:")

@@ -208,7 +208,7 @@ def _date_from_run_folder(run_folder) -> str:
         return datetime.now().strftime("%B %d, %Y")
 
 
-def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *, compact=False):
+def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *, compact=False, theme="editorial"):
     import report_data as _rd
     normalized = _rd.load(
         report,
@@ -216,6 +216,7 @@ def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *
         site={"name": url_hint, "url": url_hint},
         date=_date_from_run_folder(run_folder),
     )
+    normalized["theme"] = theme
     _rewrite_screenshot_paths(normalized, run_folder)
     template_name = "compact.html.j2" if compact else "full.html.j2"
     html_str = _render_jinja(template_name, normalized)
@@ -224,7 +225,7 @@ def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *
 
 
 # ── Multi-page PDF stitcher ───────────────────────────────────────────────────
-def stitch_reports(page_results, base_url, output_path, persona_results=None):
+def stitch_reports(page_results, base_url, output_path, persona_results=None, *, theme="editorial"):
     """Render the full template over a merged view of every page's steps.
 
     Preserves `_exec_summary_content` — its output becomes the `execSummary`
@@ -320,6 +321,7 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None):
         "technicalHealth":   exec_tech_health,
         "overallAssessment": exec_overall,
     }
+    normalized["theme"] = theme
     _rewrite_screenshot_paths(normalized, latest_run_folder)
 
     html_str = _render_jinja("full.html.j2", normalized)

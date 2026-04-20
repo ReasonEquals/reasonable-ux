@@ -7,17 +7,19 @@
   ({findings, recommendations, technicalHealth, overallAssessment}) is
   populated only on the multi-page stitch path.
 #}
+{% set theme = theme | default("editorial") %}
+{% set body_class = {"editorial": "ed-body", "technical": "tk-body", "studio": "st-body"}[theme] %}
 <!doctype html>
-<html lang="en" data-aesthetic="editorial">
+<html lang="en" data-aesthetic="{{ theme }}">
 <head>
   <meta charset="utf-8">
   <title>UX Evaluation — {{ site.name }}</title>
   <link rel="stylesheet" href="styles/tokens.css">
   <link rel="stylesheet" href="styles/page.css">
-  <link rel="stylesheet" href="styles/editorial.css">
+  <link rel="stylesheet" href="styles/{{ theme }}.css">
 </head>
 <body>
-<div class="ed-body" data-aesthetic="editorial">
+<div class="{{ body_class }}" data-aesthetic="{{ theme }}">
 
 {#— 01 · Cover —#}
 <section class="page cover" style="height: 11in; padding: 0;">
