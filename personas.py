@@ -3,69 +3,77 @@ import json
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-DEFAULT_PERSONAS = [
-    {
-        "name": "Evaluator",
-        "description": "A decision-maker comparing this product against alternatives during a free trial or demo, weighing whether it solves their team's problem before committing budget.",
-        "goals": [
-            "Quickly understand what the product does and who it's for",
-            "Find pricing, plan limits, and contract terms without sales friction",
-            "See proof the product works: case studies, customer logos, reviews",
-            "Determine how it compares to competing tools they're evaluating",
-            "Identify a clear path to start a trial or book a demo",
-        ],
-        "concerns": [
-            "Vague marketing copy with no concrete capabilities",
-            "Hidden pricing or forced sales conversations to see basic details",
-            "Lack of social proof or recognizable customers",
-            "Unclear differentiation from competitors",
-            "No obvious next step for someone ready to try it",
-        ],
-    },
-    {
-        "name": "Hands-on End User",
-        "description": "Someone who will use the product day-to-day to get their job done, often onboarded by an admin and learning the interface as they go.",
-        "goals": [
-            "Complete core tasks without hunting through menus or docs",
-            "Learn the interface quickly through obvious affordances",
-            "Find help or documentation when stuck",
-            "Customize the experience to fit their workflow",
-        ],
-        "concerns": [
-            "Cluttered or unintuitive navigation",
-            "Jargon and feature names that don't map to their mental model",
-            "Slow page loads or laggy interactions interrupting flow",
-            "Missing keyboard shortcuts or bulk actions for repetitive work",
-            "Help content that's hard to find or out of date",
-        ],
-    },
-    {
-        "name": "Technical Integrator",
-        "description": "A developer or IT admin assessing whether the product can be integrated into their existing stack — evaluating APIs, SSO, data export, and security posture.",
-        "goals": [
-            "Find API documentation and authentication details",
-            "Verify SSO, SCIM, and role-based access support",
-            "Understand data residency, compliance, and security certifications",
-            "Estimate integration effort before committing",
-        ],
-        "concerns": [
-            "API docs that are missing, incomplete, or hidden behind sign-up",
-            "No clear answer on SOC 2, GDPR, or other compliance requirements",
-            "Lack of webhooks, export, or programmatic access to data",
-            "Unclear rate limits or undocumented breaking changes",
-            "Vendor lock-in with no migration path",
-        ],
-    },
-]
+from report_data import DEFAULT_PERSONAS
+
+_ACCENT_COLORS = ["#7b2cbf", "#2c7bbf", "#bf2c7b"]
+_ARCHETYPES = ["Evaluator", "Practitioner", "Outsider"]
+_REQUIRED_FIELDS = (
+    "id", "name", "role", "company", "archetype", "goal", "jtbd",
+    "frustrations", "success", "techSavvy", "context", "quote", "color",
+)
 
 
-async def generate_personas(url, summary, advisor=False):
+def _pad_with_defaults(personas: list, want: int = 3) -> list:
+    """Ensure we return at least `want` personas by padding from DEFAULT_PERSONAS
+    while avoiding id collisions with whatever Haiku produced."""
+    existing_ids = {p.get("id") for p in personas if isinstance(p, dict)}
+    padded = list(personas)
+    for fallback in DEFAULT_PERSONAS:
+        if len(padded) >= want:
+            break
+        if fallback["id"] in existing_ids:
+            continue
+        padded.append(fallback)
+        existing_ids.add(fallback["id"])
+    return padded[:want]
+
+
+def _validate_persona(p) -> bool:
+    if not isinstance(p, dict):
+        return False
+    for field in _REQUIRED_FIELDS:
+        if field not in p:
+            return False
+    if not isinstance(p["frustrations"], list) or len(p["frustrations"]) < 1:
+        return False
+    if not isinstance(p["success"], list) or len(p["success"]) < 1:
+        return False
+    return True
+
+
+def _normalize_personas(raw: list) -> list:
+    """Coerce the accent color palette + fill obvious gaps so every persona
+    validates. Keeps whatever Haiku produced, overrides color with our palette
+    to avoid clash with the Editorial theme's plum accent."""
+    normalized = []
+    for i, p in enumerate(raw):
+        if not isinstance(p, dict):
+            continue
+        p = dict(p)
+        p["color"] = _ACCENT_COLORS[i % len(_ACCENT_COLORS)]
+        if not p.get("archetype"):
+            p["archetype"] = _ARCHETYPES[i % len(_ARCHETYPES)]
+        try:
+            p["techSavvy"] = max(1, min(5, int(p.get("techSavvy", 3))))
+        except (TypeError, ValueError):
+            p["techSavvy"] = 3
+        for list_field in ("frustrations", "success"):
+            v = p.get(list_field)
+            if not isinstance(v, list):
+                p[list_field] = []
+        if _validate_persona(p):
+            normalized.append(p)
+    return normalized
+
+
+async def _call_haiku(url: str, summary: str) -> list:
+    """Single Haiku call that returns a JSON array of 3 structured personas."""
     load_dotenv()
     client = Anthropic()
 
     system_prompt = (
-        "You generate realistic user personas for UX research. "
-        "Return only valid JSON arrays. No markdown, no explanation."
+        "You generate realistic structured user personas for UX research. "
+        "Return only a valid JSON array. No markdown, no prose, no commentary."
     )
 
     user_prompt = f"""URL: {url}
@@ -73,35 +81,68 @@ async def generate_personas(url, summary, advisor=False):
 UX report summary:
 {summary}
 
-Infer the product type and the target audience from the URL and report summary above. Then return a JSON array of exactly 3 personas that reflect the actual likely users of this specific product — not generic archetypes.
+Infer the product type and its likely audience from the URL and summary above.
+Then return a JSON array of EXACTLY 3 DISTINCT personas that represent different
+archetypes evaluating this specific product. The three archetypes must be:
+  1. "Evaluator"    — a decision-maker comparing the product for a team/org
+  2. "Practitioner" — the IC who would actually use it day-to-day
+  3. "Outsider"     — someone newer to this category or coming from an adjacent context
 
-Each persona object must have exactly these fields:
-- name: string (short persona label)
-- description: string (1-2 sentences describing this person)
-- goals: array of 3-5 strings (what they want to accomplish on this site)
-- concerns: array of 3-5 strings (friction, doubts, or risks they perceive)
+Each persona MUST be a JSON object with EXACTLY these fields:
+- id: string (kebab-case slug, e.g. "team-lead")
+- name: string (realistic full name, e.g. "Maya Chen")
+- role: string (job title)
+- company: string (stage/size + context, e.g. "Series B fintech · 40-person team")
+- archetype: one of "Evaluator", "Practitioner", "Outsider"
+- goal: string (one sentence — what they want from this product)
+- jtbd: string — formatted "When I ___, I want to ___ so I can ___"
+- frustrations: array of exactly 3 strings (concrete pains they bring to the eval)
+- success: array of exactly 2 strings (what "this worked" looks like for them)
+- techSavvy: integer 1-5
+- context: string (device, mindset, time-of-day — one sentence)
+- quote: string (in-voice pull quote, 1 sentence, <140 chars)
+- color: string (hex — will be overridden by the renderer, any hex is fine)
 
-Return only the JSON array, nothing else."""
+Anchor specificity to the URL and summary. A fintech tool gets finance-adjacent
+roles; a dev tool gets engineer personas; a design tool gets design roles; etc.
 
-    try:
-        kwargs = dict(
-            model="claude-sonnet-4-6",
-            max_tokens=1500,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        if advisor:
-            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
-            kwargs["betas"] = ["advisor-tool-2026-03-01"]
-            response = client.beta.messages.create(**kwargs)
-        else:
-            response = client.messages.create(**kwargs)
-        raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
-        clean = raw.replace("```json", "").replace("```", "").strip()
-        parsed = json.loads(clean)
-        from persona_library import save_generated
-        save_generated(url, parsed)
-        return parsed
-    except Exception as e:
-        print(f"⚠️  Persona generation failed: {e} — using DEFAULT_PERSONAS fallback")
-        return DEFAULT_PERSONAS
+Return ONLY the JSON array of 3 objects. Nothing else."""
+
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=2000,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+    raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
+    clean = raw.replace("```json", "").replace("```", "").strip()
+    parsed = json.loads(clean)
+    if not isinstance(parsed, list):
+        raise ValueError(f"Expected JSON array, got {type(parsed).__name__}")
+    return parsed
+
+
+async def generate_personas(url, summary, advisor=False):
+    """Generate N=3 structured personas for the run. Retries once on parse
+    failure, then falls back to DEFAULT_PERSONAS padding. Never raises — the
+    PDF must always render."""
+    last_err = None
+    for attempt in (1, 2):
+        try:
+            raw = await _call_haiku(url, summary)
+            normalized = _normalize_personas(raw)
+            if len(normalized) >= 3:
+                try:
+                    from persona_library import save_generated
+                    save_generated(url, normalized[:3])
+                except Exception as e:  # noqa: BLE001
+                    print(f"   ⚠️  persona library save failed: {e}")
+                return normalized[:3]
+            last_err = f"only {len(normalized)}/3 valid personas on attempt {attempt}"
+            print(f"   ⚠️  persona generation: {last_err} — retrying" if attempt == 1 else f"   ⚠️  persona generation: {last_err}")
+        except Exception as e:  # noqa: BLE001
+            last_err = str(e)
+            print(f"   ⚠️  persona generation attempt {attempt} failed: {e}")
+    padded = _pad_with_defaults([], want=3)
+    print(f"[persona] fallback — padding with DEFAULT_PERSONAS (got 0/3): {last_err}")
+    return padded
