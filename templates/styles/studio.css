@@ -1,0 +1,98 @@
+/* studio.css — bold whitespace, oversized type, duotone per-persona accents.
+   Evokes a design-studio pitch — huge display type, confident, minimal. */
+
+:root,
+[data-aesthetic="studio"] {
+  --paper: #efece5;
+  --paper-elev: #faf8f2;
+  --ink: #0d0d0f;
+  --ink-soft: #2a2a2f;
+  --muted: #6f6e6a;
+  --rule: #c7c2b6;
+  --rule-soft: #dcd7cb;
+  --accent: #7b2cbf;
+  --accent-soft: #c77dff;
+  --accent-tint: #ede3f5;
+  --critical: #7e1a1a;
+  --warn: #8a4f1a;
+
+  --font-display: "Fraunces", "Playfair Display", "Times New Roman", serif;
+  --font-body: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.st-body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 10pt;
+  line-height: 1.45;
+}
+.st-body h1 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 72pt;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variation-settings: "SOFT" 40, "opsz" 144;
+}
+.st-body h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 32pt;
+  line-height: 1.0;
+  letter-spacing: -0.025em;
+  font-variation-settings: "SOFT" 20, "opsz" 96;
+}
+.st-body h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 11pt;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.st-body .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.st-body .display-num {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-variation-settings: "SOFT" 40, "opsz" 144;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+}
+.st-body .rule { border: 0; border-top: 1px solid var(--ink); margin: 1rem 0; }
+.st-body .rule-soft { border: 0; border-top: 1px solid var(--rule); margin: 1rem 0; }
+.st-body .chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border: 1px solid var(--ink);
+  border-radius: 100px;
+  color: var(--ink);
+  background: transparent;
+}
+.st-body .chip.filled { background: var(--ink); color: var(--paper); }
+.st-body .chip.accent { border-color: var(--accent); color: var(--accent); }
+.st-body .caption {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+.st-body .folio {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}

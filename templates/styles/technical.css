@@ -1,0 +1,90 @@
+/* technical.css — cool slate, structured grid, purple signal color.
+   Evokes Stripe docs / Linear — sans type, tight grid, utility-first feel. */
+
+:root,
+[data-aesthetic="technical"] {
+  --paper: #f7f8fa;
+  --paper-elev: #ffffff;
+  --ink: #0f1418;
+  --ink-soft: #2b333b;
+  --muted: #6b7380;
+  --rule: #dfe3ea;
+  --rule-soft: #eef1f5;
+  --accent: #6b2cbf;
+  --accent-soft: #8a4fd6;
+  --accent-tint: #f1eaf9;
+  --critical: #b42a2a;
+  --warn: #b0701a;
+
+  --font-display: "Inter Tight", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.tk-body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 10pt;
+  line-height: 1.5;
+  font-feature-settings: "cv11" 1, "ss01" 1;
+}
+.tk-body h1, .tk-body h2, .tk-body h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.tk-body h1 { font-size: 32pt; line-height: 1.05; letter-spacing: -0.035em; }
+.tk-body h2 { font-size: 18pt; line-height: 1.15; font-weight: 600; }
+.tk-body h3 { font-size: 12pt; line-height: 1.25; font-weight: 600; }
+.tk-body .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tk-body .mono { font-family: var(--font-mono); }
+.tk-body .rule { border: 0; border-top: 1px solid var(--rule); margin: 1.2rem 0; }
+.tk-body .card {
+  background: var(--paper-elev);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.tk-body .kbd {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--ink-soft);
+}
+.tk-body .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 7.5pt;
+  font-weight: 500;
+  padding: 2px 6px;
+  background: var(--rule-soft);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  color: var(--ink-soft);
+}
+.tk-body .chip.accent { color: var(--accent); background: var(--accent-tint); border-color: var(--accent-tint); }
+.tk-body .caption {
+  font-family: var(--font-sans);
+  font-size: 8pt;
+  color: var(--muted);
+}
+.tk-body .folio {
+  font-family: var(--font-mono);
+  font-size: 8pt;
+  color: var(--muted);
+}
