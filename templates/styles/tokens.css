@@ -1,0 +1,71 @@
+/*
+ * Design tokens — reasonequals.com
+ *
+ * Principles (from vision doc §8):
+ * - Single accent (magenta-purple), high restraint
+ * - Dark mode default, light via prefers-color-scheme
+ * - Reading-first: generous line-height, ~68ch measure
+ * - No gradients, no glow
+ *
+ * WCAG AA: dark-mode accent #c77dff on #0a0a0b ≈ 9:1
+ *          light-mode accent #7b2cbf on #fafafb ≈ 7:1
+ */
+
+:root {
+  /* ── Color (dark mode default) ───────────────────── */
+  --bg: #0a0a0b;
+  --bg-elev: #111114;
+  --fg: #e8e8ea;
+  --muted: #8a8a93;
+  --border: #232327;
+  --accent: #c77dff;
+  --accent-hover: #d69bff;
+  --code-bg: #0d1117;
+
+  /* ── Type ────────────────────────────────────────── */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+
+  /* Fluid scale — clamp(min, preferred, max) */
+  --step--1: clamp(0.875rem, 0.82rem + 0.27vw, 1rem);
+  --step-0: clamp(1rem, 0.93rem + 0.36vw, 1.125rem);
+  --step-1: clamp(1.125rem, 1.02rem + 0.54vw, 1.375rem);
+  --step-2: clamp(1.375rem, 1.2rem + 0.9vw, 1.75rem);
+  --step-3: clamp(1.75rem, 1.43rem + 1.64vw, 2.5rem);
+  --step-4: clamp(2.25rem, 1.7rem + 2.73vw, 3.5rem);
+
+  --lh-body: 1.6;
+  --lh-display: 1.15;
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2.5rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
+
+  /* ── Layout ──────────────────────────────────────── */
+  --measure: 68ch;
+  --content-max: 760px;
+  --page-gutter: clamp(1rem, 5vw, 2rem);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fafafb;
+    --bg-elev: #ffffff;
+    --fg: #111113;
+    --muted: #555560;
+    --border: #e1e1e6;
+    --accent: #7b2cbf;
+    --accent-hover: #5a1e94;
+    --code-bg: #f6f8fa;
+  }
+}
