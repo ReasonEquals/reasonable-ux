@@ -23,17 +23,32 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
+import requests
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "tests"))
 
+from agent_test import USER_AGENT  # noqa: E402
 from agent_test import run as agent_run  # noqa: E402
 
 LABELS_PATH = REPO_ROOT / "evals" / "labels.jsonl"
 RUNS_DIR = REPO_ROOT / "runs"
 EVAL_RUNS_DIR = REPO_ROOT / "eval_runs"
 WALL_CLOCK_WARN_SECONDS = 90.0
+PREFLIGHT_TIMEOUT_S = 10.0
 SUBSCORE_FIELDS = ("cta_clarity", "copy_quality", "flow_smoothness")
+BOT_BLOCK_SIGNALS = (
+    "just a moment",
+    "cf-browser-verification",
+    "cf-challenge",
+    "attention required | cloudflare",
+    "verify you are human",
+    "access denied",
+    "captcha",
+    "ddos protection by cloudflare",
+    "enable javascript and cookies to continue",
+)
 
 
 def _domain_slug(url: str) -> str:
@@ -41,6 +56,35 @@ def _domain_slug(url: str) -> str:
     if host.startswith("www."):
         host = host[4:]
     return host.replace(".", "_").replace("-", "_")
+
+
+def _preflight(url: str) -> tuple[bool, str]:
+    """Cheap HTTP check before spending agent tokens. Returns (ok, reason).
+
+    Catches: 4xx/5xx, non-HTML responses, network errors, and Cloudflare/captcha
+    challenge pages served at the edge (body-text signatures). Does NOT catch
+    JS-rendered challenges that only fire against Playwright — those surface
+    during the agent run itself.
+    """
+    try:
+        r = requests.get(
+            url,
+            timeout=PREFLIGHT_TIMEOUT_S,
+            allow_redirects=True,
+            headers={"User-Agent": USER_AGENT},
+        )
+    except requests.RequestException as exc:
+        return False, f"network: {type(exc).__name__}: {exc}"
+    if r.status_code >= 400:
+        return False, f"HTTP {r.status_code}"
+    ctype = r.headers.get("content-type", "").lower()
+    if "html" not in ctype:
+        return False, f"non-HTML content-type: {ctype}"
+    body_lc = r.text[:8000].lower()
+    for sig in BOT_BLOCK_SIGNALS:
+        if sig in body_lc:
+            return False, f"bot-block signature: {sig!r}"
+    return True, "ok"
 
 
 def _find_latest_single_page_run(url: str, since_ts: float) -> Path | None:
@@ -169,6 +213,24 @@ def _move_run_into_eval_dir(produced: Path, eval_run_dir: Path, domain: str) -> 
 async def _evaluate_one(label: dict, eval_run_dir: Path) -> dict:
     url = label["url"]
     domain = _domain_slug(url)
+
+    preflight_ok, preflight_reason = _preflight(url)
+    if not preflight_ok:
+        return {
+            "url": url,
+            "category": label.get("category"),
+            "domain": domain,
+            "status": "skipped",
+            "passed": False,
+            "failures": [],
+            "warnings": [],
+            "wall_clock_s": 0.0,
+            "run_dir": None,
+            "score": None,
+            "persona": None,
+            "skip_reason": preflight_reason,
+        }
+
     since = time.time()
     t0 = time.monotonic()
     error: str | None = None
@@ -184,6 +246,7 @@ async def _evaluate_one(label: dict, eval_run_dir: Path) -> dict:
             "url": url,
             "category": label.get("category"),
             "domain": domain,
+            "status": "failed",
             "passed": False,
             "failures": [f"agent_run raised and produced no report: {error}"] if error else ["no single_page run dir produced after agent_run"],
             "warnings": [],
@@ -204,6 +267,7 @@ async def _evaluate_one(label: dict, eval_run_dir: Path) -> dict:
             "url": url,
             "category": label.get("category"),
             "domain": domain,
+            "status": "failed",
             "passed": False,
             "failures": [f"report.json did not parse: {exc}"],
             "warnings": [],
@@ -222,6 +286,7 @@ async def _evaluate_one(label: dict, eval_run_dir: Path) -> dict:
         "url": url,
         "category": label.get("category"),
         "domain": domain,
+        "status": "passed" if passed else "failed",
         "passed": passed,
         "failures": failures,
         "warnings": warnings,
@@ -242,14 +307,15 @@ def _build_manifest(
     settings: dict,
 ) -> dict:
     total = len(results)
-    passed = sum(1 for r in results if r["passed"])
+    passed = sum(1 for r in results if r["status"] == "passed")
+    failed = sum(1 for r in results if r["status"] == "failed")
+    skipped = sum(1 for r in results if r["status"] == "skipped")
+    scored = passed + failed
     by_cat: dict[str, dict[str, int]] = {}
     for r in results:
         cat = r.get("category") or "uncategorized"
-        bucket = by_cat.setdefault(cat, {"passed": 0, "total": 0})
-        bucket["total"] += 1
-        if r["passed"]:
-            bucket["passed"] += 1
+        bucket = by_cat.setdefault(cat, {"passed": 0, "failed": 0, "skipped": 0})
+        bucket[r["status"]] += 1
     total_wall_clock = sum(r["wall_clock_s"] for r in results)
     return {
         "eval_run_id": eval_run_dir.name,
@@ -261,8 +327,10 @@ def _build_manifest(
         "labels_count_total": len(labels_subset),
         "settings": settings,
         "passed": passed,
+        "failed": failed,
+        "skipped": skipped,
         "total": total,
-        "pass_rate": round(passed / total, 3) if total else 0.0,
+        "pass_rate": round(passed / scored, 3) if scored else 0.0,
         "per_category": by_cat,
         "results": results,
     }
@@ -270,31 +338,43 @@ def _build_manifest(
 
 def _print_summary(manifest: dict, eval_run_dir: Path) -> int:
     passed = manifest["passed"]
-    total = manifest["total"]
+    failed = manifest["failed"]
+    skipped = manifest["skipped"]
+    scored = passed + failed
     print()
     print("=" * 60)
-    print(f"RESULT: {passed}/{total} passed")
+    tail = f" ({skipped} skipped)" if skipped else ""
+    print(f"RESULT: {passed}/{scored} passed{tail}")
     print(f"Eval run dir: {eval_run_dir.relative_to(REPO_ROOT)}")
     print("=" * 60)
 
     print("\nPer-category:")
     for cat, bucket in sorted(manifest["per_category"].items()):
-        print(f"  {cat}: {bucket['passed']}/{bucket['total']}")
+        cat_scored = bucket["passed"] + bucket["failed"]
+        cat_tail = f" ({bucket['skipped']} skipped)" if bucket["skipped"] else ""
+        print(f"  {cat}: {bucket['passed']}/{cat_scored}{cat_tail}")
 
-    failing = [r for r in manifest["results"] if not r["passed"]]
+    failing = [r for r in manifest["results"] if r["status"] == "failed"]
     if failing:
         print("\nFailures:")
         for r in failing:
             print(f"  {r['url']} ({r.get('category', '—')})")
             for msg in r["failures"]:
                 print(f"    - {msg}")
+
+    skipped_results = [r for r in manifest["results"] if r["status"] == "skipped"]
+    if skipped_results:
+        print("\nSkipped (pre-flight):")
+        for r in skipped_results:
+            print(f"  {r['url']} ({r.get('category', '—')}) — {r['skip_reason']}")
+
     warnings = [(r, w) for r in manifest["results"] for w in r["warnings"]]
     if warnings:
         print("\nWarnings:")
         for r, w in warnings:
             print(f"  {r['url']}: {w}")
 
-    return 0 if passed == total else 1
+    return 0 if failed == 0 else 1
 
 
 async def _main_async(args) -> int:
@@ -317,8 +397,11 @@ async def _main_async(args) -> int:
     for i, label in enumerate(subset, 1):
         print(f"\n[{i}/{len(subset)}] {label['url']} ({label.get('category', '—')})")
         result = await _evaluate_one(label, eval_run_dir)
-        status = "PASS" if result["passed"] else "FAIL"
+        status_map = {"passed": "PASS", "failed": "FAIL", "skipped": "SKIP"}
+        status = status_map[result["status"]]
         print(f"  → {status} ({result['wall_clock_s']:.1f}s)")
+        if result["status"] == "skipped":
+            print(f"    skip: {result['skip_reason']}")
         for msg in result["failures"]:
             print(f"    fail: {msg}")
         for msg in result["warnings"]:
