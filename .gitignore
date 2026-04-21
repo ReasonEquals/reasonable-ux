@@ -13,6 +13,7 @@ personas_library.json
 screenshots/
 reports/
 runs/
+eval_runs/
 
 # session summaries (private working notes — not shared history)
 session_summaries/
