@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import os
+import sys
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -12,6 +13,13 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from PIL import Image
 from playwright.async_api import async_playwright
+
+# Allow sibling-module imports when invoked as `python tests/agent_test.py`
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+from _sanitize_extracted import sanitize_persona, sanitize_string_list  # noqa: E402
 
 load_dotenv(override=True)
 client = Anthropic()
@@ -789,7 +797,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 decision = json.loads(clean)
 
                 if persona is None:
-                    persona = decision.get("persona") or "a plausible buyer or user for this product"
+                    persona = sanitize_persona(decision.get("persona") or "a plausible buyer or user for this product")
 
                 entry = {
                     "step": step + 1,
@@ -807,8 +815,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     "flow_smoothness": decision.get("flow_smoothness"),
                     "severity": decision.get("severity"),
                     "first_impression": decision.get("first_impression", ""),
-                    "friction_points": decision.get("friction_points", []),
-                    "recommendations": decision.get("recommendations", []),
+                    "friction_points": sanitize_string_list(decision.get("friction_points", [])),
+                    "recommendations": sanitize_string_list(decision.get("recommendations", [])),
                     "confidence": decision.get("confidence", ""),
                 }
                 if step == 0:
