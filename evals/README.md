@@ -9,7 +9,8 @@ This is **Phase 1** of the LLMOps v1 integration plan. It exists specifically to
 1. `labels.jsonl` — one URL per line with expected behavior.
 2. `run_evals.py` — per invocation:
    - Creates a fresh `eval_runs/<YYYY-MM-DD_HHMMSS>[_<label>]/` directory (sibling to `runs/`).
-   - For each label: calls `tests/agent_test.run(url, max_steps=4)`, finds the produced `runs/{domain}/{ts}_single_page/`, **moves** it into `eval_runs/<eval_ts>/{domain}/` so audit-grade `runs/` stays clean.
+   - **Pre-flight check** per label: 10s `requests.get` with the shared user-agent. Skips the URL (does not spend tokens) on any of: HTTP ≥ 400, non-HTML content-type, network error, or a Cloudflare/captcha challenge-body signature. Skipped URLs are tracked separately in the manifest and excluded from the pass-rate denominator.
+   - For each label that passes pre-flight: calls `tests/agent_test.run(url, max_steps=4)`, finds the produced `runs/{domain}/{ts}_single_page/`, **moves** it into `eval_runs/<eval_ts>/{domain}/` so audit-grade `runs/` stays clean.
    - Runs five assertions per URL:
      - `report.json` parses as valid JSON
      - Step 1's top-level `persona` string contains at least one `expected_persona_keywords` entry (case-insensitive)
@@ -19,6 +20,8 @@ This is **Phase 1** of the LLMOps v1 integration plan. It exists specifically to
    - Writes `manifest.json` at the eval-run root with pass-rate, per-category breakdown, per-URL results (score, persona, failures, warnings, wall clock), labels-file SHA256, and settings.
 
 Evals run at `max_steps=4` fixed to keep cost down. No personas, no PDF, no advisor.
+
+Pre-flight and the Playwright browser context both use an identifiable user-agent defined at `tests/agent_test.py` top-level (`USER_AGENT`): `Mozilla/5.0 … Chrome/131.0.0.0 Safari/537.36 reasonable-ux/0.1`. Real-Chrome prefix so fingerprint-based blockers pass; `reasonable-ux/0.1` suffix so site operators seeing the traffic in logs can identify the tool. Audit runs (`run.py`, `site_crawler.py`) will follow in a later TOS-hygiene batch.
 
 ## Output layout
 
@@ -89,12 +92,13 @@ End-of-run summary:
 
 ```
 ============================================================
-RESULT: 18/20 passed
+RESULT: 17/19 passed (1 skipped)
+Eval run dir: eval_runs/2026-04-21_0930_baseline
 ============================================================
 
 Per-category:
   content_media: 5/6
-  dtc_ecom: 7/7
+  dtc_ecom: 6/6 (1 skipped)
   saas_landing: 6/7
 
 Failures:
@@ -102,9 +106,12 @@ Failures:
     - score 42.0 outside band [55, 85]
   https://other.com (content_media)
     - no friction keyword matched — expected any of ['subscribe', 'paywall']
+
+Skipped (pre-flight):
+  https://blocked.example (dtc_ecom) — HTTP 403
 ```
 
-Exit code is 0 iff every label passed, else 1.
+Exit code is 0 iff no URL failed (skipped URLs don't fail the run, but surface in the summary so you know to swap them).
 
 ## Label-set sizing
 
