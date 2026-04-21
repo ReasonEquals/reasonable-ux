@@ -1,0 +1,3 @@
+{"url": "https://linear.app", "expected_persona_keywords": ["engineer", "manager", "evaluator", "developer"], "expected_score_band": [60, 90], "expected_friction_keywords": ["pricing", "cta"], "category": "saas_landing"}
+{"url": "https://stripe.com", "expected_persona_keywords": ["developer", "founder", "engineer", "technical"], "expected_score_band": [65, 95], "expected_friction_keywords": ["pricing", "signup"], "category": "saas_landing"}
+{"url": "https://www.allbirds.com", "expected_persona_keywords": ["shopper", "consumer", "buyer", "customer"], "expected_score_band": [55, 90], "expected_friction_keywords": ["price", "cart"], "category": "dtc_ecom"}
