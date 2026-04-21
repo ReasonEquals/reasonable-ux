@@ -7,14 +7,43 @@ This is **Phase 1** of the LLMOps v1 integration plan. It exists specifically to
 ## How it works
 
 1. `labels.jsonl` — one URL per line with expected behavior.
-2. `run_evals.py` — calls `tests/agent_test.run(url, max_steps=4)` per URL, finds the produced `report.json` under `runs/{domain}/{ts}_single_page/`, and asserts four things:
-   - `report.json` parses as valid JSON
-   - Step 1's top-level `persona` string contains at least one `expected_persona_keywords` entry (case-insensitive)
-   - Aggregate score falls inside `expected_score_band`. Score = `mean(all per-step subscores across cta_clarity / copy_quality / flow_smoothness) * 20` — yields a 20–100 scale.
-   - At least one `expected_friction_keywords` entry appears as a lowercase substring in the concatenated `friction_points` text
-   - Wall-clock over 90s warns (does not fail)
+2. `run_evals.py` — per invocation:
+   - Creates a fresh `eval_runs/<YYYY-MM-DD_HHMMSS>[_<label>]/` directory (sibling to `runs/`).
+   - For each label: calls `tests/agent_test.run(url, max_steps=4)`, finds the produced `runs/{domain}/{ts}_single_page/`, **moves** it into `eval_runs/<eval_ts>/{domain}/` so audit-grade `runs/` stays clean.
+   - Runs five assertions per URL:
+     - `report.json` parses as valid JSON
+     - Step 1's top-level `persona` string contains at least one `expected_persona_keywords` entry (case-insensitive)
+     - Aggregate score falls inside `expected_score_band`. Score = `mean(all per-step subscores across cta_clarity / copy_quality / flow_smoothness) * 20` — yields a 20–100 scale.
+     - At least one `expected_friction_keywords` entry appears as a lowercase substring in the concatenated `friction_points` text
+     - Wall-clock over 90s warns (does not fail)
+   - Writes `manifest.json` at the eval-run root with pass-rate, per-category breakdown, per-URL results (score, persona, failures, warnings, wall clock), labels-file SHA256, and settings.
 
 Evals run at `max_steps=4` fixed to keep cost down. No personas, no PDF, no advisor.
+
+## Output layout
+
+```
+eval_runs/
+  2026-04-21_0930_baseline/
+    manifest.json          ← pass rate, per-URL results, labels SHA, settings
+    linear_app/
+      report.json
+      report.html
+      screenshots/
+      full_page.jpeg
+      below_fold.json
+      console.json
+      network.json
+    figma_com/
+      ...
+    stripe_com/
+      ...
+  2026-04-25_1700_post-phase2/
+    manifest.json
+    ...
+```
+
+The whole `eval_runs/` tree is gitignored. Manifests are diffable across historical eval runs — grep pass_rate or aggregate score per URL over time to see drift.
 
 ## `labels.jsonl` schema
 
@@ -43,11 +72,14 @@ One JSON object per line:
 ## Running
 
 ```bash
-python evals/run_evals.py                             # all labels
-python evals/run_evals.py --limit 3                   # first 3 labels
-python evals/run_evals.py --category saas_landing     # one category
-python evals/run_evals.py --category saas_landing --limit 2
+python evals/run_evals.py                                     # all labels
+python evals/run_evals.py --limit 3                           # first 3 labels
+python evals/run_evals.py --category saas_landing             # one category
+python evals/run_evals.py --label baseline                    # nickname the eval_runs/ dir
+python evals/run_evals.py --label post-phase2 --category saas_landing
 ```
+
+`--label` is a nickname suffix on the eval-run directory. Useful for marking milestone runs like `baseline` (pre-Phase 2), `post-phase2`, `post-langfuse`, etc.
 
 ## Reading the output
 
