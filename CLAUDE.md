@@ -22,7 +22,7 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 - `_build_prompt` — the UX prompt builder. Persona branch: if `persona is None`, instructs Claude to infer + emit a top-level `persona` field; otherwise threads the known persona into `persona_block`. `nav:<Label>` prefix documented in the `target` schema field.
 - `_build_below_fold_prompt` — takes the inferred persona string and builds the below-fold analysis prompt.
 - `_run_below_fold_analysis` — writes `full_page.jpeg` at JPEG quality 60, crops in place to `MAX_HEIGHT = 7500` to stay under Claude Vision's 8000px cap, re-reads as base64, calls Claude with the persona-aware prompt.
-- `scout_page` — cheap text-only pre-screen using `requests` + BeautifulSoup + Haiku to rate interest 1–5 before spending vision tokens.
+- `scout_page` — cheap text-only pre-screen using `requests` + BeautifulSoup + `claude-sonnet-4-6` to rate interest 1–5 before spending vision tokens.
 - `_build_html_report` — UX HTML table rendering with below-fold embed.
 - `run` — **the agent loop.** Requires `url` or raises `ValueError`. Image-stripping from prior messages (cost optimization — only the current step's screenshot stays in context). `adapter.complete(..., step_budget)` token budget — **do not raise this without rewriting the JSON schema**. Persona parse on step 1. Click / navigate dispatch with `nav:` prefix handling. Below-fold call with persona.
 - `__main__` — dev stub argparse, `--url` required, supports `--steps`, `--goal`, `--email`, `--password`, `--token-budget`, `--provider`, `--model`, `--advisor`.
@@ -66,7 +66,7 @@ runs/
     <YYYY-MM-DD_HHMM>_<run_type>/
       report.json          # per-step agent decisions + scores
       report.html          # dark-theme HTML version of report.json
-      report.pdf           # (single-page runs) ReportLab PDF
+      report.pdf           # (single-page runs) Playwright-rendered PDF from Jinja template
       screenshots/
         step_1.png
         step_2.png
@@ -128,9 +128,9 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 Confirmed open items (cross-check against latest `session_summaries/` and `git log` before starting — this list ages fast):
 
 - **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example.
-- **`run.py` tempfile cleanup — auth state.** `tempfile.NamedTemporaryFile(..., delete=False)` writes session cookies + localStorage to `/tmp` and never guarantees cleanup on failure paths. Fix: wrap in `try/finally` so the temp file is removed even if the run crashes.
+- **Sonnet JSON parse regression (batch 31 hand-off to batch 32).** Smoke tests after the Opus→Sonnet default flip surfaced structurally malformed JSON on some steps (missing comma around char ~2000, well below the 1024 output-token budget). Add a robust JSON parsing fallback in the step loop.
+- **`evals/labels.jsonl` bands are Opus-anchored (batch 33).** Bands were recalibrated across batches 24/27/28/28.5 while the default executor was silently `claude-opus-4-5`. Sonnet's distribution differs; re-run calibration under the new default before trusting pass/fail rates.
 - **`run.py` tempfile cleanup — auth debug screenshot.** Auth debug PNG can contain filled email/password fields. Outside the repo so no commit risk, but should be moved under the per-run dir or deleted after inspection.
-- **Git identity decision.** Commits currently use `qareasonably@gmail.com`. Not a secret (commit emails are public), but metadata is permanent — decide before many more commits whether the commercial product wants a dedicated identity.
 - **`--discover` page type filter.** Crawler currently follows every same-domain link; pages like `/now`, `/about`, `/team`, `/press`, `/careers` waste tokens without adding UX signal. Add a skip-list or a "page type" scout filter.
 - **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis.
 - **Multi-site persona validation.** Batch 15 validated persona inference on Linear only. Run a small varied suite (SaaS landing, DTC ecommerce, content/media) to confirm step-1 personas stay site-appropriate across categories.
