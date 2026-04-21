@@ -16,6 +16,12 @@ from playwright.async_api import async_playwright
 load_dotenv(override=True)
 client = Anthropic()
 
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/131.0.0.0 Safari/537.36 reasonable-ux/0.1"
+)
+
 
 class LLMAdapter:
     """Normalises API calls across providers (anthropic, openai, google)."""
@@ -643,7 +649,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
-        context = await browser.new_context(storage_state=storage_state)
+        context = await browser.new_context(storage_state=storage_state, user_agent=USER_AGENT)
         page = await context.new_page()
 
         try:
