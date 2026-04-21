@@ -580,7 +580,7 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
 </html>"""
 
 
-async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", storage_state=None, advisor: bool = False):
+async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", storage_state=None, advisor: bool = False):
     if not url:
         raise ValueError("run() requires a url — no default fallback.")
     if advisor and provider == "anthropic" and model == "claude-opus-4-5":
@@ -971,7 +971,7 @@ if __name__ == "__main__":
     parser.add_argument("--password", type=str, default=None)
     parser.add_argument("--token-budget", type=int, default=None)
     parser.add_argument("--provider", type=str, default="anthropic", choices=["anthropic", "openai", "google"])
-    parser.add_argument("--model", type=str, default="claude-opus-4-5")
+    parser.add_argument("--model", type=str, default="claude-sonnet-4-6")
     parser.add_argument("--advisor", action="store_true", help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
     args = parser.parse_args()
     asyncio.run(run(
