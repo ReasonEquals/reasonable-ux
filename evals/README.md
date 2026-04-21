@@ -30,7 +30,7 @@ One JSON object per line:
 | `expected_persona_keywords` | list[string] | 2–4 lowercase hints. OR-match against the agent's free-form persona string. Pick generic ones ("engineer", "shopper"), not specific ("senior staff ENG IV"). |
 | `expected_score_band` | [int, int] | Inclusive 20–100 band. Use ±15 around the expected mean — tighter and you're measuring model variance, not regressions. |
 | `expected_friction_keywords` | list[string] | 2–4 lowercase substrings. Pick obvious ones ("pricing", "cta", "above the fold") not subjective ones ("polish"). OR-match. |
-| `category` | string | One of `saas_landing`, `dtc_ecom`, `content_media`, `app_dashboard`. Used for the per-category breakdown. |
+| `category` | string | One of `saas_landing`, `dtc_ecom`, `content_media`. Used for the per-category breakdown. Auth-walled product UIs (login pages, dashboards) are intentionally out of scope — this tool targets marketing surfaces until explicit permission exists to test authenticated flows. |
 
 ## Adding a URL
 
@@ -61,16 +61,15 @@ RESULT: 18/20 passed
 ============================================================
 
 Per-category:
-  app_dashboard: 4/5
-  content_media: 5/5
-  dtc_ecom: 4/5
-  saas_landing: 5/5
+  content_media: 5/6
+  dtc_ecom: 7/7
+  saas_landing: 6/7
 
 Failures:
   https://example.com (dtc_ecom)
     - score 42.0 outside band [55, 85]
-  https://other.com (app_dashboard)
-    - no friction keyword matched — expected any of ['signup', 'pricing']
+  https://other.com (content_media)
+    - no friction keyword matched — expected any of ['subscribe', 'paywall']
 ```
 
 Exit code is 0 iff every label passed, else 1.
@@ -79,7 +78,7 @@ Exit code is 0 iff every label passed, else 1.
 
 **Minimum 20 URLs, 30–40 ideal.** Below 20, a single failing URL swings pass-rate more than 5%, which is the regression threshold Phase 2 uses — meaning you can't distinguish "real regression" from "one flaky URL".
 
-Spread across all four categories (5–10 each). A 20-URL set skewed entirely to one category under-tests the rest of the model's behavior surface.
+Spread across all three categories (5–10 each). A 20-URL set skewed entirely to one category under-tests the rest of the model's behavior surface.
 
 ## Out of scope for Phase 1
 
