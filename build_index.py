@@ -33,10 +33,13 @@ for run_folder in sorted(runs_dir.iterdir()):
                 if data:
                     total += 1
                     status = data[-1].get("pass_fail", "unknown")
-                    if status == "pass": passed += 1
-                    elif status == "fail": failed += 1
-                    else: errors += 1
-            except:
+                    if status == "pass":
+                        passed += 1
+                    elif status == "fail":
+                        failed += 1
+                    else:
+                        errors += 1
+            except (OSError, json.JSONDecodeError, KeyError, IndexError):
                 continue
 
         parts = folder_name.split("_")
