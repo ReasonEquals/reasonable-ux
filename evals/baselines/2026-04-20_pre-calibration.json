@@ -1,0 +1,349 @@
+{
+  "eval_run_id": "2026-04-20_235330_baseline",
+  "started_at": "2026-04-21T03:53:30.370429+00:00",
+  "finished_at": "2026-04-21T04:30:06.298894+00:00",
+  "total_wall_clock_s": 2185.9,
+  "labels_file": "evals/labels.jsonl",
+  "labels_file_sha256": "a96d80b2d440d625b03e750b951e0a1fa67911d8a618303b2457f95153a30f80",
+  "labels_count_total": 20,
+  "settings": {
+    "max_steps": 4,
+    "limit": null,
+    "category_filter": null,
+    "label": "baseline"
+  },
+  "passed": 10,
+  "failed": 9,
+  "skipped": 1,
+  "total": 20,
+  "pass_rate": 0.526,
+  "per_category": {
+    "saas_landing": {
+      "passed": 4,
+      "failed": 3,
+      "skipped": 0
+    },
+    "dtc_ecom": {
+      "passed": 2,
+      "failed": 4,
+      "skipped": 1
+    },
+    "content_media": {
+      "passed": 4,
+      "failed": 2,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "url": "https://linear.app",
+      "category": "saas_landing",
+      "domain": "linear_app",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 104.1s > 90s"
+      ],
+      "wall_clock_s": 104.06600441702176,
+      "run_dir": "linear_app",
+      "score": 76.66666666666667,
+      "persona": "Engineering manager at a growing SaaS startup evaluating project management tools to replace Jira"
+    },
+    {
+      "url": "https://www.figma.com",
+      "category": "saas_landing",
+      "domain": "figma_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 155.5s > 90s"
+      ],
+      "wall_clock_s": 155.46371062501566,
+      "run_dir": "figma_com",
+      "score": 70.0,
+      "persona": "Product designer or design team lead evaluating collaborative design tools for their team"
+    },
+    {
+      "url": "https://stripe.com",
+      "category": "saas_landing",
+      "domain": "stripe_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "no friction keyword matched \u2014 expected any of ['docs', 'api']"
+      ],
+      "warnings": [
+        "wall clock 111.1s > 90s"
+      ],
+      "wall_clock_s": 111.0747110840166,
+      "run_dir": "stripe_com",
+      "score": 93.33333333333334,
+      "persona": "Technical founder or CTO of a growing SaaS startup evaluating payment processing solutions for their product"
+    },
+    {
+      "url": "https://vercel.com",
+      "category": "saas_landing",
+      "domain": "vercel_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 107.3s > 90s"
+      ],
+      "wall_clock_s": 107.29667783295736,
+      "run_dir": "vercel_com",
+      "score": 85.0,
+      "persona": "Frontend developer or engineering lead at a startup evaluating deployment platforms for their web application"
+    },
+    {
+      "url": "https://www.notion.so",
+      "category": "saas_landing",
+      "domain": "notion_so",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "score 86.7 outside band [55, 85]"
+      ],
+      "warnings": [
+        "wall clock 110.0s > 90s"
+      ],
+      "wall_clock_s": 109.97623933298746,
+      "run_dir": "notion_so",
+      "score": 86.66666666666666,
+      "persona": "Product manager at a growing startup evaluating team productivity and knowledge management tools"
+    },
+    {
+      "url": "https://webflow.com",
+      "category": "saas_landing",
+      "domain": "webflow_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "score 86.7 outside band [55, 85]"
+      ],
+      "warnings": [
+        "wall clock 128.8s > 90s"
+      ],
+      "wall_clock_s": 128.80164804199012,
+      "run_dir": "webflow_com",
+      "score": 86.66666666666666,
+      "persona": "A marketing manager at a mid-sized B2B company evaluating no-code website builders to redesign their company site"
+    },
+    {
+      "url": "https://www.airtable.com",
+      "category": "saas_landing",
+      "domain": "airtable_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 130.5s > 90s"
+      ],
+      "wall_clock_s": 130.4626860829885,
+      "run_dir": "airtable_com",
+      "score": 78.33333333333333,
+      "persona": "Operations manager at a mid-size company evaluating workflow automation tools to streamline cross-team collaboration"
+    },
+    {
+      "url": "https://www.allbirds.com",
+      "category": "dtc_ecom",
+      "domain": "allbirds_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "persona keyword miss \u2014 expected any of ['shopper', 'consumer', 'buyer', 'customer'], got persona='Environmentally-conscious millennial woman looking for comfortable, sustainable everyday shoes'",
+        "no friction keyword matched \u2014 expected any of ['shipping', 'material']"
+      ],
+      "warnings": [
+        "wall clock 128.5s > 90s"
+      ],
+      "wall_clock_s": 128.47678095800802,
+      "run_dir": "allbirds_com",
+      "score": 65.0,
+      "persona": "Environmentally-conscious millennial woman looking for comfortable, sustainable everyday shoes"
+    },
+    {
+      "url": "https://www.warbyparker.com",
+      "category": "dtc_ecom",
+      "domain": "warbyparker_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 91.5s > 90s"
+      ],
+      "wall_clock_s": 91.53857499995502,
+      "run_dir": "warbyparker_com",
+      "score": 85.0,
+      "persona": "Style-conscious millennial professional looking to purchase affordable, fashionable prescription glasses online"
+    },
+    {
+      "url": "https://www.glossier.com",
+      "category": "dtc_ecom",
+      "domain": "glossier_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "report.json did not parse: [Errno 2] No such file or directory: '/Users/ryanwalsh/reasonable-ux/eval_runs/2026-04-20_235330_baseline/glossier_com/report.json'"
+      ],
+      "warnings": [],
+      "wall_clock_s": 152.08242929098196,
+      "run_dir": "glossier_com",
+      "score": null,
+      "persona": null
+    },
+    {
+      "url": "https://www.brilliantearth.com",
+      "category": "dtc_ecom",
+      "domain": "brilliantearth_com",
+      "status": "skipped",
+      "passed": false,
+      "failures": [],
+      "warnings": [],
+      "wall_clock_s": 0.0,
+      "run_dir": null,
+      "score": null,
+      "persona": null,
+      "skip_reason": "HTTP 403"
+    },
+    {
+      "url": "https://casper.com",
+      "category": "dtc_ecom",
+      "domain": "casper_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "persona keyword miss \u2014 expected any of ['shopper', 'customer', 'buyer'], got persona='Adult consumer aged 25-45 researching a new mattress purchase for better sleep quality'"
+      ],
+      "warnings": [
+        "wall clock 138.9s > 90s"
+      ],
+      "wall_clock_s": 138.8902619999717,
+      "run_dir": "casper_com",
+      "score": 65.0,
+      "persona": "Adult consumer aged 25-45 researching a new mattress purchase for better sleep quality"
+    },
+    {
+      "url": "https://bombas.com",
+      "category": "dtc_ecom",
+      "domain": "bombas_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "persona keyword miss \u2014 expected any of ['shopper', 'customer', 'buyer', 'consumer'], got persona='Health-conscious millennial looking for comfortable, quality basics with a social impact component'"
+      ],
+      "warnings": [
+        "wall clock 131.2s > 90s"
+      ],
+      "wall_clock_s": 131.2015336669865,
+      "run_dir": "bombas_com",
+      "score": 85.0,
+      "persona": "Health-conscious millennial looking for comfortable, quality basics with a social impact component"
+    },
+    {
+      "url": "https://www.harrys.com",
+      "category": "dtc_ecom",
+      "domain": "harrys_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 152.4s > 90s"
+      ],
+      "wall_clock_s": 152.43055470800027,
+      "run_dir": "harrys_com",
+      "score": 73.33333333333333,
+      "persona": "Male consumer aged 25-45 looking for quality shaving products with convenient subscription options"
+    },
+    {
+      "url": "https://www.nytimes.com",
+      "category": "content_media",
+      "domain": "nytimes_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "score 86.7 outside band [45, 75]",
+        "no friction keyword matched \u2014 expected any of ['subscribe', 'paywall']"
+      ],
+      "warnings": [],
+      "wall_clock_s": 60.71969324996462,
+      "run_dir": "nytimes_com",
+      "score": 86.66666666666666,
+      "persona": "A casual news reader considering a digital subscription to stay informed on current events"
+    },
+    {
+      "url": "https://techcrunch.com",
+      "category": "content_media",
+      "domain": "techcrunch_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [],
+      "wall_clock_s": 57.311095334007405,
+      "run_dir": "techcrunch_com",
+      "score": 66.66666666666667,
+      "persona": "Tech-savvy professional or startup founder seeking the latest technology and venture capital news"
+    },
+    {
+      "url": "https://www.theverge.com",
+      "category": "content_media",
+      "domain": "theverge_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [
+        "wall clock 169.7s > 90s"
+      ],
+      "wall_clock_s": 169.67088866699487,
+      "run_dir": "theverge_com",
+      "score": 68.33333333333333,
+      "persona": "Tech-savvy professional who follows technology news and product reviews to stay informed about industry trends and make purchasing decisions"
+    },
+    {
+      "url": "https://arstechnica.com",
+      "category": "content_media",
+      "domain": "arstechnica_com",
+      "status": "failed",
+      "passed": false,
+      "failures": [
+        "score 77.8 outside band [45, 75]",
+        "no friction keyword matched \u2014 expected any of ['ads', 'subscribe']"
+      ],
+      "warnings": [
+        "wall clock 123.6s > 90s"
+      ],
+      "wall_clock_s": 123.63905016705394,
+      "run_dir": "arstechnica_com",
+      "score": 77.77777777777777,
+      "persona": "Tech-savvy professional who regularly reads technology news and analysis to stay informed about industry developments"
+    },
+    {
+      "url": "https://substack.com",
+      "category": "content_media",
+      "domain": "substack_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [],
+      "wall_clock_s": 60.79237408400513,
+      "run_dir": "substack_com",
+      "score": 73.33333333333333,
+      "persona": "Aspiring independent writer or journalist exploring newsletter platforms to monetize their content"
+    },
+    {
+      "url": "https://www.wired.com",
+      "category": "content_media",
+      "domain": "wired_com",
+      "status": "passed",
+      "passed": true,
+      "failures": [],
+      "warnings": [],
+      "wall_clock_s": 72.00840712501667,
+      "run_dir": "wired_com",
+      "score": 66.66666666666667,
+      "persona": "Tech-savvy professional who regularly reads technology news to stay informed about industry trends and major tech company developments"
+    }
+  ]
+}
