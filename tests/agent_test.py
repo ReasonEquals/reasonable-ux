@@ -317,7 +317,10 @@ def _build_below_fold_html(below_fold):
 
 async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
     print("\n🔍 Running below-the-fold analysis...")
-    await page.goto(url, wait_until="networkidle")
+    try:
+        await page.goto(url, wait_until="load", timeout=20000)
+    except Exception:  # noqa: S110 — ad-heavy sites can stall past `load`; full_page screenshot will scroll and trigger lazy-load anyway
+        pass
     fp_path = f"{run_dir}/full_page.jpeg"
     await page.screenshot(path=fp_path, full_page=True, type="jpeg", quality=60)
     print(f"📸 Full-page screenshot saved: {fp_path}")
