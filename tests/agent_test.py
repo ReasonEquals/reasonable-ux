@@ -797,7 +797,14 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 brace_end = clean.rfind("}")
                 if brace_start != -1 and brace_end != -1:
                     clean = clean[brace_start:brace_end + 1]
-                decision = json.loads(clean)
+                try:
+                    decision = json.loads(clean)
+                except json.JSONDecodeError:
+                    # Sonnet occasionally emits malformed JSON (missing commas, trailing commas, etc).
+                    # Repair in place rather than bailing the whole loop.
+                    from json_repair import repair_json
+                    decision = json.loads(repair_json(clean))
+                    print(f"⚠️  JSON repair fired on step {step + 1}")
 
                 if persona is None:
                     persona = sanitize_persona(decision.get("persona") or "a plausible buyer or user for this product")
