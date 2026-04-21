@@ -34,8 +34,8 @@ def parse_args():
                         help="Scout interest score threshold (1-5, default 3); pages scoring below this are skipped")
     parser.add_argument("--provider", choices=["anthropic", "openai", "google"], default="anthropic",
                         help="LLM provider for the agent (default: anthropic)")
-    parser.add_argument("--model", default="claude-opus-4-5",
-                        help="Model name to use (default: claude-opus-4-5)")
+    parser.add_argument("--model", default="claude-sonnet-4-6",
+                        help="Model name to use (default: claude-sonnet-4-6)")
     parser.add_argument("--advisor", action="store_true",
                         help="Enable Opus advisor tool for higher-quality judgment (Anthropic only)")
     parser.add_argument("--compact", action="store_true",
@@ -44,7 +44,7 @@ def parse_args():
                         help="Visual theme for the PDF (default: editorial).")
     return parser.parse_args()
 
-async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", advisor: bool = False):
+async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", advisor: bool = False):
     from agent_test import run
     total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
@@ -106,7 +106,7 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-opus-4-5", page_steps: int = None, advisor: bool = False):
+async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", page_steps: int = None, advisor: bool = False):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_test import run as agent_run
 
