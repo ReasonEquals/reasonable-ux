@@ -13,7 +13,7 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 - `tests/agent_test.py` — despite the `tests/` path, this is **not a test file** — it is the agent loop itself. `run.py` imports `run` and `_infer_goal_from_url` from it. The path is legacy and has cost real time in past sessions when people assumed "tests/" meant pytest. Also usable standalone as a dev stub via `python tests/agent_test.py --url ...` — that's the fastest smoke test, but it bypasses `run.py`'s multi-page / PDF / persona layers.
 
 **Agent core (`tests/agent_test.py`):**
-- `LLMAdapter` — normalizes calls across Anthropic / OpenAI / Google. Translates Anthropic message format (with base64 image blocks) to OpenAI and Google formats.
+- `LLMAdapter` — normalizes calls across providers via `litellm.acompletion()`. Translates Anthropic message format (with base64 image blocks) to OpenAI format for LiteLLM. Exception: advisor-beta tool calls route directly to Anthropic SDK (`_complete_anthropic_advisor`). Emits Langfuse traces on every LiteLLM call when `LANGFUSE_PUBLIC_KEY` is set (gated at module load). Known gap: advisor path, `_run_below_fold_analysis`, and `scout_page` use the module-level `client = Anthropic()` and are not traced.
 - `screenshot_as_base64` — JPEG quality 40 per-step screenshots.
 - `_sanitize_selector` — strips `:contains()` selectors which Playwright doesn't support. Raises if all parts are blocked. **Bypassed by the `nav:` prefix path.**
 - `_click_nav_by_label` — Playwright `get_by_role("link", name=…)` with `a:has-text()` fallback. Used for `nav:<Label>` dispatch.
@@ -128,8 +128,7 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 Confirmed open items (cross-check against latest `session_summaries/` and `git log` before starting — this list ages fast):
 
 - **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example.
-- **Sonnet JSON parse regression (batch 31 hand-off to batch 32).** Smoke tests after the Opus→Sonnet default flip surfaced structurally malformed JSON on some steps (missing comma around char ~2000, well below the 1024 output-token budget). Add a robust JSON parsing fallback in the step loop.
-- **`evals/labels.jsonl` bands are Opus-anchored (batch 33).** Bands were recalibrated across batches 24/27/28/28.5 while the default executor was silently `claude-opus-4-5`. Sonnet's distribution differs; re-run calibration under the new default before trusting pass/fail rates.
+- **Langfuse instrumentation gap.** Advisor path (`_complete_anthropic_advisor`), `_run_below_fold_analysis`, and `scout_page` all use the module-level `client = Anthropic()` and are not traced. These represent ~15–20% of tokens per run. Instrument in a follow-on batch when those paths need cost visibility.
 - **`run.py` tempfile cleanup — auth debug screenshot.** Auth debug PNG can contain filled email/password fields. Outside the repo so no commit risk, but should be moved under the per-run dir or deleted after inspection.
 - **`--discover` page type filter.** Crawler currently follows every same-domain link; pages like `/now`, `/about`, `/team`, `/press`, `/careers` waste tokens without adding UX signal. Add a skip-list or a "page type" scout filter.
 - **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis.
