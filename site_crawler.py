@@ -8,6 +8,12 @@ from urllib.parse import urljoin, urlparse
 import requests
 from bs4 import BeautifulSoup
 
+# Path segments that add no UX signal for a founder-facing audit.
+_SKIP_SEGMENTS = {
+    "now", "about", "team", "press", "careers",
+    "legal", "privacy", "terms", "jobs", "blog",
+}
+
 
 def _filter_links(base_url: str, html: str) -> list:
     """Parse html, extract same-domain paths, return sorted deduplicated list."""
@@ -21,7 +27,10 @@ def _filter_links(base_url: str, html: str) -> list:
         parsed = urlparse(urljoin(base_url, href))
         if parsed.netloc != base_domain:
             continue
-        paths.add(parsed.path or "/")
+        path = parsed.path or "/"
+        if path.lstrip("/").split("/")[0] in _SKIP_SEGMENTS:
+            continue
+        paths.add(path)
     return sorted(p for p in paths if not p.startswith("/cdn-cgi/"))
 
 
