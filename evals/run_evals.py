@@ -154,9 +154,10 @@ def _assert_label(label: dict, report: list[dict], wall_clock_s: float) -> tuple
 
     score = _aggregate_score(report)
     band = label.get("expected_score_band")
+    score_gate = label.get("score_gate", True)
     if score is None:
         failures.append("no numeric subscores found; cannot compute aggregate")
-    elif band and len(band) == 2:
+    elif score_gate and band and len(band) == 2:
         low, high = band
         if not (low <= score <= high):
             failures.append(f"score {score:.1f} outside band [{low}, {high}]")
@@ -293,6 +294,7 @@ async def _evaluate_one(label: dict, eval_run_dir: Path) -> dict:
         "wall_clock_s": wall_clock,
         "run_dir": moved.name,
         "score": _aggregate_score(report),
+        "score_gate": label.get("score_gate", True),
         "persona": _persona_string(report),
     }
 
