@@ -31,11 +31,20 @@ USER_AGENT = (
 )
 
 
+class TokenBudgetExceeded(Exception):
+    def __init__(self, tokens_used: int, budget: int):
+        self.tokens_used = tokens_used
+        self.budget = budget
+        super().__init__(f"Token budget exceeded: {tokens_used:,}/{budget:,}")
+
+
 class LLMAdapter:
     """Normalises API calls across providers (anthropic, openai, google)."""
 
-    def __init__(self, provider: str):
+    def __init__(self, provider: str, token_budget: int = None):
         self._provider = provider
+        self._token_budget = token_budget
+        self._tokens_used = 0
         if provider == "anthropic":
             self._client = anthropic.AsyncAnthropic()
         elif provider == "openai":
@@ -48,18 +57,26 @@ class LLMAdapter:
         else:
             raise ValueError(f"Unknown provider: {provider!r}")
 
+    @property
+    def tokens_used(self) -> int:
+        return self._tokens_used
+
     async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None) -> tuple:
         """Routes to the appropriate provider. Returns (response_text, input_tokens, output_tokens, raw_content).
         raw_content is the full content block list when advisor tools are active (needed for
         multi-turn conversation history), None otherwise."""
         if self._provider == "anthropic":
-            return await self._complete_anthropic(messages, model, max_tokens, tools=tools)
+            result = await self._complete_anthropic(messages, model, max_tokens, tools=tools)
         elif self._provider == "openai":
             text, in_tok, out_tok = await self._complete_openai(messages, model, max_tokens)
-            return (text, in_tok, out_tok, None)
+            result = (text, in_tok, out_tok, None)
         elif self._provider == "google":
             text, in_tok, out_tok = await self._complete_google(messages, model, max_tokens)
-            return (text, in_tok, out_tok, None)
+            result = (text, in_tok, out_tok, None)
+        self._tokens_used += result[1] + result[2]
+        if self._token_budget and self._tokens_used >= self._token_budget:
+            raise TokenBudgetExceeded(self._tokens_used, self._token_budget)
+        return result
 
     async def _complete_anthropic(self, messages, model, max_tokens, tools=None):
         kwargs = dict(model=model, max_tokens=max_tokens, messages=messages)
@@ -658,7 +675,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             }
 
     # ── Full vision eval ──────────────────────────────────────────────────────
-    adapter = LLMAdapter(provider)
+    adapter = LLMAdapter(provider, token_budget=token_budget)
     async with async_playwright() as p:
         headless = os.environ.get("CI", "false").lower() == "true"
         browser = await p.chromium.launch(headless=headless)
@@ -701,7 +718,6 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         conversation = []
         report = []
         persona = None
-        tokens_used = 0
         run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
         if suite_dir:
@@ -714,21 +730,6 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         os.makedirs(screenshots_dir, exist_ok=True)
 
         for step in range(max_steps):
-            # Check token budget before next API call
-            if token_budget and tokens_used >= token_budget:
-                print(f"💰 Token budget exceeded ({tokens_used:,}/{token_budget:,}), stopping test")
-                report.append({
-                    "step": step + 1,
-                    "screenshot": "",
-                    "observation": "Token budget exceeded",
-                    "action": "budget_stop",
-                    "target": None,
-                    "reasoning": f"Used {tokens_used:,} of {token_budget:,} token budget",
-                    "pass_fail": "fail",
-                    "verdict": f"Test stopped — token budget of {token_budget:,} exceeded"
-                })
-                break
-
             print(f"\n--- Agent Step {step + 1} ---")
 
             screenshot_path = f"{screenshots_dir}/step_{step + 1}.png"
@@ -767,25 +768,24 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             if advisor and provider == "anthropic":
                 advisor_tools = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
             step_budget = 2048 if advisor else 1024
-            raw, _in_tok, _out_tok, _raw_content = await adapter.complete(conversation, model, step_budget, tools=advisor_tools)
-            tokens_used += _in_tok + _out_tok
-            print(raw)
-            if token_budget:
-                print(f"💰 Tokens: {tokens_used:,}/{token_budget:,}")
-
-            if token_budget and tokens_used >= token_budget:
-                print(f"💰 Token budget exceeded ({tokens_used:,}/{token_budget:,}) after API call, stopping test")
+            try:
+                raw, _in_tok, _out_tok, _raw_content = await adapter.complete(conversation, model, step_budget, tools=advisor_tools)
+            except TokenBudgetExceeded as e:
+                print(f"💰 Token budget exceeded ({e.tokens_used:,}/{e.budget:,}), stopping test")
                 report.append({
                     "step": step + 1,
                     "screenshot": screenshot_path,
                     "observation": "Token budget exceeded",
                     "action": "budget_stop",
                     "target": None,
-                    "reasoning": f"Used {tokens_used:,} of {token_budget:,} token budget",
+                    "reasoning": f"Used {e.tokens_used:,} of {e.budget:,} token budget",
                     "pass_fail": "fail",
-                    "verdict": f"Test stopped — token budget of {token_budget:,} exceeded"
+                    "verdict": f"Test stopped — token budget of {e.budget:,} exceeded"
                 })
                 break
+            print(raw)
+            if token_budget:
+                print(f"💰 Tokens: {adapter.tokens_used:,}/{token_budget:,}")
 
             conversation.append({
                 "role": "assistant",
