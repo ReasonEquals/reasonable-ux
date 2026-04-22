@@ -248,22 +248,24 @@ def _build_prompt(goal, step, max_steps, email, password, url=None, persona=None
 
 Current step: {step + 1}
 
+Friction is REQUIRED. Every real website has at least one friction point for any given persona — unclear CTAs, hidden pricing, cognitive load, competing messages, missing social proof, copy that assumes context. You MUST surface 1-3 concrete friction points on every step unless action="done" AND severity=0 (in which case verdict must justify the zero-friction claim). Empty friction_points on a non-`done` step is invalid. Keep every text field terse — one short sentence per note.
+
 Navigate the page and evaluate the user experience. Respond in JSON with exactly this shape:
 {{
-    "observation": "what you see on the page",
-    "action": "click | type | navigate | done — navigate requires a full URL starting with http:// or https://; to follow a link use click with its CSS selector instead",
-    "target": "simple CSS selector — prefer id over class over tag (e.g. '#username', 'button[type=submit]', 'input[name=password]') — avoid generic selectors like '.button' or bare 'a' — no :contains() — or URL or null. For clicks on main navigation links, use the format 'nav:<Visible Label>' instead of a CSS selector (e.g. 'nav:Pricing', 'nav:Features'). Use CSS selectors for everything else — form fields, buttons, CTAs, in-page elements.",
+    "observation": "one short sentence on what you see",
+    "action": "click | type | navigate | done — navigate requires a full URL (http/https); to follow a link use click with its selector",
+    "target": "simple CSS selector — prefer id > class > tag (e.g. '#username', 'button[type=submit]') — no :contains() — or URL or null. For main-nav links use 'nav:<Visible Label>' (e.g. 'nav:Pricing'). Use CSS selectors for everything else.",
     "value": "text to type or null",{persona_schema_field}
-    "cta_clarity": {{"score": 1-5, "note": "Is the primary call-to-action obvious and well-labeled?"}},
-    "copy_quality": {{"score": 1-5, "note": "Is the copy clear, concise, and free of confusion?"}},
-    "flow_smoothness": {{"score": 1-5, "note": "Does the interaction feel smooth and logical?"}},
-    "severity": "integer 0-4 — Nielsen usability severity for the worst issue on this page. 0=no problem (excellent UX), 1=cosmetic, 2=minor, 3=major, 4=catastrophe (blocks the user). Be honest — if the page is genuinely good, emit 0 or 1; don't pad.",
-    "first_impression": "one sentence gut reaction to what you see",
-    "friction_points": ["list any moments of confusion, hesitation, or extra effort required"],
-    "recommendations": ["one specific, actionable fix per friction point — not generic advice, a concrete change. E.g. 'No pricing above the fold → add a line near the CTA that says Plans start at $X/month'"],
-    "confidence": "high | medium | low — high if you navigated the page fully and evaluated real content; medium if you saw the page but could not interact with some elements; low if you were blocked, hit an error, or only saw partial content",
+    "cta_clarity": {{"score": 1-5, "note": "one short sentence"}},
+    "copy_quality": {{"score": 1-5, "note": "one short sentence"}},
+    "flow_smoothness": {{"score": 1-5, "note": "one short sentence"}},
+    "severity": "integer 0-4 — Nielsen severity for the worst issue. 0=no problem, 1=cosmetic, 2=minor, 3=major, 4=catastrophe. Be honest; don't pad.",
+    "first_impression": "one short sentence",
+    "friction_points": ["REQUIRED: 1-3 concrete, one-sentence friction points this persona would encounter on THIS page. Not generic UX maxims. Empty list is invalid unless action=done AND severity=0."],
+    "recommendations": ["one concrete fix per friction point — one short sentence each. Same count as friction_points."],
+    "confidence": "high | medium | low",
     "pass_fail": "pass | fail | in_progress",
-    "verdict": "one sentence UX summary so far"
+    "verdict": "one short sentence"
 }}
 
 Score rubric: 1=very poor, 2=poor, 3=acceptable, 4=good, 5=excellent.
