@@ -7,6 +7,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 
 import anthropic
+import litellm
 import requests
 from anthropic import Anthropic
 from bs4 import BeautifulSoup
@@ -37,45 +38,43 @@ class LLMAdapter:
     def __init__(self, provider: str):
         self._provider = provider
         if provider == "anthropic":
-            self._client = anthropic.AsyncAnthropic()
-        elif provider == "openai":
-            import openai as _openai
-            self._client = _openai.AsyncOpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-        elif provider == "google":
-            import google.generativeai as genai
-            genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
-            self._genai = genai
-        else:
+            self._anthropic = anthropic.AsyncAnthropic()  # advisor-beta path only
+        elif provider not in ("openai", "google"):
             raise ValueError(f"Unknown provider: {provider!r}")
 
-    async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None) -> tuple:
-        """Routes to the appropriate provider. Returns (response_text, input_tokens, output_tokens, raw_content).
-        raw_content is the full content block list when advisor tools are active (needed for
-        multi-turn conversation history), None otherwise."""
+    def _litellm_model(self, model: str) -> str:
         if self._provider == "anthropic":
-            return await self._complete_anthropic(messages, model, max_tokens, tools=tools)
+            return f"anthropic/{model}"
         elif self._provider == "openai":
-            text, in_tok, out_tok = await self._complete_openai(messages, model, max_tokens)
-            return (text, in_tok, out_tok, None)
+            return model
         elif self._provider == "google":
-            text, in_tok, out_tok = await self._complete_google(messages, model, max_tokens)
-            return (text, in_tok, out_tok, None)
+            return f"gemini/{model}"
 
-    async def _complete_anthropic(self, messages, model, max_tokens, tools=None):
-        kwargs = dict(model=model, max_tokens=max_tokens, messages=messages)
-        if tools:
-            kwargs["tools"] = tools
-            kwargs["betas"] = ["advisor-tool-2026-03-01"]
-            response = await self._client.beta.messages.create(**kwargs)
-        else:
-            response = await self._client.messages.create(**kwargs)
+    async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None) -> tuple:
+        """Routes to the appropriate provider via LiteLLM (or direct Anthropic for advisor-beta).
+        Returns (response_text, input_tokens, output_tokens, raw_content)."""
+        if self._provider == "anthropic" and tools:
+            return await self._complete_anthropic_advisor(messages, model, max_tokens, tools)
+        oai_messages = self._anthropic_to_openai_messages(messages)
+        response = await litellm.acompletion(
+            model=self._litellm_model(model),
+            messages=oai_messages,
+            max_tokens=max_tokens,
+        )
+        text = response.choices[0].message.content or ""
+        return (text, response.usage.prompt_tokens, response.usage.completion_tokens, None)
+
+    async def _complete_anthropic_advisor(self, messages, model, max_tokens, tools):
+        response = await self._anthropic.beta.messages.create(
+            model=model, max_tokens=max_tokens, messages=messages,
+            tools=tools, betas=["advisor-tool-2026-03-01"]
+        )
         text = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
-        raw_content = response.content if tools else None
-        return (text, response.usage.input_tokens, response.usage.output_tokens, raw_content)
+        return (text, response.usage.input_tokens, response.usage.output_tokens, response.content)
 
     @staticmethod
     def _anthropic_to_openai_messages(messages) -> list:
-        """Translates Anthropic message format to OpenAI format."""
+        """Normalises Anthropic-format messages to OpenAI format for LiteLLM."""
         oai_messages = []
         for msg in messages:
             role = msg["role"]
@@ -97,56 +96,6 @@ class LLMAdapter:
             else:
                 oai_messages.append({"role": role, "content": content})
         return oai_messages
-
-    async def _complete_openai(self, messages, model, max_tokens):
-        oai_messages = self._anthropic_to_openai_messages(messages)
-        response = await self._client.chat.completions.create(
-            model=model, max_tokens=max_tokens, messages=oai_messages
-        )
-        return (
-            response.choices[0].message.content,
-            response.usage.prompt_tokens,
-            response.usage.completion_tokens,
-        )
-
-    @staticmethod
-    def _anthropic_to_google_contents(messages) -> list:
-        """Translates Anthropic message format to Google generativeai format."""
-        contents = []
-        for msg in messages:
-            role = "model" if msg["role"] == "assistant" else "user"
-            content = msg["content"]
-            if isinstance(content, str):
-                parts = [content]
-            elif isinstance(content, list):
-                parts = []
-                for block in content:
-                    if block.get("type") == "image":
-                        src = block["source"]
-                        parts.append({
-                            "mime_type": src["media_type"],
-                            "data": base64.b64decode(src["data"]),
-                        })
-                    else:
-                        parts.append(block.get("text", ""))
-            else:
-                parts = [str(content)]
-            contents.append({"role": role, "parts": parts})
-        return contents
-
-    async def _complete_google(self, messages, model, max_tokens):
-        contents = self._anthropic_to_google_contents(messages)
-        gen_model = self._genai.GenerativeModel(model)
-        response = await asyncio.get_event_loop().run_in_executor(
-            None,
-            lambda: gen_model.generate_content(
-                contents,
-                generation_config={"max_output_tokens": max_tokens},
-            )
-        )
-        in_tok = response.usage_metadata.prompt_token_count or 0
-        out_tok = response.usage_metadata.candidates_token_count or 0
-        return (response.text, in_tok, out_tok)
 
 
 async def screenshot_as_base64(page):
