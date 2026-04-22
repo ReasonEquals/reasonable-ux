@@ -25,6 +25,9 @@ from _sanitize_extracted import sanitize_persona, sanitize_string_list  # noqa: 
 load_dotenv(override=True)
 client = Anthropic()
 
+if os.environ.get("LANGFUSE_PUBLIC_KEY"):
+    litellm.success_callback = ["langfuse"]
+
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -63,7 +66,7 @@ class LLMAdapter:
         elif self._provider == "google":
             return f"gemini/{model}"
 
-    async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None) -> tuple:
+    async def complete(self, messages: list, model: str, max_tokens: int, tools: list = None, metadata: dict = None) -> tuple:
         """Routes to the appropriate provider via LiteLLM (or direct Anthropic for advisor-beta).
         Returns (response_text, input_tokens, output_tokens, raw_content)."""
         if self._provider == "anthropic" and tools:
@@ -74,6 +77,7 @@ class LLMAdapter:
                 model=self._litellm_model(model),
                 messages=oai_messages,
                 max_tokens=max_tokens,
+                metadata=metadata,
             )
             text = response.choices[0].message.content or ""
             result = (text, response.usage.prompt_tokens, response.usage.completion_tokens, None)
@@ -719,7 +723,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                 advisor_tools = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
             step_budget = 2048 if advisor else 1024
             try:
-                raw, _in_tok, _out_tok, _raw_content = await adapter.complete(conversation, model, step_budget, tools=advisor_tools)
+                raw, _in_tok, _out_tok, _raw_content = await adapter.complete(
+                    conversation, model, step_budget, tools=advisor_tools,
+                    metadata={"session_id": run_dir, "step": step + 1}
+                )
             except TokenBudgetExceeded as e:
                 print(f"💰 Token budget exceeded ({e.tokens_used:,}/{e.budget:,}), stopping test")
                 report.append({
