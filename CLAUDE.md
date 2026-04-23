@@ -122,13 +122,14 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 - **Batch 13b** (2026-04-08) — fix auth submit (skip Enter fallback if already navigated away).
 - **Batch 14** (2026-04-09) — created `personas.py`; dynamic persona generation from URL + report summary.
 - **Batch 15** (2026-04-09) — `nav:<Label>` nav-click helper, full-page screenshot crop at 7500px (PIL), dynamic persona inference and threading through `_build_prompt` / `_run_below_fold_analysis`, herokuapp silent-redirect killed, `--url` now required everywhere, `.env.example` populated.
+- **Batch 38.1** (2026-04-22) — pin `langfuse>=3.0.0`, switch LiteLLM callback from legacy `success_callback=["langfuse"]` to `litellm.callbacks = ["langfuse_otel"]` for Python 3.14 compat. Added async `_flush_langfuse_spans()` awaited at end of `run()` (atexit ordering breaks on 3.14). `LANGFUSE_OTEL_HOST` env var (EU cloud).
+- **Batch 39** (2026-04-22) — close Langfuse blindspots for direct Anthropic SDK calls. Added `opentelemetry-instrumentation-anthropic>=0.60.0`; `AnthropicInstrumentor().instrument()` runs after the `langfuse_otel` callback setup, sharing its active TracerProvider. New `_trace_session(run_dir)` helper wraps each of the 3 blindspots (`_complete_anthropic_advisor`, `_run_below_fold_analysis`, `scout_page`) with Langfuse's `propagate_attributes(session_id=run_dir)` context manager so their spans land under the same session as per-step LiteLLM calls. Hoisted `run_dir` computation to the top of `run()` (pre-scout) and removed duplicates from both scout-skip and full-eval branches; scout now receives `run_dir` via new optional param.
 
 ## 7. Known backlog
 
 Confirmed open items (cross-check against latest `session_summaries/` and `git log` before starting — this list ages fast):
 
 - **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example.
-- **Langfuse instrumentation gap.** Advisor path (`_complete_anthropic_advisor`), `_run_below_fold_analysis`, and `scout_page` all use the module-level `client = Anthropic()` and are not traced. These represent ~15–20% of tokens per run. Instrument in a follow-on batch when those paths need cost visibility.
 - **`run.py` tempfile cleanup — auth debug screenshot.** Auth debug PNG can contain filled email/password fields. Outside the repo so no commit risk, but should be moved under the per-run dir or deleted after inspection.
 - **`--discover` page type filter.** Crawler currently follows every same-domain link; pages like `/now`, `/about`, `/team`, `/press`, `/careers` waste tokens without adding UX signal. Add a skip-list or a "page type" scout filter.
 - **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis.
