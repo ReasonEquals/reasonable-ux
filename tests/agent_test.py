@@ -3,6 +3,7 @@ import base64
 import json
 import os
 import sys
+from contextlib import nullcontext
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -28,6 +29,24 @@ client = Anthropic()
 _LANGFUSE_TRACING_ENABLED = bool(os.environ.get("LANGFUSE_PUBLIC_KEY"))
 if _LANGFUSE_TRACING_ENABLED:
     litellm.callbacks = ["langfuse_otel"]
+    # Auto-instrument direct Anthropic SDK calls (advisor, below-fold, scout) — shares
+    # the TracerProvider that `langfuse_otel` initializes on first LiteLLM call.
+    try:
+        from opentelemetry.instrumentation.anthropic import AnthropicInstrumentor
+        AnthropicInstrumentor().instrument()
+    except ImportError:
+        pass
+
+
+def _trace_session(session_id):
+    """Tag direct-SDK Anthropic spans with a Langfuse session_id. No-op when tracing off."""
+    if not _LANGFUSE_TRACING_ENABLED or not session_id:
+        return nullcontext()
+    try:
+        from langfuse import propagate_attributes
+        return propagate_attributes(session_id=session_id)
+    except ImportError:
+        return nullcontext()
 
 
 async def _flush_langfuse_spans():
@@ -96,7 +115,7 @@ class LLMAdapter:
         """Routes to the appropriate provider via LiteLLM (or direct Anthropic for advisor-beta).
         Returns (response_text, input_tokens, output_tokens, raw_content)."""
         if self._provider == "anthropic" and tools:
-            result = await self._complete_anthropic_advisor(messages, model, max_tokens, tools)
+            result = await self._complete_anthropic_advisor(messages, model, max_tokens, tools, metadata=metadata)
         else:
             oai_messages = self._anthropic_to_openai_messages(messages)
             response = await litellm.acompletion(
@@ -112,11 +131,13 @@ class LLMAdapter:
             raise TokenBudgetExceeded(self._tokens_used, self._token_budget)
         return result
 
-    async def _complete_anthropic_advisor(self, messages, model, max_tokens, tools):
-        response = await self._anthropic.beta.messages.create(
-            model=model, max_tokens=max_tokens, messages=messages,
-            tools=tools, betas=["advisor-tool-2026-03-01"]
-        )
+    async def _complete_anthropic_advisor(self, messages, model, max_tokens, tools, metadata=None):
+        session_id = metadata.get("session_id") if metadata else None
+        with _trace_session(session_id):
+            response = await self._anthropic.beta.messages.create(
+                model=model, max_tokens=max_tokens, messages=messages,
+                tools=tools, betas=["advisor-tool-2026-03-01"]
+            )
         text = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
         return (text, response.usage.input_tokens, response.usage.output_tokens, response.content)
 
@@ -348,12 +369,13 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
             ]
         }]
     )
-    if advisor:
-        kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
-        kwargs["betas"] = ["advisor-tool-2026-03-01"]
-        response = client.beta.messages.create(**kwargs)
-    else:
-        response = client.messages.create(**kwargs)
+    with _trace_session(run_dir):
+        if advisor:
+            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+            kwargs["betas"] = ["advisor-tool-2026-03-01"]
+            response = client.beta.messages.create(**kwargs)
+        else:
+            response = client.messages.create(**kwargs)
 
     raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
     print(f"💰 Below-fold analysis tokens: {response.usage.input_tokens + response.usage.output_tokens:,}")
@@ -366,7 +388,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
         return None
 
 
-async def scout_page(url: str, storage_state: str = None) -> dict:
+async def scout_page(url: str, storage_state: str = None, run_dir: str = None) -> dict:
     """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
@@ -441,11 +463,12 @@ Respond with a JSON object with exactly these two fields:
     "reason": "<one sentence explaining the score>"
 }}"""
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=256,
-        messages=[{"role": "user", "content": scout_prompt}]
-    )
+    with _trace_session(run_dir):
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=256,
+            messages=[{"role": "user", "content": scout_prompt}]
+        )
 
     raw = response.content[0].text
     try:
@@ -585,12 +608,27 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
     if advisor and provider == "anthropic" and model == "claude-opus-4-5":
         model = "claude-sonnet-4-6"
         print("🧠 Advisor mode: switching executor to claude-sonnet-4-6 (Opus 4.5 does not support advisor tool)")
+
+    # Compute run_dir up front so every LLM call (scout, per-step, below-fold, advisor)
+    # shares one Langfuse session_id = run_dir.
+    if not goal:
+        goal = _infer_goal_from_url(url)
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
+    if suite_dir:
+        _path = urlparse(url).path.strip("/")
+        page_segment = _path.replace("/", "_") if _path else "homepage"
+        run_dir = f"{suite_dir}/{page_segment}"
+        os.makedirs(run_dir, exist_ok=True)
+    else:
+        run_dir = _make_run_dir(url, "single_page")
+
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
 
     if scout:
-        scout_result = await scout_page(url, storage_state=storage_state)
+        scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir)
         score = scout_result["interest_score"]
         reason = scout_result["reason"]
         extracted = scout_result["extracted_text"]
@@ -599,18 +637,6 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         print(f"🔍 Scout: {url} scored {score}/5 — {reason}")
 
         if score < scout_threshold:
-            if not goal:
-                goal = _infer_goal_from_url(url)
-            run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-            run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
-            if suite_dir:
-                _path = urlparse(url).path.strip("/")
-                page_segment = _path.replace("/", "_") if _path else "homepage"
-                run_dir = f"{suite_dir}/{page_segment}"
-            else:
-                run_dir = _make_run_dir(url, "single_page")
-            os.makedirs(run_dir, exist_ok=True)
-
             scout_entry = {
                 "step": 1,
                 "screenshot": "",
@@ -692,20 +718,9 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         page.on("request", _on_request)
         page.on("response", _on_response)
 
-        if not goal:
-            goal = _infer_goal_from_url(url)
-
         conversation = []
         report = []
         persona = None
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_label = "_".join(goal.split()[0:3]).lower().strip(".,!?")
-        if suite_dir:
-            _path = urlparse(url).path.strip("/")
-            page_segment = _path.replace("/", "_") if _path else "homepage"
-            run_dir = f"{suite_dir}/{page_segment}"
-        else:
-            run_dir = _make_run_dir(url, "single_page")
         screenshots_dir = f"{run_dir}/screenshots"
         os.makedirs(screenshots_dir, exist_ok=True)
 
