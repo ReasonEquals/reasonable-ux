@@ -25,8 +25,34 @@ from _sanitize_extracted import sanitize_persona, sanitize_string_list  # noqa: 
 load_dotenv(override=True)
 client = Anthropic()
 
-if os.environ.get("LANGFUSE_PUBLIC_KEY"):
-    litellm.success_callback = ["langfuse"]
+_LANGFUSE_TRACING_ENABLED = bool(os.environ.get("LANGFUSE_PUBLIC_KEY"))
+if _LANGFUSE_TRACING_ENABLED:
+    litellm.callbacks = ["langfuse_otel"]
+
+
+async def _flush_langfuse_spans():
+    """Drain LiteLLM's logging queue and flush OTel spans while the event loop is still alive.
+
+    Must run INSIDE the asyncio loop — LiteLLM's atexit path fails on Python 3.14 with
+    'cannot schedule new futures after interpreter shutdown' when the OTel span creation
+    is queued behind the main script's exit.
+    """
+    if not _LANGFUSE_TRACING_ENABLED:
+        return
+    try:
+        from litellm.litellm_core_utils.logging_worker import GLOBAL_LOGGING_WORKER
+
+        await GLOBAL_LOGGING_WORKER.flush()
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️ LiteLLM logging flush failed: {e}", file=sys.stderr)
+    try:
+        from opentelemetry import trace as _otel_trace
+
+        provider = _otel_trace.get_tracer_provider()
+        if hasattr(provider, "force_flush"):
+            provider.force_flush(timeout_millis=5000)
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️ Langfuse OTel span flush failed: {e}", file=sys.stderr)
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -913,6 +939,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
         await asyncio.sleep(0.5)
         await asyncio.wait_for(context.close(), timeout=10)
+
+        await _flush_langfuse_spans()
 
         total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
         total_output = sum(r.get("output_tokens", 0) for r in report if "output_tokens" in r)
