@@ -27,6 +27,9 @@ vault_storage_artifacts/
 # claude code per-machine permission allowlist (local, not shared)
 .claude/settings.local.json
 
+# claude code subagent worktrees (regenerable, per-machine)
+.claude/worktrees/
+
 # optional but common
 .pytest_cache/
 .DS_Store
