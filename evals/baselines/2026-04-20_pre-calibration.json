@@ -186,7 +186,7 @@
       "status": "failed",
       "passed": false,
       "failures": [
-        "report.json did not parse: [Errno 2] No such file or directory: '/Users/ryanwalsh/reasonable-ux/eval_runs/2026-04-20_235330_baseline/glossier_com/report.json'"
+        "report.json did not parse: [Errno 2] No such file or directory: '<repo>/eval_runs/2026-04-20_235330_baseline/glossier_com/report.json'"
       ],
       "warnings": [],
       "wall_clock_s": 152.08242929098196,
