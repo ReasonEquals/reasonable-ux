@@ -8,7 +8,6 @@ from pathlib import Path
 
 import requests
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tests"))
 
 def parse_args():
     parser = argparse.ArgumentParser(description="reasonable-ux orchestrator", allow_abbrev=False)
@@ -45,7 +44,7 @@ def parse_args():
     return parser.parse_args()
 
 async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", advisor: bool = False):
-    from agent_test import run
+    from agent_core import run
     total_tokens = await run(url=url, goal=goal, max_steps=steps, token_budget=token_budget, email=email, password=password, scout=scout, scout_threshold=scout_threshold, provider=provider, model=model, advisor=advisor)
     return total_tokens
 
@@ -108,7 +107,7 @@ def _newest_run_folder(before_names, runs_dir="runs"):
 
 async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", page_steps: int = None, advisor: bool = False):
     """Run the agent once per page sequentially and return collected page_results."""
-    from agent_test import run as agent_run
+    from agent_core import run as agent_run
 
     effective_steps = page_steps if page_steps is not None else 12
 
@@ -218,7 +217,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
                 continue
 
-            from agent_test import _infer_goal_from_url
+            from agent_core import _infer_goal_from_url
             page_goal = _infer_goal_from_url(full_url)
             before = _existing_run_names()
             tokens = await agent_run(

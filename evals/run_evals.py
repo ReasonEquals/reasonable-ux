@@ -27,10 +27,8 @@ import requests
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "tests"))
-
-from agent_test import USER_AGENT  # noqa: E402
-from agent_test import run as agent_run  # noqa: E402
+from agent_core import USER_AGENT  # noqa: E402
+from agent_core import run as agent_run  # noqa: E402
 
 LABELS_PATH = REPO_ROOT / "evals" / "labels.jsonl"
 RUNS_DIR = REPO_ROOT / "runs"

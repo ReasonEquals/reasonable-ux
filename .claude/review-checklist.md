@@ -9,7 +9,7 @@ Project-specific review criteria. Used by the /review skill.
 - [ ] No sensitive data in error messages or logs
 
 ## Project Rules (from CLAUDE.md)
-- [ ] tests/agent_test.py is the agent core, NOT a test file — don't treat it as one
+- [ ] agent_core.py is the agent loop at repo root — tests/ contains only real test files
 - [ ] max_tokens=1024 per step has not been raised without discussion
 - [ ] UX and QA branches are isolated — UX changes don't leak into QA mode
 - [ ] Minimum viable diff — no drive-by refactors
