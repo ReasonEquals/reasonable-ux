@@ -129,10 +129,10 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 
 Confirmed open items (cross-check against latest `session_summaries/` and `git log` before starting — this list ages fast):
 
-- **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example. Automated regression planned for Batch 43.
+- **`nav:` prompt drift.** Resolved (Batch 43): `_nav_drift_check()` in `evals/run_evals.py` flags CSS nav selectors as failures; all `saas_landing` labels carry `assert_nav_drift: true`.
 - **`run.py` auth debug screenshot.** Resolved (Batch 40): now writes to `runs/auth_debug_{PID}.png` which is gitignored.
 - **`--discover` page type filter.** Resolved: `_SKIP_SEGMENTS` in `site_crawler.py:12-15` already covers `about`, `team`, `press`, `careers`, `legal`, `privacy`, `terms`, `jobs`, `blog`, `now`.
-- **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis. Planned for Batch 41.
+- **Cross-page friction point deduplication.** Resolved (Batch 41): 7-line dedup pass in `stitch_reports` (`generate_report.py`) drops exact duplicate friction strings before exec summary synthesis.
 - **Langfuse blindspot runtime verification.** All 3 direct-SDK paths confirmed wrapped (Batch 39): `_complete_anthropic_advisor` (line 136), `_run_below_fold_analysis` (line 372), `scout_page` (line 466). Remaining step: manual smoke test with `LANGFUSE_PUBLIC_KEY` set to confirm spans appear in dashboard.
 - **Multi-site persona validation.** Batch 15 validated persona inference on Linear only. Run a small varied suite (SaaS landing, DTC ecommerce, content/media) to confirm step-1 personas stay site-appropriate across categories.
 - **Product framing questions flagged in batch 15's audit.** Repo public/private, LICENSE decision, third-party TOS positioning, customer data retention, dependency license cadence, `.claude/settings.local.json` review.
@@ -146,3 +146,4 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **If you go off-rails, the user will `/exit`.** Don't spiral. If the first approach fails, diagnose once, try a focused second approach, and if that also fails stop and explain rather than burning more budget.
 - **Pre-commit ritual.** Before every commit, append a new entry to `session_summaries/YYYY-MM-DD.md` (gitignored), update `session_summaries/LATEST.md`, show the entry in chat, then commit.
 - **Secrets hygiene.** Never hardcode credentials. Never commit `.env`, auth state JSON, or screenshots containing filled login fields. `runs/`, `screenshots/`, `reports/`, and `session_summaries/` are gitignored — keep them that way.
+- **Always `git fetch` before reading git state.** Use `git fetch && git log origin/main --oneline` not bare `git log`. Bare `git log` only shows local commits — PRs merged via GitHub UI won't appear until pulled.
