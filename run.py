@@ -119,9 +119,8 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
     auth_state_path = None
     auth_debug_path = None
     if email and password:
-        auth_debug_path = os.path.join(
-            tempfile.gettempdir(), f"reasonable-ux_auth_debug_{os.getpid()}.png"
-        )
+        os.makedirs("runs", exist_ok=True)
+        auth_debug_path = os.path.join("runs", f"auth_debug_{os.getpid()}.png")
         print(f"\n🔐 Pre-authenticating session for {base_url}...")
         async def _do_auth():
             from urllib.parse import urlparse as _urlparse

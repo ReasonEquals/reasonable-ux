@@ -115,6 +115,20 @@ cp .env.example .env  # add your ANTHROPIC_API_KEY
 
 ---
 
+## For contributors
+
+**`tests/agent_test.py` is not a test file.** Despite the path, it's the agent loop itself — `run.py` imports `run` and `_infer_goal_from_url` from it. The path is legacy. If you're expecting pytest, it isn't there.
+
+The fastest smoke test is running the agent core directly:
+
+```bash
+python tests/agent_test.py --url https://linear.app --steps 4
+```
+
+This skips multi-page orchestration, PDF generation, and persona layers. Use it when iterating on the core agent loop. Use `run.py` to test the full stack.
+
+---
+
 ## CLI reference
 
 ```bash
@@ -214,7 +228,7 @@ runs/
 
 ## Engineering decisions
 
-- **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Reduced average token usage from ~55,000 to ~8,800 per run (84%) with no measurable impact on test quality.
+- **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Reduced average token usage from ~55,000 to ~8,800 per run (84%), measured by comparing `usage.input_tokens` across sample runs before and after the change was introduced; no regression detected in eval harness output quality.
 - **JPEG tiers** — per-step screenshots at quality 40; full-page below-fold screenshots at quality 60 (tuned against text-heavy pages). PNG costs significantly more per image block.
 - **Full-page crop at 7500px** — the below-fold analysis takes a full-page screenshot and crops in place to 7500px tall before sending, staying under Claude Vision's 8000px cap.
 - **Model tiering** — executor on Opus 4.5 (default), personas on Sonnet 4.6, scout and exec summary on Haiku 4.5, optional advisor on Opus 4.6. Text-only scout doesn't need the same reasoning depth as vision-based step-by-step decisions.
@@ -227,6 +241,20 @@ runs/
 - **Crawler fallback** — link discovery tries `requests` first. If the site blocks the plain user-agent, it falls back to headless Playwright automatically.
 - **HEAD validation** — before spending agent tokens on a discovered page, a HEAD request confirms the path returns a non-4xx status. Dead links are skipped.
 - **Batched persona evaluation** — persona evals run 2 at a time with a brief pause between batches to stay under the 30k input tokens/minute org rate limit on Sonnet.
+
+---
+
+## Eval harness
+
+A deterministic regression net lives in `evals/`. Run it before and after any change that could shift agent behavior — model bumps, prompt edits, LiteLLM swaps — to confirm pass-rate holds within 5%.
+
+```bash
+python evals/run_evals.py                       # all labels
+python evals/run_evals.py --limit 3             # first 3 labels (fast sanity check)
+python evals/run_evals.py --label post-change   # name the run for comparison
+```
+
+Runs five assertions per URL: valid JSON, persona keyword match, score band, friction keyword match, and wall-clock warning (>90s). Pre-flight checks skip unreachable URLs so one dead URL doesn't tank the pass-rate. Historical baseline manifests live in `evals/baselines/` and survive across machines. See `evals/README.md` for label schema and how to add URLs.
 
 ---
 

@@ -4,7 +4,7 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 
 ## 1. What this is
 
-**reasonable-ux** is a commercial product under active development — a URL-driven UX evaluation tool. Point it at a website, and a vision-based agent (Claude Sonnet by default, pluggable via `LLMAdapter`) drives a real Chromium browser through the site via Playwright, evaluates each page as an inferred persona (scoring CTA clarity, copy quality, and flow smoothness, plus a below-the-fold pass), and produces scored JSON + HTML + PDF reports suitable for handing to a founder. Treat all code as production-grade — no throwaway scripts, no "just for now" hacks.
+**reasonable-ux** is a URL-driven UX evaluation tool under active development. Point it at a website, and a vision-based agent (Claude Sonnet by default, pluggable via `LLMAdapter`) drives a real Chromium browser through the site via Playwright, evaluates each page as an inferred persona (scoring CTA clarity, copy quality, and flow smoothness, plus a below-the-fold pass), and produces scored JSON + HTML + PDF reports suitable for handing to a founder. Treat all code as production-grade — no throwaway scripts, no "just for now" hacks.
 
 ## 2. Architecture map
 
@@ -129,10 +129,11 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 
 Confirmed open items (cross-check against latest `session_summaries/` and `git log` before starting — this list ages fast):
 
-- **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example.
-- **`run.py` tempfile cleanup — auth debug screenshot.** Auth debug PNG can contain filled email/password fields. Outside the repo so no commit risk, but should be moved under the per-run dir or deleted after inspection.
-- **`--discover` page type filter.** Crawler currently follows every same-domain link; pages like `/now`, `/about`, `/team`, `/press`, `/careers` waste tokens without adding UX signal. Add a skip-list or a "page type" scout filter.
-- **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis.
+- **`nav:` prompt drift.** Watch step JSONs on each smoke test: if Claude starts emitting CSS selectors instead of `nav:<Label>` for main nav links, the UX prompt has drifted and needs an explicit negative example. Automated regression planned for Batch 43.
+- **`run.py` auth debug screenshot.** Resolved (Batch 40): now writes to `runs/auth_debug_{PID}.png` which is gitignored.
+- **`--discover` page type filter.** Resolved: `_SKIP_SEGMENTS` in `site_crawler.py:12-15` already covers `about`, `team`, `press`, `careers`, `legal`, `privacy`, `terms`, `jobs`, `blog`, `now`.
+- **Cross-page friction point deduplication.** Multi-page runs surface the same friction (e.g. "no pricing above the fold") on every page. The exec summary should dedupe before synthesis. Planned for Batch 41.
+- **Langfuse blindspot runtime verification.** All 3 direct-SDK paths confirmed wrapped (Batch 39): `_complete_anthropic_advisor` (line 136), `_run_below_fold_analysis` (line 372), `scout_page` (line 466). Remaining step: manual smoke test with `LANGFUSE_PUBLIC_KEY` set to confirm spans appear in dashboard.
 - **Multi-site persona validation.** Batch 15 validated persona inference on Linear only. Run a small varied suite (SaaS landing, DTC ecommerce, content/media) to confirm step-1 personas stay site-appropriate across categories.
 - **Product framing questions flagged in batch 15's audit.** Repo public/private, LICENSE decision, third-party TOS positioning, customer data retention, dependency license cadence, `.claude/settings.local.json` review.
 
