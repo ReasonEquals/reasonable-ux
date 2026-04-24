@@ -10,7 +10,7 @@ This is **Phase 1** of the LLMOps v1 integration plan. It exists specifically to
 2. `run_evals.py` — per invocation:
    - Creates a fresh `eval_runs/<YYYY-MM-DD_HHMMSS>[_<label>]/` directory (sibling to `runs/`).
    - **Pre-flight check** per label: 10s `requests.get` with the shared user-agent. Skips the URL (does not spend tokens) on any of: HTTP ≥ 400, non-HTML content-type, network error, or a Cloudflare/captcha challenge-body signature. Skipped URLs are tracked separately in the manifest and excluded from the pass-rate denominator.
-   - For each label that passes pre-flight: calls `tests/agent_test.run(url, max_steps=4)`, finds the produced `runs/{domain}/{ts}_single_page/`, **moves** it into `eval_runs/<eval_ts>/{domain}/` so audit-grade `runs/` stays clean.
+   - For each label that passes pre-flight: calls `agent_core.run(url, max_steps=4)`, finds the produced `runs/{domain}/{ts}_single_page/`, **moves** it into `eval_runs/<eval_ts>/{domain}/` so audit-grade `runs/` stays clean.
    - Runs five assertions per URL:
      - `report.json` parses as valid JSON
      - Step 1's top-level `persona` string contains at least one `expected_persona_keywords` entry (case-insensitive)
@@ -21,7 +21,7 @@ This is **Phase 1** of the LLMOps v1 integration plan. It exists specifically to
 
 Evals run at `max_steps=4` fixed to keep cost down. No personas, no PDF, no advisor.
 
-Pre-flight and the Playwright browser context both use an identifiable user-agent defined at `tests/agent_test.py` top-level (`USER_AGENT`): `Mozilla/5.0 … Chrome/131.0.0.0 Safari/537.36 reasonable-ux/0.1`. Real-Chrome prefix so fingerprint-based blockers pass; `reasonable-ux/0.1` suffix so site operators seeing the traffic in logs can identify the tool. Audit runs (`run.py`, `site_crawler.py`) will follow in a later TOS-hygiene batch.
+Pre-flight and the Playwright browser context both use an identifiable user-agent defined at `agent_core.py` top-level (`USER_AGENT`): `Mozilla/5.0 … Chrome/131.0.0.0 Safari/537.36 reasonable-ux/0.1`. Real-Chrome prefix so fingerprint-based blockers pass; `reasonable-ux/0.1` suffix so site operators seeing the traffic in logs can identify the tool. Audit runs (`run.py`, `site_crawler.py`) will follow in a later TOS-hygiene batch.
 
 ## Output layout
 
@@ -66,7 +66,7 @@ One JSON object per line:
 
 ## Adding a URL
 
-1. Run the agent once manually to calibrate: `python tests/agent_test.py --url https://newsite.com --steps 4`.
+1. Run the agent once manually to calibrate: `python agent_core.py --url https://newsite.com --steps 4`.
 2. Open the produced `runs/{domain}/{ts}_single_page/report.json` and note the persona string, the three subscores per step, and the friction points.
 3. Compute an expected score: mean of all subscores × 20. Set the band ±15 points.
 4. Pick 2–4 keywords each for persona and friction that felt obvious in the real output.
@@ -123,4 +123,4 @@ Spread across all three categories (5–10 each). A 20-URL set skewed entirely t
 
 - Cost ceiling (Phase 3) — evals run unbudgeted.
 - Langfuse traces (Phase 4) — no telemetry yet.
-- LiteLLM (Phase 2) — evals call the existing `agent_test.run` unchanged.
+- LiteLLM (Phase 2) — evals call the existing `agent_core.run` unchanged.

@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from PIL import Image
 from playwright.async_api import async_playwright
 
-# Allow sibling-module imports when invoked as `python tests/agent_test.py`
+# Allow sibling-module imports when invoked as `python agent_core.py`
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
@@ -972,7 +972,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Dev entry point for agent_test.run(). For the full CLI use run.py.", allow_abbrev=False)
+    parser = argparse.ArgumentParser(description="Dev entry point for agent_core.run(). For the full CLI use run.py.", allow_abbrev=False)
     parser.add_argument("--url", type=str, required=True, help="Target URL (required)")
     parser.add_argument("--goal", type=str, default=None)
     parser.add_argument("--steps", type=int, default=8)

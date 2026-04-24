@@ -117,12 +117,12 @@ cp .env.example .env  # add your ANTHROPIC_API_KEY
 
 ## For contributors
 
-**`tests/agent_test.py` is not a test file.** Despite the path, it's the agent loop itself — `run.py` imports `run` and `_infer_goal_from_url` from it. The path is legacy. If you're expecting pytest, it isn't there.
+**`agent_core.py` is the agent loop**, not a test file. `run.py` imports `run` and `_infer_goal_from_url` from it. `tests/` contains only real test files.
 
 The fastest smoke test is running the agent core directly:
 
 ```bash
-python tests/agent_test.py --url https://linear.app --steps 4
+python agent_core.py --url https://linear.app --steps 4
 ```
 
 This skips multi-page orchestration, PDF generation, and persona layers. Use it when iterating on the core agent loop. Use `run.py` to test the full stack.

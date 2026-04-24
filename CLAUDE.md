@@ -10,9 +10,9 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 
 **Entry points — read this twice:**
 - `run.py` — **the real CLI entry point.** All user-facing flags (`--pages`, `--discover`, `--personas`, `--scout`, multi-page orchestration, PDF stitching) live here.
-- `tests/agent_test.py` — despite the `tests/` path, this is **not a test file** — it is the agent loop itself. `run.py` imports `run` and `_infer_goal_from_url` from it. The path is legacy and has cost real time in past sessions when people assumed "tests/" meant pytest. Also usable standalone as a dev stub via `python tests/agent_test.py --url ...` — that's the fastest smoke test, but it bypasses `run.py`'s multi-page / PDF / persona layers.
+- `agent_core.py` — the agent loop. `run.py` imports `run` and `_infer_goal_from_url` from it. Usable standalone as a dev stub via `python agent_core.py --url ...` — that's the fastest smoke test, but it bypasses `run.py`'s multi-page / PDF / persona layers.
 
-**Agent core (`tests/agent_test.py`):**
+**Agent core (`agent_core.py`):**
 - `LLMAdapter` — normalizes calls across providers via `litellm.acompletion()`. Translates Anthropic message format (with base64 image blocks) to OpenAI format for LiteLLM. Exception: advisor-beta tool calls route directly to Anthropic SDK (`_complete_anthropic_advisor`). Emits Langfuse traces on every LiteLLM call when `LANGFUSE_PUBLIC_KEY` is set (gated at module load). Known gap: advisor path, `_run_below_fold_analysis`, and `scout_page` use the module-level `client = Anthropic()` and are not traced.
 - `screenshot_as_base64` — JPEG quality 40 per-step screenshots.
 - `_sanitize_selector` — strips `:contains()` selectors which Playwright doesn't support. Raises if all parts are blocked. **Bypassed by the `nav:` prefix path.**
@@ -28,7 +28,7 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 - `__main__` — dev stub argparse, `--url` required, supports `--steps`, `--goal`, `--email`, `--password`, `--token-budget`, `--provider`, `--model`, `--advisor`.
 
 **Orchestration & reporting:**
-- `run.py` — CLI dispatcher. Single-page → calls `agent_test.run` → `generate_report.build_pdf`. Multi-page (`--pages` / `--discover`) → `run_pages` loops over URLs, stitches via `generate_report.stitch_reports`. Pre-authenticates via its own Playwright session in `_do_auth` (only when `--email` and `--password` are both set), writing a storage_state tempfile (**see backlog**). `--discover` auth crawler at `_auth_crawl`.
+- `run.py` — CLI dispatcher. Single-page → calls `agent_core.run` → `generate_report.build_pdf`. Multi-page (`--pages` / `--discover`) → `run_pages` loops over URLs, stitches via `generate_report.stitch_reports`. Pre-authenticates via its own Playwright session in `_do_auth` (only when `--email` and `--password` are both set), writing a storage_state tempfile (**see backlog**). `--discover` auth crawler at `_auth_crawl`.
 - `generate_report.py` — PDF generation. `build_pdf` single-page (HTML → Jinja → Playwright), `stitch_reports` multi-page with executive summary synthesized by Haiku.
 - `personas.py` — `generate_personas(url, summary)` that asks Claude to build 3 contextual personas from URL + report summary. Fallback pads from `DEFAULT_PERSONAS` in `report_data.py`.
 - `persona_orchestrator.py` — runs persona evaluations in batches of 2 with a 2-second pause to respect rate limits.
@@ -42,7 +42,7 @@ Loaded automatically into every Claude Code session. Read it fully before touchi
 
 ```bash
 # Single-page smoke test, 4 steps (dev stub — fastest)
-python tests/agent_test.py --url https://linear.app --steps 4
+python agent_core.py --url https://linear.app --steps 4
 
 # Same smoke test through the real CLI (also produces a PDF)
 python run.py --url https://linear.app --steps 4
@@ -141,7 +141,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 
 - **Minimum viable diff.** Make the stated fix and nothing else. No refactors, no renames, no "while I'm here" cleanups, no adding type annotations or docstrings to code you didn't change. If the fix is 5 lines, the diff is 5 lines.
 - **One commit per completed batch, fresh Claude Code session per batch.** Each batch has a crisp scope. Don't carry context across batches inside a single session. When a batch is done, commit, `/exit`, start fresh.
-- **Do not run the full suite to verify.** Smoke test on a single URL (`python tests/agent_test.py --url https://linear.app --steps 4`) is sufficient. Full suite runs burn tokens and rarely surface anything a smoke test doesn't.
+- **Do not run the full suite to verify.** Smoke test on a single URL (`python agent_core.py --url https://linear.app --steps 4`) is sufficient. Full suite runs burn tokens and rarely surface anything a smoke test doesn't.
 - **After each fix, print 2–3 sentences explaining what changed and why.** Not a diff, not a list — a short prose explanation the user can read in 10 seconds to decide whether to commit.
 - **If you go off-rails, the user will `/exit`.** Don't spiral. If the first approach fails, diagnose once, try a focused second approach, and if that also fails stop and explain rather than burning more budget.
 - **Pre-commit ritual.** Before every commit, append a new entry to `session_summaries/YYYY-MM-DD.md` (gitignored), update `session_summaries/LATEST.md`, show the entry in chat, then commit.
