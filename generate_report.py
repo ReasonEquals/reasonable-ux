@@ -284,6 +284,14 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None, *,
                     url_counts[u] = url_counts.get(u, 0) + 1
     tech["top_offender_urls"] = [u for u, _ in sorted(url_counts.items(), key=lambda x: -x[1])[:5]]
 
+    seen_findings: set[str] = set()
+    for ps in page_summaries:
+        tf = ps.get("top_finding", "")
+        if tf and tf in seen_findings:
+            ps["top_finding"] = ""
+        elif tf:
+            seen_findings.add(tf)
+
     print("🧠 Generating executive summary...")
     exec_findings, exec_recs, exec_tech_health, exec_overall = _exec_summary_content(
         page_summaries, tech_summary=tech,
