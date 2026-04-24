@@ -16,6 +16,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import re
 import shutil
 import sys
 import time
@@ -131,6 +132,29 @@ def _concatenated_friction(report: list[dict]) -> str:
     return " ".join(chunks).lower()
 
 
+# CSS selector patterns that signal nav-click drift.
+# A match means Claude emitted a selector for a link instead of nav:<Label>.
+_NAV_DRIFT_RE = re.compile(
+    r"(^a\[href|^a:has-text|^a:contains|\.nav[-_]|^nav\s+a|^header\s+a)",
+    re.IGNORECASE,
+)
+
+
+def _nav_drift_check(report: list[dict]) -> tuple[int, list[str]]:
+    """Return (nav_prefix_count, suspicious_css_targets) across all steps."""
+    nav_prefix_count = 0
+    suspicious: list[str] = []
+    for step in report:
+        target = step.get("target")
+        if not isinstance(target, str) or not target:
+            continue
+        if target.startswith("nav:"):
+            nav_prefix_count += 1
+        elif not target.startswith("http") and _NAV_DRIFT_RE.search(target):
+            suspicious.append(target)
+    return nav_prefix_count, suspicious
+
+
 def _assert_label(label: dict, report: list[dict], wall_clock_s: float) -> tuple[bool, list[str], list[str]]:
     """Run assertions against a parsed report. Returns (passed, failures, warnings)."""
     failures: list[str] = []
@@ -166,6 +190,15 @@ def _assert_label(label: dict, report: list[dict], wall_clock_s: float) -> tuple
         failures.append(
             f"no friction keyword matched — expected any of {friction_keywords}"
         )
+
+    if label.get("assert_nav_drift"):
+        nav_count, suspicious_css = _nav_drift_check(report)
+        if suspicious_css:
+            failures.append(
+                f"nav: drift — CSS nav selector(s) found: {suspicious_css[:3]}"
+            )
+        elif nav_count == 0:
+            warnings.append("nav: drift — zero nav: prefixes in 4-step run (possible drift or site not navigated)")
 
     if wall_clock_s > WALL_CLOCK_WARN_SECONDS:
         warnings.append(f"wall clock {wall_clock_s:.1f}s > {WALL_CLOCK_WARN_SECONDS:.0f}s")
