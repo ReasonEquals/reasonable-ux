@@ -267,6 +267,12 @@ Runs five assertions per URL: valid JSON, persona keyword match, score band, fri
 
 ---
 
+## Legal
+
+See [TERMS.md](TERMS.md) for third-party website compliance, data handling, and API usage policy.
+
+---
+
 ## Tech stack
 
 | | |

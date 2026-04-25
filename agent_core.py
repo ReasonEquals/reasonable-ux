@@ -556,28 +556,74 @@ Respond with a JSON object with exactly these two fields:
         }
 
 
+def _compute_summary(report):
+    score_buckets = {"cta_clarity": [], "copy_quality": [], "flow_smoothness": []}
+    friction_count = 0
+    persona = None
+    for entry in report:
+        if entry.get("action") == "scout_skip":
+            continue
+        for field in score_buckets:
+            obj = entry.get(field)
+            if isinstance(obj, dict) and isinstance(obj.get("score"), (int, float)):
+                score_buckets[field].append(obj["score"])
+        friction_count += len(entry.get("friction_points", []))
+        if not persona and entry.get("persona"):
+            persona = entry["persona"]
+    avgs = {k: round(sum(v) / len(v), 1) if v else None for k, v in score_buckets.items()}
+    return persona, avgs, friction_count
+
+
 def _build_html_report(report, goal, run_id, run_label, below_fold=None):
     final_status = report[-1].get("pass_fail", "unknown").upper() if report else "UNKNOWN"
     status_color = "#2ecc71" if final_status == "PASS" else "#e74c3c" if final_status == "FAIL" else "#f39c12"
 
     shared_style = """
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a2e; color: #eee; }
-        h1 { font-size: 28px; margin-bottom: 8px; color: #00d4ff; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; margin: 40px; background: #1a1a2e; color: #eee; }
+        h1 { font-size: 28px; margin-bottom: 8px; color: #00d4ff; letter-spacing: -0.02em; }
         .status { font-size: 24px; font-weight: bold; margin: 16px 0; }
         .goal { background: #16213e; padding: 15px; border-left: 4px solid #00d4ff; margin: 20px 0; border-radius: 4px; }
         .meta { color: #888; font-size: 13px; margin: 8px 0; }
         table { width: 100%; border-collapse: collapse; background: #16213e; border-radius: 8px; overflow: hidden; margin-top: 20px; }
         th { background: #0f3460; color: #00d4ff; padding: 12px 16px; text-align: left; font-size: 13px; }
-        td { padding: 12px 16px; border-bottom: 1px solid #0f3460; vertical-align: top; font-size: 13px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #0f3460; vertical-align: top; font-size: 13px; line-height: 1.5; }
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: #0f3460; }
-        img { border-radius: 4px; border: 1px solid #0f3460; }
+        img.step-shot { border-radius: 4px; border: 1px solid #0f3460; cursor: zoom-in; }
         .score { font-weight: bold; }
         .s5 { color: #2ecc71; } .s4 { color: #27ae60; } .s3 { color: #f39c12; }
         .s2 { color: #e67e22; } .s1 { color: #e74c3c; }
         .friction { color: #f39c12; font-size: 12px; }
+        .summary { display: flex; gap: 16px; margin: 20px 0; }
+        .scard { background: #16213e; padding: 16px 20px; border-radius: 8px; flex: 1; text-align: center; border: 1px solid #0f3460; }
+        .scard .val { font-size: 28px; font-weight: 700; }
+        .scard .lbl { font-size: 11px; color: #888; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+        .persona-block { background: #16213e; border-left: 4px solid #00d4ff; padding: 14px 16px; margin: 0 0 20px; border-radius: 0 4px 4px 0; font-size: 13px; }
+        .persona-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
     """
+
+    persona, avgs, friction_count = _compute_summary(report)
+
+    def _avg_card(label, v):
+        if v is None:
+            return f'<div class="scard"><div class="val" style="color:#888">—</div><div class="lbl">{label}</div></div>'
+        cls = f"s{min(max(round(v), 1), 5)}"
+        return f'<div class="scard"><div class="val {cls}">{v}/5</div><div class="lbl">{label}</div></div>'
+
+    persona_html = (
+        f'<div class="persona-block"><div class="persona-label">Inferred Persona</div><div>{persona}</div></div>'
+        if persona else ""
+    )
+    summary_html = (
+        f'<div class="summary">'
+        f'{_avg_card("CTA Clarity", avgs["cta_clarity"])}'
+        f'{_avg_card("Copy Quality", avgs["copy_quality"])}'
+        f'{_avg_card("Flow", avgs["flow_smoothness"])}'
+        f'<div class="scard"><div class="val" style="color:#f39c12">{friction_count}</div>'
+        f'<div class="lbl">Friction Pts</div></div>'
+        f'</div>'
+    )
 
     rows = ""
     for entry in report:
@@ -619,7 +665,7 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
         rows += f"""
         <tr>
             <td>{entry['step']}</td>
-            <td><img src="screenshots/step_{entry['step']}.png" width="200"/></td>
+            <td><img class="step-shot" src="screenshots/step_{entry['step']}.png" width="200"/></td>
             <td>{entry['observation']}</td>
             <td>{entry['action']}</td>
             <td>{score_cell('cta_clarity')}</td>
@@ -644,6 +690,8 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
     <div class="goal"><strong>Goal:</strong> {goal}</div>
     <p class="meta"><strong>Run ID:</strong> {run_id}</p>
     <p class="status" style="color:{status_color}">Final Status: {final_status}</p>
+    {persona_html}
+    {summary_html}
     <table>
         <tr>
             <th>Step</th>

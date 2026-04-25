@@ -144,7 +144,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **Cross-page friction point deduplication.** Resolved (Batch 41): 7-line dedup pass in `stitch_reports` (`generate_report.py`) drops exact duplicate friction strings before exec summary synthesis.
 - **Langfuse blindspot runtime verification.** Resolved (Batch 45): replaced broken `AnthropicInstrumentor`/OTel approach with `langfuse.decorators.observe()` on the three direct-SDK paths. Verify by running a smoke test with `LANGFUSE_PUBLIC_KEY` set and checking Sessions in the Langfuse UI for `scout_page`, `below_fold`, and `advisor` traces alongside LiteLLM step traces.
 - **Multi-site persona validation.** Resolved (Batch 44): DTC (allbirds.com → "Eco-conscious millennial woman, sustainable footwear") and content/media (substack.com → "Aspiring paid newsletter creator") both produced site-appropriate step-1 personas.
-- **Product framing questions flagged in batch 15's audit.** Repo public/private, LICENSE decision, third-party TOS positioning, customer data retention, dependency license cadence, `.claude/settings.local.json` review.
+- **Product framing questions flagged in batch 15's audit.** Partially resolved (Batch 46): LICENSE ✓ MIT, TERMS.md ✓ (third-party TOS, data retention, API usage, acceptable use), `.claude/settings.local.json` pruned ✓. Still open (non-code decisions): repo public/private, dependency license cadence audit.
 
 ## 8. Working rules for this repo
 
