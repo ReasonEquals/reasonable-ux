@@ -3,6 +3,7 @@ import base64
 import json
 import os
 import sys
+from contextlib import nullcontext
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -27,22 +28,53 @@ client = Anthropic()
 
 _LANGFUSE_TRACING_ENABLED = bool(os.environ.get("LANGFUSE_PUBLIC_KEY"))
 _langfuse_observe = None
-_langfuse_ctx = None
+_langfuse_propagate = None
 
 if _LANGFUSE_TRACING_ENABLED:
     litellm.callbacks = ["langfuse_otel"]
     try:
-        from langfuse.decorators import langfuse_context as _langfuse_ctx
-        from langfuse.decorators import observe as _langfuse_observe
+        from langfuse import observe as _langfuse_observe
+        from langfuse import propagate_attributes as _langfuse_propagate
     except ImportError:
         pass
 
 
 def _lf_observe(f):
-    """Wrap with langfuse @observe(as_type='generation') when tracing is on; identity otherwise."""
+    """Wrap with langfuse @observe when tracing is on; identity otherwise.
+
+    capture_input/output disabled — these functions receive Playwright Page
+    objects and base64-encoded screenshots in messages; auto-serializing them
+    burns 50+ GB and hangs. Functions manually call _lf_update_generation()
+    after their LLM call to log only the safe text fields (prompt, response,
+    model, tokens) — see invariants in CLAUDE.md section 5.
+    """
     if _langfuse_observe is not None:
-        return _langfuse_observe(as_type="generation")(f)
+        return _langfuse_observe(as_type="generation", capture_input=False, capture_output=False)(f)
     return f
+
+
+def _lf_update_generation(*, input=None, output=None, model=None, input_tokens=None, output_tokens=None):
+    """Manually populate the current Langfuse generation observation with safe text fields.
+
+    No-op when tracing is disabled or no observation is active. Use after an LLM call
+    inside a function decorated with @_lf_observe — pass only text/scalar values, never
+    Playwright objects or base64 image blobs.
+    """
+    if not _LANGFUSE_TRACING_ENABLED:
+        return
+    try:
+        from langfuse import get_client
+        usage = None
+        if input_tokens is not None or output_tokens is not None:
+            usage = {"input": input_tokens or 0, "output": output_tokens or 0}
+        get_client().update_current_generation(
+            input=input,
+            output=output,
+            model=model,
+            usage_details=usage,
+        )
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️ Langfuse update_current_generation failed: {e}", file=sys.stderr)
 
 
 async def _flush_langfuse_spans():
@@ -68,6 +100,11 @@ async def _flush_langfuse_spans():
             provider.force_flush(timeout_millis=5000)
     except Exception as e:  # noqa: BLE001
         print(f"⚠️ Langfuse OTel span flush failed: {e}", file=sys.stderr)
+    try:
+        from langfuse import get_client as _lf_get_client
+        _lf_get_client().flush()
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️ Langfuse SDK flush failed: {e}", file=sys.stderr)
 
 USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -130,13 +167,28 @@ class LLMAdapter:
     @_lf_observe
     async def _complete_anthropic_advisor(self, messages, model, max_tokens, tools, metadata=None):
         session_id = metadata.get("session_id") if metadata else None
-        if _langfuse_ctx and session_id:
-            _langfuse_ctx.update_current_trace(session_id=session_id, name="advisor")
-        response = await self._anthropic.beta.messages.create(
+        _ctx = _langfuse_propagate(session_id=session_id) if (_langfuse_propagate and session_id) else nullcontext()
+        with _ctx:
+            response = await self._anthropic.beta.messages.create(
             model=model, max_tokens=max_tokens, messages=messages,
             tools=tools, betas=["advisor-tool-2026-03-01"]
         )
         text = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
+        # Safe text-only summary of input messages (skip image blocks; they're already
+        # captured upstream by per-step LiteLLM traces and would re-trigger the leak).
+        safe_input = [
+            {"role": m["role"],
+             "text": " ".join(b.get("text", "") for b in m["content"] if isinstance(b, dict) and b.get("type") == "text")
+             if isinstance(m["content"], list) else m["content"]}
+            for m in messages
+        ]
+        _lf_update_generation(
+            input=safe_input,
+            output=text,
+            model=model,
+            input_tokens=response.usage.input_tokens,
+            output_tokens=response.usage.output_tokens,
+        )
         return (text, response.usage.input_tokens, response.usage.output_tokens, response.content)
 
     @staticmethod
@@ -335,8 +387,6 @@ def _build_below_fold_html(below_fold):
 
 @_lf_observe
 async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
-    if _langfuse_ctx and run_dir:
-        _langfuse_ctx.update_current_trace(session_id=run_dir, name="below_fold")
     print("\n🔍 Running below-the-fold analysis...")
     try:
         await page.goto(url, wait_until="load", timeout=20000)
@@ -379,6 +429,13 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
 
     raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
     print(f"💰 Below-fold analysis tokens: {response.usage.input_tokens + response.usage.output_tokens:,}")
+    _lf_update_generation(
+        input=_build_below_fold_prompt(persona),
+        output=raw,
+        model=kwargs["model"],
+        input_tokens=response.usage.input_tokens,
+        output_tokens=response.usage.output_tokens,
+    )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
         return json.loads(clean)
@@ -393,8 +450,6 @@ async def scout_page(url: str, storage_state: str = None, run_dir: str = None) -
     """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
-    if _langfuse_ctx and run_dir:
-        _langfuse_ctx.update_current_trace(session_id=run_dir, name="scout_page")
     cookie_jar = requests.cookies.RequestsCookieJar()
     if storage_state:
         try:
@@ -473,6 +528,13 @@ Respond with a JSON object with exactly these two fields:
     )
 
     raw = response.content[0].text
+    _lf_update_generation(
+        input=scout_prompt,
+        output=raw,
+        model="claude-sonnet-4-6",
+        input_tokens=response.usage.input_tokens,
+        output_tokens=response.usage.output_tokens,
+    )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
         result = json.loads(clean)
@@ -630,7 +692,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
     scout_output_tokens = 0
 
     if scout:
-        scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir)
+        with (_langfuse_propagate(session_id=run_dir) if _langfuse_propagate and run_dir else nullcontext()):
+            scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir)
         score = scout_result["interest_score"]
         reason = scout_result["reason"]
         extracted = scout_result["extracted_text"]
@@ -922,7 +985,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         # Below-the-fold analysis
         below_fold = None
         try:
-            below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
+            with (_langfuse_propagate(session_id=run_dir) if _langfuse_propagate and run_dir else nullcontext()):
+                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
             if below_fold:
                 bf_path = f"{run_dir}/below_fold.json"
                 with open(bf_path, "w", encoding="utf-8") as f:
