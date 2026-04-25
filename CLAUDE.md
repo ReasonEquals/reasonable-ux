@@ -139,7 +139,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **Cross-page friction point deduplication.** Resolved (Batch 41): 7-line dedup pass in `stitch_reports` (`generate_report.py`) drops exact duplicate friction strings before exec summary synthesis.
 - **Langfuse blindspot runtime verification.** Partially resolved (Batch 44): all 4 LiteLLM step traces confirmed (14 traces across 4 sessions). `AnthropicInstrumentor` paths NOT confirmed — "below the fold" in traces is organic step output, not `_run_below_fold_analysis` spans; zero distinct below-fold, scout, or advisor traces found across 42 observations. Investigate `_trace_session()` wiring: the `propagate_attributes` context manager may not be attaching spans to the active TracerProvider correctly on Python 3.14.
 - **Multi-site persona validation.** Resolved (Batch 44): DTC (allbirds.com → "Eco-conscious millennial woman, sustainable footwear") and content/media (substack.com → "Aspiring paid newsletter creator") both produced site-appropriate step-1 personas.
-- **Product framing questions flagged in batch 15's audit.** Repo public/private, LICENSE decision, third-party TOS positioning, customer data retention, dependency license cadence, `.claude/settings.local.json` review.
+- **Product framing questions flagged in batch 15's audit.** Partially resolved (Batch 46): LICENSE ✓ MIT, TERMS.md ✓ (third-party TOS, data retention, API usage, acceptable use), `.claude/settings.local.json` pruned ✓. Still open (non-code decisions): repo public/private, dependency license cadence audit.
 
 ## 8. Working rules for this repo
 
