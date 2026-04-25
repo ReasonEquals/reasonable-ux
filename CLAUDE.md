@@ -128,6 +128,7 @@ Session summaries live in `session_summaries/` (gitignored). Read the latest one
 - **Batch 41** (2026-04-22) — cross-page friction deduplication: 7-line dedup pass in `stitch_reports` (`generate_report.py`) removes repeated top-finding strings before exec summary synthesis.
 - **Batch 42** (2026-04-22) — rename `tests/agent_test.py` → `agent_core.py` at repo root; remove `sys.path.insert` shims; add H5.11 `main-branch-edit-guard` hook.
 - **Batch 43** (2026-04-24) — `nav:` drift regression: `_NAV_DRIFT_RE` + `_nav_drift_check()` in `evals/run_evals.py`; `assert_nav_drift: true` on all 7 `saas_landing` eval labels; git-hygiene working rule added.
+- **Batch 45** (2026-04-24) — fix Langfuse blindspots: root cause was `AnthropicInstrumentor().instrument()` running at import time before `langfuse_otel` initialized its TracerProvider, so advisor/below-fold/scout spans were silently discarded. Replaced broken OTel approach with `langfuse.decorators.observe()` (`@_lf_observe` wrapper) on `scout_page`, `_run_below_fold_analysis`, and `_complete_anthropic_advisor`; each calls `_langfuse_ctx.update_current_trace(session_id=run_dir)` to group under the run session. Removed `_trace_session()`, `AnthropicInstrumentor` import, and `opentelemetry-instrumentation-anthropic` from requirements.txt.
 
 ## 7. Known backlog
 
@@ -137,7 +138,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **`run.py` auth debug screenshot.** Resolved (Batch 40): now writes to `runs/auth_debug_{PID}.png` which is gitignored.
 - **`--discover` page type filter.** Resolved: `_SKIP_SEGMENTS` in `site_crawler.py:12-15` already covers `about`, `team`, `press`, `careers`, `legal`, `privacy`, `terms`, `jobs`, `blog`, `now`.
 - **Cross-page friction point deduplication.** Resolved (Batch 41): 7-line dedup pass in `stitch_reports` (`generate_report.py`) drops exact duplicate friction strings before exec summary synthesis.
-- **Langfuse blindspot runtime verification.** Partially resolved (Batch 44): all 4 LiteLLM step traces confirmed (14 traces across 4 sessions). `AnthropicInstrumentor` paths NOT confirmed — "below the fold" in traces is organic step output, not `_run_below_fold_analysis` spans; zero distinct below-fold, scout, or advisor traces found across 42 observations. Investigate `_trace_session()` wiring: the `propagate_attributes` context manager may not be attaching spans to the active TracerProvider correctly on Python 3.14.
+- **Langfuse blindspot runtime verification.** Resolved (Batch 45): replaced broken `AnthropicInstrumentor`/OTel approach with `langfuse.decorators.observe()` on the three direct-SDK paths. Verify by running a smoke test with `LANGFUSE_PUBLIC_KEY` set and checking Sessions in the Langfuse UI for `scout_page`, `below_fold`, and `advisor` traces alongside LiteLLM step traces.
 - **Multi-site persona validation.** Resolved (Batch 44): DTC (allbirds.com → "Eco-conscious millennial woman, sustainable footwear") and content/media (substack.com → "Aspiring paid newsletter creator") both produced site-appropriate step-1 personas.
 - **Product framing questions flagged in batch 15's audit.** Repo public/private, LICENSE decision, third-party TOS positioning, customer data retention, dependency license cadence, `.claude/settings.local.json` review.
 

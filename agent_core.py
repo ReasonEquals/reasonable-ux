@@ -3,7 +3,6 @@ import base64
 import json
 import os
 import sys
-from contextlib import nullcontext
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -27,26 +26,23 @@ load_dotenv(override=True)
 client = Anthropic()
 
 _LANGFUSE_TRACING_ENABLED = bool(os.environ.get("LANGFUSE_PUBLIC_KEY"))
+_langfuse_observe = None
+_langfuse_ctx = None
+
 if _LANGFUSE_TRACING_ENABLED:
     litellm.callbacks = ["langfuse_otel"]
-    # Auto-instrument direct Anthropic SDK calls (advisor, below-fold, scout) — shares
-    # the TracerProvider that `langfuse_otel` initializes on first LiteLLM call.
     try:
-        from opentelemetry.instrumentation.anthropic import AnthropicInstrumentor
-        AnthropicInstrumentor().instrument()
+        from langfuse.decorators import langfuse_context as _langfuse_ctx
+        from langfuse.decorators import observe as _langfuse_observe
     except ImportError:
         pass
 
 
-def _trace_session(session_id):
-    """Tag direct-SDK Anthropic spans with a Langfuse session_id. No-op when tracing off."""
-    if not _LANGFUSE_TRACING_ENABLED or not session_id:
-        return nullcontext()
-    try:
-        from langfuse import propagate_attributes
-        return propagate_attributes(session_id=session_id)
-    except ImportError:
-        return nullcontext()
+def _lf_observe(f):
+    """Wrap with langfuse @observe(as_type='generation') when tracing is on; identity otherwise."""
+    if _langfuse_observe is not None:
+        return _langfuse_observe(as_type="generation")(f)
+    return f
 
 
 async def _flush_langfuse_spans():
@@ -131,13 +127,15 @@ class LLMAdapter:
             raise TokenBudgetExceeded(self._tokens_used, self._token_budget)
         return result
 
+    @_lf_observe
     async def _complete_anthropic_advisor(self, messages, model, max_tokens, tools, metadata=None):
         session_id = metadata.get("session_id") if metadata else None
-        with _trace_session(session_id):
-            response = await self._anthropic.beta.messages.create(
-                model=model, max_tokens=max_tokens, messages=messages,
-                tools=tools, betas=["advisor-tool-2026-03-01"]
-            )
+        if _langfuse_ctx and session_id:
+            _langfuse_ctx.update_current_trace(session_id=session_id, name="advisor")
+        response = await self._anthropic.beta.messages.create(
+            model=model, max_tokens=max_tokens, messages=messages,
+            tools=tools, betas=["advisor-tool-2026-03-01"]
+        )
         text = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
         return (text, response.usage.input_tokens, response.usage.output_tokens, response.content)
 
@@ -335,7 +333,10 @@ def _build_below_fold_html(below_fold):
     </div>"""
 
 
+@_lf_observe
 async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
+    if _langfuse_ctx and run_dir:
+        _langfuse_ctx.update_current_trace(session_id=run_dir, name="below_fold")
     print("\n🔍 Running below-the-fold analysis...")
     try:
         await page.goto(url, wait_until="load", timeout=20000)
@@ -369,13 +370,12 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
             ]
         }]
     )
-    with _trace_session(run_dir):
-        if advisor:
-            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
-            kwargs["betas"] = ["advisor-tool-2026-03-01"]
-            response = client.beta.messages.create(**kwargs)
-        else:
-            response = client.messages.create(**kwargs)
+    if advisor:
+        kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+        kwargs["betas"] = ["advisor-tool-2026-03-01"]
+        response = client.beta.messages.create(**kwargs)
+    else:
+        response = client.messages.create(**kwargs)
 
     raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
     print(f"💰 Below-fold analysis tokens: {response.usage.input_tokens + response.usage.output_tokens:,}")
@@ -388,10 +388,13 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
         return None
 
 
+@_lf_observe
 async def scout_page(url: str, storage_state: str = None, run_dir: str = None) -> dict:
     """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
+    if _langfuse_ctx and run_dir:
+        _langfuse_ctx.update_current_trace(session_id=run_dir, name="scout_page")
     cookie_jar = requests.cookies.RequestsCookieJar()
     if storage_state:
         try:
@@ -463,12 +466,11 @@ Respond with a JSON object with exactly these two fields:
     "reason": "<one sentence explaining the score>"
 }}"""
 
-    with _trace_session(run_dir):
-        response = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=256,
-            messages=[{"role": "user", "content": scout_prompt}]
-        )
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=256,
+        messages=[{"role": "user", "content": scout_prompt}]
+    )
 
     raw = response.content[0].text
     try:
