@@ -224,6 +224,17 @@ def build_pdf(run_folder, report, url_hint, output_path, persona_results=None, *
     print(f"✅ PDF saved: {output_path}")
 
 
+def _deduplicate_findings(page_summaries: list[dict]) -> None:
+    """Clear duplicate top_finding strings across page summaries (mutates in place)."""
+    seen: set[str] = set()
+    for ps in page_summaries:
+        tf = ps.get("top_finding", "")
+        if tf and tf in seen:
+            ps["top_finding"] = ""
+        elif tf:
+            seen.add(tf)
+
+
 # ── Multi-page PDF stitcher ───────────────────────────────────────────────────
 def stitch_reports(page_results, base_url, output_path, persona_results=None, *, theme="editorial"):
     """Render the full template over a merged view of every page's steps.
@@ -284,13 +295,7 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None, *,
                     url_counts[u] = url_counts.get(u, 0) + 1
     tech["top_offender_urls"] = [u for u, _ in sorted(url_counts.items(), key=lambda x: -x[1])[:5]]
 
-    seen_findings: set[str] = set()
-    for ps in page_summaries:
-        tf = ps.get("top_finding", "")
-        if tf and tf in seen_findings:
-            ps["top_finding"] = ""
-        elif tf:
-            seen_findings.add(tf)
+    _deduplicate_findings(page_summaries)
 
     print("🧠 Generating executive summary...")
     exec_findings, exec_recs, exec_tech_health, exec_overall = _exec_summary_content(

@@ -334,6 +334,25 @@ This section has more narrative than the others because the observability work w
 
 ---
 
+### Decision: Repo visibility — public
+
+**Context:** The repo was private during development. Before flipping it public, a pre-release checklist was run (2026-04-26) to confirm no secrets in history, no hardcoded credentials in the working tree, all dependency licenses are permissive, the README is externally readable, and the CI workflows are in working order.
+
+**Decision:** Conditions met as of 2026-04-26. Repo is ready to flip public.
+
+**Conditions verified:**
+- Git history content scan (`git log --all -S`) — all `sk-ant` hits are the placeholder string `ANTHROPIC_API_KEY=sk-ant-...` in docs; no real key values in history.
+- Working tree credential grep — nothing outside `.env.example`.
+- Dependency licenses — all MIT / Apache-2.0 / BSD: anthropic (MIT), playwright (Apache-2.0), beautifulsoup4 (MIT), python-dotenv (BSD-3-Clause), requests (Apache-2.0), openai (Apache-2.0), google-generativeai (Apache-2.0), Pillow (MIT-CMU), Jinja2 (BSD), json-repair (MIT), litellm (MIT), langfuse (MIT), opentelemetry-api/sdk/exporter (Apache-2.0).
+- README externally readable — accurate after Batch 49 cleanup.
+- CI workflows — `test.yml` fixed in Batch 52; `pytest.yml` added in Batch 51.
+
+**Tradeoffs accepted:** Once public, commit history is permanently visible. The history scan covered known key prefixes; a more exhaustive scan (e.g. trufflehog) would add confidence but was assessed as out of proportion given the project's dev history.
+
+**Outcome:** Dependency license audit cadence set to annual.
+
+---
+
 ## 8. Deferred — Considered, Not Built
 
 Naming what was decided against is as informative as naming what was built. Each item below was considered, sized, and deliberately left out — not forgotten.
