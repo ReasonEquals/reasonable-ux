@@ -1,0 +1,33 @@
+name: Tests
+
+on:
+  push:
+    paths:
+      - "**.py"
+      - "requirements.txt"
+      - ".github/workflows/pytest.yml"
+  pull_request:
+    paths:
+      - "**.py"
+      - "requirements.txt"
+      - ".github/workflows/pytest.yml"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        # No `playwright install chromium` — unit tests only need the
+        # playwright Python package for imports, not the browser binaries.
+        run: pip install -r requirements.txt -r requirements-test.txt
+
+      - name: Run unit tests
+        run: pytest tests/ -v
