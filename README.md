@@ -4,7 +4,7 @@ Give it a URL. It browses the site, evaluates the experience, and produces a PDF
 
 Built to explore what LLM-driven browser agents can actually do in practice — starting from a week-one project at [Juno.tax](https://juno.tax) and grown from there.
 
-**84% token reduction** via image stripping from conversation history — full details in Engineering Decisions below.
+Image history is stripped from the conversation after each step, keeping per-run token cost predictable. Full architectural details in [DECISIONS.md](DECISIONS.md).
 
 ---
 
@@ -78,14 +78,14 @@ python run.py --url https://yoursite.com --discover --scout --scout-threshold 3
 ```
 
 ### Advisor mode
-Wrap the executor with Claude Opus 4.6 as an `advisor` tool for higher-judgment decisions — e.g. deciding whether a friction point is substantive or cosmetic before it lands in the report. Anthropic-only. Enabling `--advisor` auto-switches the executor to Sonnet 4.6, since Opus 4.5 doesn't support the advisor tool format.
+Wrap the executor with Claude Opus 4.6 as an `advisor` tool for higher-judgment decisions — e.g. deciding whether a friction point is substantive or cosmetic before it lands in the report. Anthropic-only. Default executor (Sonnet 4.6) supports the advisor tool format directly.
 
 ```bash
 python run.py --url https://yoursite.com --advisor
 ```
 
 ### Multi-provider executor
-The agent runs on Claude (Opus 4.5) by default, but the `LLMAdapter` normalizes calls across Anthropic, OpenAI, and Google Gemini. Switch providers and models via flags:
+The agent runs on Claude (Sonnet 4.6) by default, but the `LLMAdapter` normalizes calls across Anthropic, OpenAI, and Google Gemini. Switch providers and models via flags:
 
 ```bash
 # OpenAI
@@ -108,7 +108,7 @@ All runs are indexed into `runs/index.json` and `runs/suite_index.json` after ea
 git clone https://github.com/qa-reasonably/reasonable-ux.git
 cd reasonable-ux
 python -m venv venv && source venv/bin/activate
-pip install anthropic playwright python-dotenv reportlab requests beautifulsoup4
+pip install -r requirements.txt
 playwright install chromium
 cp .env.example .env  # add your ANTHROPIC_API_KEY
 ```
@@ -181,7 +181,7 @@ python run.py --url https://yoursite.com --provider openai --model gpt-4o
 | `--scout` | off | Pre-screen pages with text-only Haiku before vision eval |
 | `--scout-threshold` | 3 | Scout interest threshold (1–5); pages below are skipped |
 | `--provider` | `anthropic` | Executor provider: `anthropic`, `openai`, or `google` |
-| `--model` | `claude-opus-4-5` | Model name for the executor |
+| `--model` | `claude-sonnet-4-6` | Model name for the executor |
 | `--advisor` | off | Enable Opus 4.6 advisor tool (Anthropic only; auto-switches executor to Sonnet 4.6) |
 | `--compact` | off | Render PDF using the compact template instead of the full deep-dive |
 
@@ -228,10 +228,10 @@ runs/
 
 ## Engineering decisions
 
-- **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Reduced average token usage from ~55,000 to ~8,800 per run (84%), measured by comparing `usage.input_tokens` across sample runs before and after the change was introduced; no regression detected in eval harness output quality.
+- **Image stripping** — only the current screenshot is sent to Claude each step. Prior screenshots are stripped from conversation history while preserving the text reasoning trail. Image history is the largest single cost driver in a multi-step run; stripping it keeps per-run cost predictable.
 - **JPEG tiers** — per-step screenshots at quality 40; full-page below-fold screenshots at quality 60 (tuned against text-heavy pages). PNG costs significantly more per image block.
 - **Full-page crop at 7500px** — the below-fold analysis takes a full-page screenshot and crops in place to 7500px tall before sending, staying under Claude Vision's 8000px cap.
-- **Model tiering** — executor on Opus 4.5 (default), personas on Sonnet 4.6, scout and exec summary on Haiku 4.5, optional advisor on Opus 4.6. Text-only scout doesn't need the same reasoning depth as vision-based step-by-step decisions.
+- **Model tiering** — executor on Sonnet 4.6 (default), scout and exec summary on Haiku 4.5, optional advisor on Opus 4.6. Text-only scout doesn't need the same reasoning depth as vision-based step-by-step decisions.
 - **URL anchor** — the target URL is injected into every step prompt. Prevents the agent from hallucinating a different domain and navigating away mid-evaluation.
 - **`nav:<Label>` for nav clicks** — the UX prompt instructs the agent to emit `"target": "nav:Pricing"` for main-navigation links instead of CSS selectors. Dispatch routes through Playwright's `get_by_role("link", name=…)` and bypasses the CSS selector sanitizer entirely. Replaces brittle guesses like `a[href*='#pricing']` that only worked on well-structured sites.
 - **Persona inference on step 1** — step 1 asks the agent to pick a plausible evaluator persona from the screenshot + URL + title and emit it as a top-level field. The persona is then threaded through steps 2–N and the below-fold pass. Avoids the mismatch of scoring a tax-software landing page through a generic "B2B SaaS evaluator" lens.
@@ -277,7 +277,7 @@ See [TERMS.md](TERMS.md) for third-party website compliance, data handling, and 
 
 | | |
 |---|---|
-| **AI** | Claude API — Opus 4.5 (executor, default), Sonnet 4.6 (personas), Haiku 4.5 (scout + exec summary), Opus 4.6 (optional advisor). OpenAI and Google also supported as executor via `--provider`. |
+| **AI** | Claude API — Sonnet 4.6 (executor, default), Haiku 4.5 (scout + exec summary), Opus 4.6 (optional advisor). OpenAI and Google also supported as executor via `--provider`. |
 | **Browser** | Playwright (Chromium) |
 | **Crawler** | requests + BeautifulSoup, Playwright fallback |
 | **PDF** | HTML + Jinja + Playwright |

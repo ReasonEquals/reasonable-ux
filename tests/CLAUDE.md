@@ -2,10 +2,11 @@
 
 ## This directory contains only real test files
 
-- **test_sanitize_extracted.py** — 28 assertions covering `_sanitize_selector` prompt-injection defense cases
-- **test_agent_core.py** — unit tests for pure functions in `agent_core.py` (added in Batch 43)
+- **test_sanitize_extracted.py** — 16 assertions covering `_sanitize_extracted.py` prompt-injection defense (`sanitize_persona`, `sanitize_field`, `sanitize_string_list`)
+- **test_agent_core.py** — 16 assertions covering pure helpers `_sanitize_selector` and `_infer_goal_from_url` (Batch 48)
+- **test_evals.py** — 18 assertions covering `_NAV_DRIFT_RE` and `_nav_drift_check` from `evals/run_evals.py` (Batch 48)
 
-The agent loop lives at `agent_core.py` (repo root), not here.
+Scope rule: pure functions only. The agent loop itself is deliberately untested — see DECISIONS.md §8 for why. The agent loop lives at `agent_core.py` (repo root), not here.
 
 ## Key invariants (agent_core.py)
 
