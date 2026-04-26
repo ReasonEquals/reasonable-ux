@@ -7,7 +7,6 @@ on:
         description: "Target URL to test"
         required: true
         type: string
-  pull_request:
 
 jobs:
   test:
@@ -20,19 +19,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14"
 
       - name: Install dependencies
         run: |
-          pip install anthropic playwright python-dotenv
+          pip install -r requirements.txt
           playwright install chromium
           playwright install-deps chromium
 
       - name: Run QA suite
-        if: github.event_name == 'workflow_dispatch'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python suite_runner.py --url "${{ inputs.url }}" --steps 8
+        run: python run.py --url "${{ inputs.url }}" --steps 8
 
       - name: Upload reports
         if: always()
