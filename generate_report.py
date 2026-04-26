@@ -10,6 +10,8 @@ from urllib.parse import urlparse
 import jinja2
 from playwright.async_api import async_playwright
 
+from _sanitize_extracted import sanitize_field
+
 
 # ── Data helpers ──────────────────────────────────────────────────────────────
 def find_latest_ux_run(runs_dir="runs"):
@@ -251,19 +253,19 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None, *,
     page_summaries = []
     for pr in page_results:
         overall_page, _ = avg_scores(pr["report"])
-        top_finding = next(
+        top_finding = sanitize_field(next(
             (fp for e in pr["report"] for fp in e.get("friction_points", []) if fp), "",
-        )
+        ))
         if not top_finding:
-            top_finding = next(
+            top_finding = sanitize_field(next(
                 (e.get("first_impression", "") for e in pr["report"] if e.get("first_impression")),
                 "",
-            )
-        verdict = next(
+            ))
+        verdict = sanitize_field(next(
             (e.get("verdict", "") for e in reversed(pr["report"])
              if e.get("action") == "done" and e.get("verdict")),
             next((e.get("verdict", "") for e in reversed(pr["report"]) if e.get("verdict")), ""),
-        )
+        ))
         page_summaries.append({
             "path":        pr["path"],
             "url":         pr["url"],

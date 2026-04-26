@@ -816,11 +816,11 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         _pending_requests = {}
 
         def _on_request(request):
-            _pending_requests[request.url] = asyncio.get_event_loop().time()
+            _pending_requests[request.url] = asyncio.get_running_loop().time()
 
         def _on_response(response):
             start = _pending_requests.pop(response.url, None)
-            duration_ms = round((asyncio.get_event_loop().time() - start) * 1000) if start else None
+            duration_ms = round((asyncio.get_running_loop().time() - start) * 1000) if start else None
             if response.status >= 400 or (duration_ms is not None and duration_ms > 2000):
                 network_events.append({
                     "url": response.url,

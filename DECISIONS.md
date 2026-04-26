@@ -258,7 +258,7 @@ This section has more narrative than the others because the observability work w
 
 **Tradeoffs accepted:** Two output directories to maintain. `eval_runs/` requires its own cleanup policy.
 
-**Outcome:** Eval manifests are diffable. The same labels SHA means two manifests are directly comparable for regression detection. Audit history in `runs/` stays clean and readable.
+**Outcome:** Eval manifests are diffable. The same labels SHA means two manifests are directly comparable for regression detection. Audit history in `runs/` stays clean and readable. See [`eval_results_sample.md`](eval_results_sample.md) for a committed sample run.
 
 ---
 

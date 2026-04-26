@@ -2,7 +2,7 @@
 
 Give it a URL. It browses the site, evaluates the experience, and produces a PDF report clean enough to hand to a founder.
 
-Built to explore what LLM-driven browser agents can actually do in practice — starting from a week-one project at [Juno.tax](https://juno.tax) and grown from there.
+Built to explore what LLM-driven browser agents can actually do in practice.
 
 Image history is stripped from the conversation after each step, keeping per-run token cost predictable. Full architectural details in [DECISIONS.md](DECISIONS.md).
 
