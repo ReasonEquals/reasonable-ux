@@ -30,9 +30,6 @@ vault_storage_artifacts/
 # claude code subagent worktrees (regenerable, per-machine)
 .claude/worktrees/
 
-# generated build artifacts (re-render with `python render_decisions.py`)
-DECISIONS.pdf
-
 # optional but common
 .pytest_cache/
 .DS_Store
