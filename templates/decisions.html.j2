@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles/page.css">
+  <link rel="stylesheet" href="styles/editorial.css">
+  <style>
+    /* ── Page setup ───────────────────────────────────────── */
+    @page { size: Letter portrait; margin: 0; }
+    body  { background: var(--paper); margin: 0; }
+
+    /* ── Cover ────────────────────────────────────────────── */
+    .d-cover {
+      width: 8.5in; height: 11in;
+      padding: 1.1in 1.1in 0.9in;
+      background: var(--paper-elev);
+      box-sizing: border-box;
+      page-break-after: always; break-after: page;
+      display: flex; flex-direction: column;
+    }
+    .cover-eyebrow {
+      font-family: var(--font-sans);
+      font-size: 7.5pt; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin: 0;
+    }
+    .cover-push { flex: 1; }
+    .cover-title {
+      font-family: var(--font-display);
+      font-size: 60pt; font-weight: 500;
+      line-height: 0.96; letter-spacing: -0.03em;
+      color: var(--ink); margin: 0 0 1.25rem;
+    }
+    .cover-rule {
+      border: none; border-top: 2.5px solid var(--ink);
+      margin: 0 0 1.25rem; width: 2.75in;
+    }
+    .cover-sub {
+      font-family: var(--font-body);
+      font-size: 12pt; font-style: italic;
+      color: var(--ink-soft); line-height: 1.5;
+      max-width: 40ch; margin: 0 0 0.5rem;
+    }
+    .cover-meta {
+      font-family: var(--font-sans);
+      font-size: 8pt; color: var(--muted);
+      letter-spacing: 0.06em; margin: 0;
+    }
+
+    /* ── Content ──────────────────────────────────────────── */
+    .d-content { padding: 0.75in 0.9in 0.65in; }
+
+    .doc-intro {
+      font-family: var(--font-body);
+      font-size: 11pt; font-style: italic;
+      color: var(--ink-soft); line-height: 1.62;
+      max-width: 58ch;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 1.5rem; margin: 0 0 2rem;
+    }
+
+    /* ── Section headers ──────────────────────────────────── */
+    .section-hd {
+      display: flex; align-items: baseline; gap: 0.8rem;
+      border-top: 2px solid var(--ink);
+      padding-top: 1rem; margin: 2.5rem 0 0.4rem;
+    }
+    .section-num {
+      font-family: var(--font-sans);
+      font-size: 7pt; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--accent); flex-shrink: 0; padding-top: 4px;
+    }
+    .section-name {
+      font-family: var(--font-display);
+      font-size: 20pt; font-weight: 500;
+      line-height: 1.1; color: var(--ink); margin: 0;
+    }
+    .section-intro {
+      font-family: var(--font-body);
+      font-size: 9.5pt; font-style: italic;
+      color: var(--ink-soft); line-height: 1.5;
+      max-width: 60ch; margin: 0.25rem 0 0.75rem;
+    }
+
+    /* ── Decision cards ───────────────────────────────────── */
+    .decision {
+      border-left: 3px solid var(--accent);
+      background: var(--paper);
+      padding: 0.55rem 0.85rem 0.65rem;
+      margin: 0.85rem 0;
+      page-break-inside: avoid; break-inside: avoid;
+    }
+    .decision-title {
+      font-family: var(--font-display);
+      font-size: 11.5pt; font-weight: 500;
+      color: var(--ink); line-height: 1.2;
+      margin: 0 0 0.55rem;
+    }
+    .fields { display: flex; flex-direction: column; gap: 0.3rem; }
+    .field {
+      display: grid;
+      grid-template-columns: 15ch 1fr;
+      gap: 0.6rem; align-items: baseline;
+    }
+    .fl {
+      font-family: var(--font-sans);
+      font-size: 6.5pt; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent-soft); padding-top: 3px; line-height: 1.55;
+    }
+    .fb {
+      font-family: var(--font-body);
+      font-size: 9pt; line-height: 1.52;
+      color: var(--ink-soft);
+    }
+    .fb code, .fb .code-ref {
+      font-family: var(--font-mono);
+      font-size: 8pt;
+      background: var(--rule-soft);
+      padding: 1px 4px; border-radius: 2px;
+      color: var(--accent-soft);
+    }
+    .fb strong { font-weight: 600; color: var(--ink); }
+    .fb em { font-style: italic; }
+  </style>
+</head>
+<body class="ed-body">
+
+<!-- ── Cover ── -->
+<div class="d-cover">
+  <p class="cover-eyebrow">reasonable-ux &nbsp;·&nbsp; build log</p>
+  <div class="cover-push"></div>
+  <h1 class="cover-title">Architecture<br>Decisions</h1>
+  <hr class="cover-rule">
+  <p class="cover-sub">What was built, why it was built that way, what broke, and what was learned — 117 commits.</p>
+  <div class="cover-push"></div>
+  <p class="cover-meta">Ryan Walsh &nbsp;·&nbsp; April 2026</p>
+</div>
+
+<!-- ── Content ── -->
+<div class="d-content">
+  <p class="doc-intro">{{ intro | safe }}</p>
+
+  {% for section in sections %}
+  <div class="section-hd">
+    <span class="section-num">{{ section.num }}</span>
+    <h2 class="section-name">{{ section.title }}</h2>
+  </div>
+  {% if section.intro %}
+  <p class="section-intro">{{ section.intro | safe }}</p>
+  {% endif %}
+  {% for decision in section.decisions %}
+  <div class="decision">
+    <h3 class="decision-title">{{ decision.title }}</h3>
+    {% if decision.fields %}
+    <div class="fields">
+      {% for field in decision.fields %}
+      <div class="field">
+        <span class="fl">{{ field.label }}</span>
+        <div class="fb">{{ field.content | safe }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endfor %}
+</div>
+
+</body>
+</html>
