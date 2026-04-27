@@ -61,6 +61,8 @@ Pass credentials for sites that require login before the relevant content is acc
 python run.py --url https://yoursite.com --email you@example.com --password yourpassword
 ```
 
+> **Note:** `--password` is visible in shell history and process listings. For CI or shared environments, pass credentials via environment variables or a secrets manager instead of the CLI flag.
+
 For `--pages` runs, authentication happens once up front and the session state is reused across all pages.
 
 ### Token budget
@@ -105,7 +107,7 @@ All runs are indexed into `runs/index.json` and `runs/suite_index.json` after ea
 ## Quick start
 
 ```bash
-git clone https://github.com/qa-reasonably/reasonable-ux.git
+git clone https://github.com/ReasonEquals/reasonable-ux.git
 cd reasonable-ux
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt

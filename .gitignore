@@ -31,6 +31,12 @@ vault_storage_artifacts/
 # claude code subagent worktrees (regenerable, per-machine)
 .claude/worktrees/
 
+# playwright auth state (written by --email/--password flow, never committed)
+storage_state.json
+cookies.json
+*.auth
+secrets/
+
 # optional but common
 .pytest_cache/
 .DS_Store
