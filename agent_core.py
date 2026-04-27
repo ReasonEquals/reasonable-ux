@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 import anthropic
 import litellm
 import requests
-from anthropic import Anthropic
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from PIL import Image
@@ -21,10 +20,13 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-from _sanitize_extracted import sanitize_persona, sanitize_string_list  # noqa: E402
+from _sanitize_extracted import (  # noqa: E402
+    sanitize_field,
+    sanitize_persona,
+    sanitize_string_list,
+)
 
 load_dotenv(override=True)
-client = Anthropic()
 
 _LANGFUSE_TRACING_ENABLED = bool(os.environ.get("LANGFUSE_PUBLIC_KEY"))
 _langfuse_observe = None
@@ -406,9 +408,13 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
     with open(fp_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
 
-    kwargs = dict(
-        model="claude-sonnet-4-6",
-        max_tokens=2048,
+    tools = (
+        [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+        if advisor
+        else None
+    )
+    adapter = LLMAdapter("anthropic")
+    raw, in_tok, out_tok, _ = await adapter.complete(
         messages=[{
             "role": "user",
             "content": [
@@ -418,23 +424,19 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
                 },
                 {"type": "text", "text": _build_below_fold_prompt(persona)}
             ]
-        }]
+        }],
+        model="claude-sonnet-4-6",
+        max_tokens=2048,
+        tools=tools,
+        metadata={"session_id": run_dir} if run_dir else None,
     )
-    if advisor:
-        kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
-        kwargs["betas"] = ["advisor-tool-2026-03-01"]
-        response = client.beta.messages.create(**kwargs)
-    else:
-        response = client.messages.create(**kwargs)
-
-    raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "")
-    print(f"💰 Below-fold analysis tokens: {response.usage.input_tokens + response.usage.output_tokens:,}")
+    print(f"💰 Below-fold analysis tokens: {in_tok + out_tok:,}")
     _lf_update_generation(
         input=_build_below_fold_prompt(persona),
         output=raw,
-        model=kwargs["model"],
-        input_tokens=response.usage.input_tokens,
-        output_tokens=response.usage.output_tokens,
+        model="claude-sonnet-4-6",
+        input_tokens=in_tok,
+        output_tokens=out_tok,
     )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
@@ -495,7 +497,7 @@ async def scout_page(url: str, storage_state: str = None, run_dir: str = None) -
         cta_texts = [b.get_text(strip=True) for b in soup.find_all("button") if b.get_text(strip=True)][:5]
     cta_texts = cta_texts[:5]
 
-    extracted_text = (
+    extracted_text = sanitize_field(
         f"Title: {title}\n"
         f"Meta description: {meta_desc}\n"
         f"H1: {h1}\n"
@@ -521,19 +523,20 @@ Respond with a JSON object with exactly these two fields:
     "reason": "<one sentence explaining the score>"
 }}"""
 
-    response = client.messages.create(
+    adapter = LLMAdapter("anthropic")
+    raw, in_tok, out_tok, _ = await adapter.complete(
+        messages=[{"role": "user", "content": scout_prompt}],
         model="claude-sonnet-4-6",
         max_tokens=256,
-        messages=[{"role": "user", "content": scout_prompt}]
+        metadata={"session_id": run_dir} if run_dir else None,
     )
 
-    raw = response.content[0].text
     _lf_update_generation(
         input=scout_prompt,
         output=raw,
         model="claude-sonnet-4-6",
-        input_tokens=response.usage.input_tokens,
-        output_tokens=response.usage.output_tokens,
+        input_tokens=in_tok,
+        output_tokens=out_tok,
     )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
@@ -542,8 +545,8 @@ Respond with a JSON object with exactly these two fields:
             "interest_score": max(1, min(5, int(result.get("interest_score", 3)))),
             "reason": result.get("reason", ""),
             "extracted_text": extracted_text,
-            "input_tokens": response.usage.input_tokens,
-            "output_tokens": response.usage.output_tokens,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
         }
     except Exception as e:
         print(f"⚠️  Could not parse scout response: {e}\nRaw: {raw}")
@@ -551,8 +554,8 @@ Respond with a JSON object with exactly these two fields:
             "interest_score": 3,
             "reason": "Could not parse scout response, defaulting to threshold",
             "extracted_text": extracted_text,
-            "input_tokens": response.usage.input_tokens,
-            "output_tokens": response.usage.output_tokens,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
         }
 
 
@@ -1057,7 +1060,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
         if persona:
             from persona_library import save_inferred
-            save_inferred(url, persona, run_dir)
+            await save_inferred(url, persona, run_dir)
 
         # Build HTML report
         html = _build_html_report(report, goal, run_id, run_label, below_fold=below_fold)
