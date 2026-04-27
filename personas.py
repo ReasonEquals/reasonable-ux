@@ -1,8 +1,9 @@
 import json
 
-from anthropic import Anthropic
 from dotenv import load_dotenv
 
+from _sanitize_extracted import sanitize_field
+from agent_core import LLMAdapter
 from report_data import DEFAULT_PERSONAS
 
 _ACCENT_COLORS = ["#7b2cbf", "#2c7bbf", "#bf2c7b"]
@@ -69,7 +70,8 @@ def _normalize_personas(raw: list) -> list:
 async def _call_haiku(url: str, summary: str) -> list:
     """Single Haiku call that returns a JSON array of 3 structured personas."""
     load_dotenv()
-    client = Anthropic()
+    url = sanitize_field(url)
+    summary = sanitize_field(summary)
 
     system_prompt = (
         "You generate realistic structured user personas for UX research. "
@@ -107,14 +109,16 @@ roles; a dev tool gets engineer personas; a design tool gets design roles; etc.
 
 Return ONLY the JSON array of 3 objects. Nothing else."""
 
-    response = client.messages.create(
+    adapter = LLMAdapter("anthropic")
+    raw, _, _, _ = await adapter.complete(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
         model="claude-haiku-4-5-20251001",
         max_tokens=2000,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
     )
-    raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
-    clean = raw.replace("```json", "").replace("```", "").strip()
+    clean = raw.strip().replace("```json", "").replace("```", "").strip()
     parsed = json.loads(clean)
     if not isinstance(parsed, list):
         raise ValueError(f"Expected JSON array, got {type(parsed).__name__}")

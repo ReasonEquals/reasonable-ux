@@ -64,7 +64,8 @@ def _exec_summary_content(page_summaries, tech_summary=None):
     import anthropic
 
     pages_text = "\n".join(
-        f"- {ps['path']}: score {ps['overall']:.1f}/5, verdict: {ps.get('verdict') or ps['top_finding']}"
+        f"- {sanitize_field(ps['path'])}: score {ps['overall']:.1f}/5, verdict: "
+        f"{sanitize_field(ps.get('verdict') or ps['top_finding'])}"
         for ps in page_summaries
     )
     tech_block = ""

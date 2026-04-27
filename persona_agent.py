@@ -1,10 +1,11 @@
 import json
 
-from anthropic import Anthropic
 from dotenv import load_dotenv
 
+from _sanitize_extracted import sanitize_field, sanitize_string_list
+from agent_core import LLMAdapter
+
 load_dotenv()
-client = Anthropic()
 
 
 async def evaluate(persona: dict, report: list, url: str, advisor: bool = False) -> dict:
@@ -17,25 +18,33 @@ async def evaluate(persona: dict, report: list, url: str, advisor: bool = False)
     On parse failure returns the persona with a minimal error payload rather
     than crashing the run.
     """
-    frustrations = persona.get("frustrations") or []
-    success = persona.get("success") or []
+    safe_url = sanitize_field(url)
+    safe_name = sanitize_field(persona.get("name", ""))
+    safe_role = sanitize_field(persona.get("role", ""))
+    safe_company = sanitize_field(persona.get("company", ""))
+    safe_archetype = sanitize_field(persona.get("archetype", ""))
+    safe_goal = sanitize_field(persona.get("goal", ""))
+    safe_jtbd = sanitize_field(persona.get("jtbd", ""))
+    safe_context = sanitize_field(persona.get("context", ""))
+    frustrations = sanitize_string_list(persona.get("frustrations") or [])
+    success = sanitize_string_list(persona.get("success") or [])
 
     prompt = f"""You are a UX expert evaluating a website through the lens of a specific user persona.
 
-URL: {url}
+URL: {safe_url}
 
 Persona:
-Name: {persona.get("name", "")}
-Role: {persona.get("role", "")}
-Company / context: {persona.get("company", "")}
-Archetype: {persona.get("archetype", "")}
-Goal: {persona.get("goal", "")}
-Jobs-to-be-done: {persona.get("jtbd", "")}
+Name: {safe_name}
+Role: {safe_role}
+Company / context: {safe_company}
+Archetype: {safe_archetype}
+Goal: {safe_goal}
+Jobs-to-be-done: {safe_jtbd}
 Frustrations:
 {json.dumps(frustrations, indent=2)}
 Success looks like:
 {json.dumps(success, indent=2)}
-Context: {persona.get("context", "")}
+Context: {safe_context}
 
 UX Evaluation Report (from an automated agent):
 {json.dumps(report, indent=2)}
@@ -52,19 +61,19 @@ Return ONLY a JSON object with exactly these fields:
 Return nothing but the JSON object. No markdown, no explanation."""
 
     try:
-        kwargs = dict(
+        tools = (
+            [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
+            if advisor
+            else None
+        )
+        adapter = LLMAdapter("anthropic")
+        raw, _, _, _ = await adapter.complete(
+            messages=[{"role": "user", "content": prompt}],
             model="claude-sonnet-4-6",
             max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}],
+            tools=tools,
         )
-        if advisor:
-            kwargs["tools"] = [{"type": "advisor_20260301", "name": "advisor", "model": "claude-opus-4-6", "max_uses": 1}]
-            kwargs["betas"] = ["advisor-tool-2026-03-01"]
-            response = client.beta.messages.create(**kwargs)
-        else:
-            response = client.messages.create(**kwargs)
-        raw = next((b.text for b in reversed(response.content) if hasattr(b, "text")), "").strip()
-        clean = raw.replace("```json", "").replace("```", "").strip()
+        clean = raw.strip().replace("```json", "").replace("```", "").strip()
         parsed = json.loads(clean)
         return {
             **persona,
