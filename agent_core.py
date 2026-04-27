@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import html
 import json
 import os
 import sys
@@ -352,7 +353,7 @@ def _build_below_fold_html(below_fold):
         return ""
     findings = below_fold.get("below_fold_findings", [])
     adjustments = below_fold.get("below_fold_score_adjustments", {})
-    findings_html = "".join(f'<li style="margin-bottom:6px">{f}</li>' for f in findings)
+    findings_html = "".join(f'<li style="margin-bottom:6px">{html.escape(f)}</li>' for f in findings)
     adj_rows = ""
     dim_labels = {"cta_clarity": "CTA Clarity", "copy_quality": "Copy Quality", "flow_smoothness": "Flow Smoothness"}
     for dim, val in adjustments.items():
@@ -362,9 +363,9 @@ def _build_below_fold_html(below_fold):
         color = "#2ecc71" if isinstance(score, (int, float)) and score >= 4 else "#f39c12" if isinstance(score, (int, float)) and score >= 3 else "#e74c3c"
         adj_rows += f"""
         <tr>
-            <td style="font-weight:bold">{label}</td>
-            <td style="color:{color};font-weight:bold">{score}/5</td>
-            <td>{reason}</td>
+            <td style="font-weight:bold">{html.escape(label)}</td>
+            <td style="color:{color};font-weight:bold">{html.escape(str(score))}/5</td>
+            <td>{html.escape(reason)}</td>
         </tr>"""
     adj_section = f"""
     <h3 style="color:#00d4ff;font-size:15px;margin:16px 0 8px">Score Adjustments</h3>
@@ -612,7 +613,7 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
         return f'<div class="scard"><div class="val {cls}">{v}/5</div><div class="lbl">{label}</div></div>'
 
     persona_html = (
-        f'<div class="persona-block"><div class="persona-label">Inferred Persona</div><div>{persona}</div></div>'
+        f'<div class="persona-block"><div class="persona-label">Inferred Persona</div><div>{html.escape(persona)}</div></div>'
         if persona else ""
     )
     summary_html = (
@@ -632,14 +633,14 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
         <tr>
             <td>{entry['step']}</td>
             <td style="color:#888;font-size:11px">scout skip</td>
-            <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{entry['observation']}</td>
+            <td style="white-space:pre-wrap;font-size:12px;color:#aaa">{html.escape(entry['observation'])}</td>
             <td style="color:#888">scout_skip</td>
             <td>—</td><td>—</td><td>—</td>
             <td>—</td>
             <td>—</td>
             <td>—</td>
             <td style="color:#888;font-weight:bold">SKIP</td>
-            <td>{entry.get('verdict','')}</td>
+            <td>{html.escape(entry.get('verdict',''))}</td>
         </tr>"""
             continue
 
@@ -652,12 +653,12 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
                 return "—"
             s = obj.get("score", 0)
             cls = f"s{min(max(int(s), 1), 5)}"
-            return f'<span class="score {cls}">{s}/5</span><br><span style="color:#aaa;font-size:11px">{obj.get("note","")}</span>'
+            return f'<span class="score {cls}">{s}/5</span><br><span style="color:#aaa;font-size:11px">{html.escape(obj.get("note",""))}</span>'
 
         friction = entry.get("friction_points", [])
-        friction_html = "".join(f'<div class="friction">• {f}</div>' for f in friction) if friction else "—"
+        friction_html = "".join(f'<div class="friction">• {html.escape(f)}</div>' for f in friction) if friction else "—"
         recs = entry.get("recommendations", [])
-        recs_html = "".join(f'<div style="color:#00d4ff;font-size:11px">→ {r}</div>' for r in recs) if recs else ""
+        recs_html = "".join(f'<div style="color:#00d4ff;font-size:11px">→ {html.escape(r)}</div>' for r in recs) if recs else ""
 
         conf = entry.get("confidence", "")
         conf_color = "#2ecc71" if conf == "high" else "#f39c12" if conf == "medium" else "#e74c3c" if conf == "low" else "#888"
@@ -666,16 +667,16 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
         <tr>
             <td>{entry['step']}</td>
             <td><img class="step-shot" src="screenshots/step_{entry['step']}.png" width="200"/></td>
-            <td>{entry['observation']}</td>
-            <td>{entry['action']}</td>
+            <td>{html.escape(entry['observation'])}</td>
+            <td>{html.escape(entry['action'])}</td>
             <td>{score_cell('cta_clarity')}</td>
             <td>{score_cell('copy_quality')}</td>
             <td>{score_cell('flow_smoothness')}</td>
-            <td>{entry.get('first_impression', '—')}</td>
+            <td>{html.escape(entry.get('first_impression', '—'))}</td>
             <td>{friction_html}{recs_html}</td>
             <td style="color:{conf_color};font-weight:bold">{conf.upper() if conf else "—"}</td>
             <td style="color:{pf_color};font-weight:bold">{pf}</td>
-            <td>{entry.get('verdict','')}</td>
+            <td>{html.escape(entry.get('verdict',''))}</td>
         </tr>"""
 
     return f"""<!DOCTYPE html>
@@ -687,7 +688,7 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
 </head>
 <body>
     <h1>🎨 UX Evaluation Report</h1>
-    <div class="goal"><strong>Goal:</strong> {goal}</div>
+    <div class="goal"><strong>Goal:</strong> {html.escape(goal)}</div>
     <p class="meta"><strong>Run ID:</strong> {run_id}</p>
     <p class="status" style="color:{status_color}">Final Status: {final_status}</p>
     {persona_html}
