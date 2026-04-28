@@ -42,6 +42,16 @@ for run_folder in sorted(runs_dir.iterdir()):
             except (OSError, json.JSONDecodeError, KeyError, IndexError):
                 continue
 
+        cost_path = run_folder / "cost_summary.json"
+        total_tokens = None
+        if cost_path.exists():
+            try:
+                with open(cost_path, "r", encoding="utf-8") as f:
+                    cost_data = json.load(f)
+                total_tokens = cost_data.get("total_tokens")
+            except (OSError, json.JSONDecodeError):
+                pass
+
         parts = folder_name.split("_")
         suite_id = "_".join(parts[1:3]) if len(parts) >= 3 else folder_name
 
@@ -53,6 +63,7 @@ for run_folder in sorted(runs_dir.iterdir()):
             "errors": errors,
             "suite_status": "pass" if failed == 0 and errors == 0 else "fail",
             "html_path": str(suite_report_path).replace("\\", "/"),
+            "total_tokens": total_tokens,
         })
         continue
 
@@ -71,6 +82,17 @@ for run_folder in sorted(runs_dir.iterdir()):
             continue
 
         final_step = report[-1]
+
+        cost_path = run_folder / "cost_summary.json"
+        total_tokens = None
+        if cost_path.exists():
+            try:
+                with open(cost_path, "r", encoding="utf-8") as f:
+                    cost_data = json.load(f)
+                total_tokens = cost_data.get("total_tokens")
+            except (OSError, json.JSONDecodeError):
+                pass
+
         parts = folder_name.split("_")
         run_id = "_".join(parts[:2])
         test_name = "_".join(parts[2:]) if len(parts) > 2 else folder_name
@@ -82,7 +104,8 @@ for run_folder in sorted(runs_dir.iterdir()):
             "final_status": final_step.get("pass_fail", "unknown"),
             "verdict": final_step.get("verdict", ""),
             "html_path": str(html_path).replace("\\", "/"),
-            "json_path": str(report_path).replace("\\", "/")
+            "json_path": str(report_path).replace("\\", "/"),
+            "total_tokens": total_tokens,
         })
 
     except Exception as e:
