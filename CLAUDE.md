@@ -150,7 +150,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **Product framing questions flagged in batch 15's audit.** Partially resolved (Batch 46): LICENSE ✓ MIT, TERMS.md ✓ (third-party TOS, data retention, API usage, acceptable use), `.claude/settings.local.json` pruned ✓. Still open (non-code decisions): repo public/private, dependency license cadence audit.
 - **Dedup-pass unit test.** Resolved (Batch 53): `_deduplicate_findings` helper extracted to `generate_report.py:230`; `tests/test_dedup_findings.py` added with full coverage.
 - **PDF page section breaks.** Resolved (Batch 59): `stitch_reports()` stamps `isGroupStart`/`groupUrl` on the first step of each URL group; `templates/full.html.j2` renders a centered `.page` divider before those steps.
-- **Drift evaluation.** `cost_log.csv` and per-run `cost_summary.json` exist as data sources; no drift detection feature designed yet.
+- **Drift evaluation.** Resolved (Batch 61): `drift_report.py` reads `cost_log.csv`, groups by URL, flags runs that exceed ±20% of first-run baseline. Inline check in `run.py` prints a warning after each `_log_cost()` call. CLI: `python drift_report.py`. Threshold (`DRIFT_THRESHOLD`) is an uncalibrated placeholder; per-step normalization deferred until `step_count` is tracked in cost_log.csv.
 - **API key rotation.** Pre-public gate flagged in batch-57 session summary — still open.
 - **`langfuse_cost_usd` backfill gap.** Resolved as unresolvable: the 3 pre-Batch-58 portfolio suite runs (Stripe, Linear, Vercel) have no matching Langfuse traces — they predate the `suite_session_id` wiring. Backfill was attempted (2026-04-28) and confirmed empty. All runs from Batch 58 onward auto-populate `langfuse_cost_usd` at run time.
 
