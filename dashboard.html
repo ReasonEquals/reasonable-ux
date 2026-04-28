@@ -105,11 +105,12 @@
                     <th>Steps</th>
                     <th>Status</th>
                     <th>Verdict</th>
+                    <th>Tokens</th>
                     <th>Report</th>
                 </tr>
             </thead>
             <tbody id="runs-table">
-                <tr><td colspan="8" class="empty">Loading...</td></tr>
+                <tr><td colspan="9" class="empty">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -130,11 +131,12 @@
                     <th>Time</th>
                     <th>Tests</th>
                     <th>Status</th>
+                    <th>Tokens</th>
                     <th>Report</th>
                 </tr>
             </thead>
             <tbody id="suites-table">
-                <tr><td colspan="6" class="empty">Loading...</td></tr>
+                <tr><td colspan="7" class="empty">Loading...</td></tr>
             </tbody>
         </table>
     </div>
@@ -171,7 +173,7 @@
                 if (!res.ok) throw new Error();
                 index = await res.json();
             } catch {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty">No runs found. Run build_index.py first.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="empty">No runs found. Run build_index.py first.</td></tr>`;
                 return;
             }
 
@@ -199,11 +201,12 @@
                     <td>${r.steps || "—"}</td>
                     <td><span class="badge ${status}">${status}</span></td>
                     <td style="max-width:300px">${r.verdict || "—"}</td>
+                    <td>${r.total_tokens ? r.total_tokens.toLocaleString() : "—"}</td>
                     <td><a href="${r.html_path}" target="_blank">View →</a></td>
                 </tr>`;
             }
 
-            tbody.innerHTML = rows || `<tr><td colspan="8" class="empty">No runs indexed yet.</td></tr>`;
+            tbody.innerHTML = rows || `<tr><td colspan="9" class="empty">No runs indexed yet.</td></tr>`;
             document.getElementById("runs-total").textContent = index.length;
             document.getElementById("runs-pass").textContent = passes;
             document.getElementById("runs-fail").textContent = fails;
@@ -222,7 +225,7 @@
                 if (!res.ok) throw new Error();
                 index = await res.json();
             } catch {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty">No suites found. Run build_index.py first.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty">No suites found. Run build_index.py first.</td></tr>`;
                 return;
             }
 
@@ -247,11 +250,12 @@
                     <td>${formattedTime}</td>
                     <td>${s.passed}/${s.total} passed</td>
                     <td><span class="badge ${status}">${status}</span></td>
+                    <td>${s.total_tokens ? s.total_tokens.toLocaleString() : "—"}</td>
                     <td><a href="${s.html_path}" target="_blank">View →</a></td>
                 </tr>`;
             }
 
-            tbody.innerHTML = rows || `<tr><td colspan="6" class="empty">No suites indexed yet.</td></tr>`;
+            tbody.innerHTML = rows || `<tr><td colspan="7" class="empty">No suites indexed yet.</td></tr>`;
             document.getElementById("suites-total").textContent = index.length;
             document.getElementById("suites-pass").textContent = passes;
             document.getElementById("suites-fail").textContent = fails;
