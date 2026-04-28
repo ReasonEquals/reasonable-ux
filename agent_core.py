@@ -56,7 +56,7 @@ def _lf_observe(f):
     return f
 
 
-def _lf_update_generation(*, input=None, output=None, model=None, input_tokens=None, output_tokens=None):
+def _lf_update_generation(*, input=None, output=None, model=None, input_tokens=None, output_tokens=None, cost_usd=None):
     """Manually populate the current Langfuse generation observation with safe text fields.
 
     No-op when tracing is disabled or no observation is active. Use after an LLM call
@@ -70,14 +70,30 @@ def _lf_update_generation(*, input=None, output=None, model=None, input_tokens=N
         usage = None
         if input_tokens is not None or output_tokens is not None:
             usage = {"input": input_tokens or 0, "output": output_tokens or 0}
+        cost_details = {"total": cost_usd} if cost_usd is not None else None
         get_client().update_current_generation(
             input=input,
             output=output,
             model=model,
             usage_details=usage,
+            cost_details=cost_details,
         )
     except Exception as e:  # noqa: BLE001
         print(f"⚠️ Langfuse update_current_generation failed: {e}", file=sys.stderr)
+
+
+def _calc_cost_usd(model: str, input_tokens: int | None, output_tokens: int | None) -> float | None:
+    if input_tokens is None or output_tokens is None:
+        return None
+    try:
+        inp, out = litellm.cost_per_token(
+            model=model,
+            prompt_tokens=input_tokens,
+            completion_tokens=output_tokens,
+        )
+        return inp + out
+    except Exception:  # noqa: BLE001
+        return None
 
 
 async def _flush_langfuse_spans():
@@ -191,6 +207,7 @@ class LLMAdapter:
             model=model,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
+            cost_usd=_calc_cost_usd(model, response.usage.input_tokens, response.usage.output_tokens),
         )
         return (text, response.usage.input_tokens, response.usage.output_tokens, response.content)
 
@@ -438,6 +455,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
         model="claude-sonnet-4-6",
         input_tokens=in_tok,
         output_tokens=out_tok,
+        cost_usd=_calc_cost_usd("claude-sonnet-4-6", in_tok, out_tok),
     )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
@@ -538,6 +556,7 @@ Respond with a JSON object with exactly these two fields:
         model="claude-sonnet-4-6",
         input_tokens=in_tok,
         output_tokens=out_tok,
+        cost_usd=_calc_cost_usd("claude-sonnet-4-6", in_tok, out_tok),
     )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()
