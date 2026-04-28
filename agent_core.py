@@ -714,7 +714,7 @@ def _build_html_report(report, goal, run_id, run_label, below_fold=None):
 </html>"""
 
 
-async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", storage_state=None, advisor: bool = False):
+async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=None, email=None, password=None, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", storage_state=None, advisor: bool = False, session_id: str = None):
     if not url:
         raise ValueError("run() requires a url — no default fallback.")
     if advisor and provider == "anthropic" and model == "claude-opus-4-5":
@@ -722,7 +722,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         print("🧠 Advisor mode: switching executor to claude-sonnet-4-6 (Opus 4.5 does not support advisor tool)")
 
     # Compute run_dir up front so every LLM call (scout, per-step, below-fold, advisor)
-    # shares one Langfuse session_id = run_dir.
+    # shares one Langfuse session. session_id overrides run_dir when provided (e.g. suite runs
+    # pass a shared suite session ID so all pages land under one Langfuse session).
     if not goal:
         goal = _infer_goal_from_url(url)
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -734,13 +735,14 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         os.makedirs(run_dir, exist_ok=True)
     else:
         run_dir = _make_run_dir(url, "single_page")
+    lf_session_id = session_id if session_id is not None else run_dir
 
     # ── Scout phase (optional) ────────────────────────────────────────────────
     scout_input_tokens = 0
     scout_output_tokens = 0
 
     if scout:
-        with (_langfuse_propagate(session_id=run_dir) if _langfuse_propagate and run_dir else nullcontext()):
+        with (_langfuse_propagate(session_id=lf_session_id) if _langfuse_propagate and lf_session_id else nullcontext()):
             scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir)
         score = scout_result["interest_score"]
         reason = scout_result["reason"]
@@ -879,7 +881,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             try:
                 raw, _in_tok, _out_tok, _raw_content = await adapter.complete(
                     conversation, model, step_budget, tools=advisor_tools,
-                    metadata={"session_id": run_dir, "step": step + 1}
+                    metadata={"session_id": lf_session_id, "step": step + 1}
                 )
             except TokenBudgetExceeded as e:
                 print(f"💰 Token budget exceeded ({e.tokens_used:,}/{e.budget:,}), stopping test")
@@ -1033,7 +1035,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         # Below-the-fold analysis
         below_fold = None
         try:
-            with (_langfuse_propagate(session_id=run_dir) if _langfuse_propagate and run_dir else nullcontext()):
+            with (_langfuse_propagate(session_id=lf_session_id) if _langfuse_propagate and lf_session_id else nullcontext()):
                 below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
             if below_fold:
                 bf_path = f"{run_dir}/below_fold.json"
