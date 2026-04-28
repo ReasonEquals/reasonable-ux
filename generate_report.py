@@ -331,6 +331,15 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None, *,
         site={"name": hostname, "url": base_url},
         date=run_date,
     )
+
+    # Annotate the first step of each evaluated URL so the template can render a divider page.
+    step_offset = 0
+    for pr in page_results:
+        if step_offset < len(normalized["steps"]):
+            normalized["steps"][step_offset]["isGroupStart"] = True
+            normalized["steps"][step_offset]["groupUrl"] = pr["url"]
+        step_offset += len(pr["report"])
+
     normalized["execSummary"] = {
         "findings":          exec_findings,
         "recommendations":   exec_recs,

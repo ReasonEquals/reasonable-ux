@@ -236,6 +236,23 @@
 {% for p in personas %}{% set _ = _persona_by_id.update({p.id: p}) %}{% endfor %}
 {% for s in steps %}
 {% set persona = _persona_by_id.get(s.personaId) or personas[0] %}
+{% if s.isGroupStart %}
+<section class="page" style="height: 11in; display: flex; flex-direction: column;">
+  <header class="page-head">
+    <span class="small-caps text-muted">04 · Walkthrough</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 14px;">
+    <div class="eyebrow" style="letter-spacing: .15em; text-transform: uppercase; color: var(--accent);">Evaluating</div>
+    <h1 style="font-size: 32px; margin: 0;">{{ s.pageLabel | lower }}</h1>
+    <p class="text-muted" style="font-size: 12px; margin: 0;">{{ s.groupUrl }}</p>
+  </div>
+  <footer class="page-foot">
+    <span class="folio">04 · Walkthrough</span>
+    <span class="folio">{{ site.name }}</span>
+  </footer>
+</section>
+{% endif %}
 <section class="page" style="height: 11in;">
   <header class="page-head">
     <span class="small-caps text-muted">04.{{ "%02d" | format(loop.index) }} · {{ persona.role }}</span>
