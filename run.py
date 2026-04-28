@@ -1,9 +1,11 @@
 import argparse
 import asyncio
+import csv
 import json
 import os
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -105,11 +107,67 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
 
 
+def _fetch_langfuse_cost(session_id: str) -> "float | None":
+    """Sum total_cost across all Langfuse traces for session_id. Returns None on any failure."""
+    try:
+        import time
+        if not (os.environ.get("LANGFUSE_PUBLIC_KEY") and os.environ.get("LANGFUSE_SECRET_KEY")):
+            return None
+        from langfuse.api import LangfuseAPI
+        otel_host = os.environ.get("LANGFUSE_OTEL_HOST", "https://cloud.langfuse.com")
+        base_url = otel_host.rstrip("/").removesuffix("/api/public/otel").removesuffix("/otel")
+        api = LangfuseAPI(
+            base_url=base_url,
+            username=os.environ.get("LANGFUSE_PUBLIC_KEY", ""),
+            password=os.environ.get("LANGFUSE_SECRET_KEY", ""),
+        )
+        time.sleep(3)
+        total = 0.0
+        page = 1
+        while True:
+            resp = api.trace.list(session_id=session_id, page=page, limit=50)
+            for trace in (resp.data or []):
+                total += getattr(trace, "total_cost", None) or 0.0
+            if not getattr(getattr(resp, "meta", None), "next_page", None):
+                break
+            page += 1
+        return round(total, 6) if total > 0 else None
+    except Exception:
+        return None
+
+
+def _log_cost(run_dir: Path, url: str, run_type: str, tokens: dict, *, session_id: str = None, model: str = None) -> None:
+    """Append a cost row to runs/cost_log.csv and write cost_summary.json into run_dir."""
+    lf_cost = _fetch_langfuse_cost(session_id) if session_id else None
+    summary = {
+        "timestamp": datetime.now().isoformat(),
+        "url": url,
+        "run_type": run_type,
+        "model": model or "unknown",
+        "input_tokens": tokens["input"],
+        "output_tokens": tokens["output"],
+        "total_tokens": tokens["total"],
+        "langfuse_session_id": session_id or "",
+        "langfuse_cost_usd": lf_cost,
+    }
+    cost_summary_path = run_dir / "cost_summary.json"
+    cost_summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    log_path = Path("runs") / "cost_log.csv"
+    write_header = not log_path.exists()
+    with log_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(summary.keys()))
+        if write_header:
+            writer.writeheader()
+        writer.writerow(summary)
+
+
 async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", page_steps: int = None, advisor: bool = False):
     """Run the agent once per page sequentially and return collected page_results."""
     from agent_core import run as agent_run
 
     effective_steps = page_steps if page_steps is not None else 12
+    suite_session_id = f"suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     page_results = []
     total_tokens_all = {"input": 0, "output": 0, "total": 0}
@@ -225,6 +283,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 token_budget=token_budget, email=email, password=password,
                 scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
                 storage_state=auth_state_path, advisor=advisor,
+                session_id=suite_session_id,
             )
             run_folder = _newest_run_folder(before)
 
@@ -255,7 +314,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
             except OSError as e:
                 print(f"⚠️  Could not remove auth state tempfile {auth_state_path}: {e}")
 
-    return page_results, total_tokens_all
+    return page_results, total_tokens_all, suite_session_id
 
 
 def build_index():
@@ -405,7 +464,7 @@ if __name__ == "__main__":
         pages = None
 
     if pages:
-        page_results, total_tokens = asyncio.run(
+        page_results, total_tokens, suite_session_id = asyncio.run(
             run_pages(url, goal, args.steps, args.token_budget,
                       args.email, args.password, pages,
                       scout=args.scout, scout_threshold=args.scout_threshold,
@@ -416,14 +475,12 @@ if __name__ == "__main__":
         build_index()
 
         if page_results:
-            from datetime import datetime
             from urllib.parse import urlparse
 
             from generate_report import stitch_reports
 
             hostname = urlparse(url).hostname or url.replace("https://", "").replace("http://", "")
-            now = datetime.now()
-            suite_folder = Path("runs") / f"suite_{now.strftime('%Y%m%d_%H%M%S')}"
+            suite_folder = Path("runs") / suite_session_id
             suite_folder.mkdir(parents=True, exist_ok=True)
 
             persona_results = None
@@ -436,7 +493,7 @@ if __name__ == "__main__":
                 )
 
             output_path = suite_folder / _pdf_filename(
-                hostname, now, scope="multi", compact=args.compact,
+                hostname, datetime.now(), scope="multi", compact=args.compact,
                 theme=args.theme, persona=bool(persona_results),
             )
             print(f"\n📄 Stitching multi-page report → {output_path}")
@@ -447,6 +504,9 @@ if __name__ == "__main__":
             print(f"   Input:  {total_tokens['input']:,}")
             print(f"   Output: {total_tokens['output']:,}")
             print(f"   Total:  {total_tokens['total']:,}")
+            if page_results:
+                _log_cost(suite_folder, url, "multi", total_tokens,
+                          session_id=suite_session_id, model=args.model)
 
     else:
         before = _existing_run_names()
@@ -501,5 +561,8 @@ if __name__ == "__main__":
             print(f"   Input:  {total_tokens['input']:,}")
             print(f"   Output: {total_tokens['output']:,}")
             print(f"   Total:  {total_tokens['total']:,}")
+            if run_dir_for_pdf:
+                _log_cost(run_dir_for_pdf, url, "single", total_tokens,
+                          session_id=str(run_dir_for_pdf), model=args.model)
 
     print("\n✅ Run complete. Open dashboard to view results.")
