@@ -152,7 +152,7 @@ Confirmed open items (cross-check against latest `session_summaries/` and `git l
 - **PDF page section breaks.** Resolved (Batch 59): `stitch_reports()` stamps `isGroupStart`/`groupUrl` on the first step of each URL group; `templates/full.html.j2` renders a centered `.page` divider before those steps.
 - **Drift evaluation.** `cost_log.csv` and per-run `cost_summary.json` exist as data sources; no drift detection feature designed yet.
 - **API key rotation.** Pre-public gate flagged in batch-57 session summary — still open.
-- **`langfuse_cost_usd` backfill gap.** Null in the 3 existing portfolio `cost_summary.json` files (Stripe, Linear, Vercel) — fetch was not attempted at backfill time. Query Langfuse manually or add a backfill script before treating cost data as complete.
+- **`langfuse_cost_usd` backfill gap.** Resolved as unresolvable: the 3 pre-Batch-58 portfolio suite runs (Stripe, Linear, Vercel) have no matching Langfuse traces — they predate the `suite_session_id` wiring. Backfill was attempted (2026-04-28) and confirmed empty. All runs from Batch 58 onward auto-populate `langfuse_cost_usd` at run time.
 
 ## 8. Working rules for this repo
 
