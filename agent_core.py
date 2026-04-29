@@ -406,7 +406,7 @@ def _build_below_fold_html(below_fold):
 
 
 @_lf_observe
-async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
+async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False, session_id=None):
     print("\n🔍 Running below-the-fold analysis...")
     try:
         await page.goto(url, wait_until="load", timeout=20000)
@@ -446,7 +446,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
         model="claude-sonnet-4-6",
         max_tokens=2048,
         tools=tools,
-        metadata={"session_id": run_dir} if run_dir else None,
+        metadata={"session_id": session_id or run_dir} if (session_id or run_dir) else None,
     )
     print(f"💰 Below-fold analysis tokens: {in_tok + out_tok:,}")
     _lf_update_generation(
@@ -467,7 +467,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False):
 
 
 @_lf_observe
-async def scout_page(url: str, storage_state: str = None, run_dir: str = None) -> dict:
+async def scout_page(url: str, storage_state: str = None, run_dir: str = None, session_id: str = None) -> dict:
     """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
@@ -547,7 +547,7 @@ Respond with a JSON object with exactly these two fields:
         messages=[{"role": "user", "content": scout_prompt}],
         model="claude-sonnet-4-6",
         max_tokens=256,
-        metadata={"session_id": run_dir} if run_dir else None,
+        metadata={"session_id": session_id or run_dir} if (session_id or run_dir) else None,
     )
 
     _lf_update_generation(
@@ -766,7 +766,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
 
     if scout:
         with (_langfuse_propagate(session_id=lf_session_id) if _langfuse_propagate and lf_session_id else nullcontext()):
-            scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir)
+            scout_result = await scout_page(url, storage_state=storage_state, run_dir=run_dir, session_id=lf_session_id)
         score = scout_result["interest_score"]
         reason = scout_result["reason"]
         extracted = scout_result["extracted_text"]
@@ -1063,7 +1063,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         below_fold = None
         try:
             with (_langfuse_propagate(session_id=lf_session_id) if _langfuse_propagate and lf_session_id else nullcontext()):
-                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor)
+                below_fold = await _run_below_fold_analysis(page, run_dir, url, persona or "a plausible buyer or user for this product", advisor=advisor, session_id=lf_session_id)
             if below_fold:
                 bf_path = f"{run_dir}/below_fold.json"
                 with open(bf_path, "w", encoding="utf-8") as f:
@@ -1087,7 +1087,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         if persona:
             try:
                 from persona_library import save_inferred
-                await save_inferred(url, persona, run_dir)
+                await save_inferred(url, persona, run_dir, session_id=lf_session_id)
             except Exception as e:  # noqa: BLE001
                 print(f"⚠️  Could not save inferred persona: {e}")
 
