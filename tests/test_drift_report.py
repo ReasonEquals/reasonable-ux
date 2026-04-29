@@ -12,7 +12,7 @@ from drift_report import check_drift, load_cost_log  # noqa: E402
 
 _PROD_FIELDS = [
     "timestamp", "url", "run_type", "model",
-    "input_tokens", "output_tokens", "total_tokens",
+    "input_tokens", "output_tokens", "total_tokens", "step_count",
     "langfuse_session_id", "langfuse_cost_usd",
 ]
 
@@ -27,12 +27,13 @@ def _write_csv(tmp_path: Path, rows: list[dict], fieldnames: list[str] | None = 
     return path
 
 
-def _row(timestamp: str, url: str, total: int, *, inp: int = 0, out: int = 0, run_type: str = "multi") -> dict:
-    """Build a 9-col row. Only fields drift_report reads need real values."""
+def _row(timestamp: str, url: str, total: int, *, inp: int = 0, out: int = 0, run_type: str = "multi", step_count: int = 0) -> dict:
+    """Build a 10-col row. Only fields drift_report reads need real values."""
     return {
         "timestamp": timestamp, "url": url, "run_type": run_type,
         "model": "", "input_tokens": inp, "output_tokens": out,
-        "total_tokens": total, "langfuse_session_id": "", "langfuse_cost_usd": "",
+        "total_tokens": total, "step_count": step_count,
+        "langfuse_session_id": "", "langfuse_cost_usd": "",
     }
 
 
@@ -133,7 +134,7 @@ def test_round_trip_log_cost_to_load_cost_log(tmp_path, monkeypatch):
         run_dir,
         "https://example.com",
         "multi",
-        {"input": 1234, "output": 567, "total": 1801},
+        {"input": 1234, "output": 567, "total": 1801, "step_count": 6},
         session_id="suite_20260428_999999",
         model="claude-sonnet-4-6",
     )
@@ -145,6 +146,7 @@ def test_round_trip_log_cost_to_load_cost_log(tmp_path, monkeypatch):
     assert rows[0]["input_tokens"] == 1234
     assert rows[0]["output_tokens"] == 567
     assert rows[0]["total_tokens"] == 1801
+    assert rows[0]["step_count"] == 6
 
 
 def test_log_cost_migrates_stale_header(tmp_path, monkeypatch):
@@ -170,7 +172,7 @@ def test_log_cost_migrates_stale_header(tmp_path, monkeypatch):
         run_dir,
         "https://new.test",
         "multi",
-        {"input": 200, "output": 80, "total": 280},
+        {"input": 200, "output": 80, "total": 280, "step_count": 4},
         session_id="suite_test",
         model="claude-sonnet-4-6",
     )
@@ -184,12 +186,14 @@ def test_log_cost_migrates_stale_header(tmp_path, monkeypatch):
     assert legacy["url"] == "https://legacy.test"
     assert legacy["input_tokens"] == "100"
     assert legacy["model"] == ""  # backfilled empty
+    assert legacy["step_count"] == ""  # backfilled empty
     assert legacy["langfuse_session_id"] == ""
     assert legacy["langfuse_cost_usd"] == ""
     new = dict(zip(_PROD_FIELDS, rows_raw[2], strict=True))
     assert new["url"] == "https://new.test"
     assert new["model"] == "claude-sonnet-4-6"
     assert new["input_tokens"] == "200"
+    assert new["step_count"] == "4"
     assert new["langfuse_session_id"] == "suite_test"
 
 
@@ -272,3 +276,27 @@ def test_per_type_threshold_single_vs_multi(tmp_path):
     assert check_drift("https://x.test", "single", current, str(p_single)) is not None
     # multi: 25% < 30% threshold → no drift
     assert check_drift("https://x.test", "multi", current, str(p_multi)) is None
+
+
+def test_step_normalization_eliminates_false_positive(tmp_path):
+    """4-step baseline at 50k/step vs 8-step run at 50k/step — raw +100% but per-step 0% → no drift."""
+    p = _write_csv(tmp_path, [
+        _row("2026-04-29T00:00:00", "https://x.test", 200000, run_type="single", step_count=4),
+        _row("2026-04-29T01:00:00", "https://x.test", 400000, run_type="single", step_count=8),
+    ])
+    # Raw comparison would flag +100% (> 20% threshold); per-step is 0% → no drift.
+    assert check_drift("https://x.test", "single", 400000, str(p)) is None
+
+
+def test_step_normalization_catches_per_step_regression(tmp_path):
+    """Same step count, 30% more tokens per step → DRIFT flagged."""
+    baseline_total = 200000
+    current_total = int(baseline_total * 1.30) + 1  # just over 20% threshold
+    p = _write_csv(tmp_path, [
+        _row("2026-04-29T00:00:00", "https://x.test", baseline_total, run_type="single", step_count=4),
+        _row("2026-04-29T01:00:00", "https://x.test", current_total, run_type="single", step_count=4),
+    ])
+    result = check_drift("https://x.test", "single", current_total, str(p))
+    assert result is not None
+    assert "DRIFT" in result
+    assert "/step" in result  # normalized message format
