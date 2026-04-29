@@ -74,6 +74,7 @@ class VariantRow:
     flow_smoothness: float
     n_score_steps: int
     persona: str
+    advisor_call_rate: float | None = None
 
     @property
     def tokens_per_step(self) -> float:
@@ -171,6 +172,9 @@ def build_rows(cost_rows: list[dict] | None = None, runs_dir: Path = RUNS_DIR) -
             continue
         page_dirs = find_page_dirs(suite_id, site, runs_dir=runs_dir)
         scores = aggregate_scores(page_dirs)
+        called = int(cost_row.get("advisor_called_count") or 0)
+        eligible = int(cost_row.get("advisor_eligible_steps") or 0)
+        advisor_call_rate = called / eligible if eligible > 0 else None
         out.append(VariantRow(
             variant=variant,
             site=site,
@@ -183,6 +187,7 @@ def build_rows(cost_rows: list[dict] | None = None, runs_dir: Path = RUNS_DIR) -
             flow_smoothness=scores["flow_smoothness"],
             n_score_steps=scores["n_score_steps"],
             persona=scores["persona"],
+            advisor_call_rate=advisor_call_rate,
         ))
     return out
 
@@ -193,15 +198,16 @@ def build_markdown(rows: list[VariantRow]) -> str:
         "",
         "Four configurations of the multi-page suite, run across stripe / linear / glossier on 2026-04-28 → 2026-04-29.",
         "",
-        "| Variant | Site | Steps | Tokens | $ Cost | tok/step | CTA | Copy | Flow | Composite |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| Variant | Site | Steps | Tokens | $ Cost | tok/step | CTA | Copy | Flow | Composite | Adv. calls |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
+        adv = "N/A" if row.advisor_call_rate is None else f"{row.advisor_call_rate:.0%}"
         lines.append(
             f"| {row.variant} | {row.site} | {row.step_count} | {row.total_tokens:,} | "
             f"${row.cost_usd:.2f} | {row.tokens_per_step:,.0f} | "
             f"{row.cta_clarity:.2f} | {row.copy_quality:.2f} | {row.flow_smoothness:.2f} | "
-            f"{row.composite_score:.2f} |"
+            f"{row.composite_score:.2f} | {adv} |"
         )
 
     lines.extend(["", "## Per-variant means (averaged across 3 sites)", ""])
@@ -215,6 +221,27 @@ def build_markdown(rows: list[VariantRow]) -> str:
         tps = sum(r.tokens_per_step for r in members) / len(members)
         comp = sum(r.composite_score for r in members) / len(members)
         lines.append(f"| {variant} | ${cost:.2f} | {tps:,.0f} | {comp:.2f} |")
+
+    lines.extend(["", "## Advisor invocation rate", ""])
+    lines.append(
+        "*Data available from batch-70 forward; batch-68 baseline rows show N/A "
+        "because `advisor_called_count` cannot be reconstructed from stored Langfuse traces.*"
+    )
+    lines.append("")
+    rated = [r for r in rows if r.advisor_call_rate is not None]
+    if rated:
+        avg_rate = sum(r.advisor_call_rate for r in rated) / len(rated)
+        lines.append(
+            f"Across {len(rated)} runs with the advisor enabled, Opus was consulted on "
+            f"**{avg_rate:.0%}** of steps on average. The remainder of the v2/v4 cost "
+            "premium over baseline is `step_budget = 2048` overhead applied to every "
+            "step regardless of whether the advisor fired."
+        )
+    else:
+        lines.append(
+            "No runs in the current matrix carry advisor-fire data yet. Re-run "
+            "v2_advisor / v4_8step_advisor variants after batch 70 lands to populate."
+        )
     lines.append("")
     return "\n".join(lines)
 

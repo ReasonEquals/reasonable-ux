@@ -14,6 +14,13 @@ _PROD_FIELDS = [
     "timestamp", "url", "run_type", "model",
     "input_tokens", "output_tokens", "total_tokens", "step_count",
     "langfuse_session_id", "langfuse_cost_usd",
+    "advisor_called_count", "advisor_eligible_steps",
+]
+
+_PRE_BATCH_70_FIELDS = [
+    "timestamp", "url", "run_type", "model",
+    "input_tokens", "output_tokens", "total_tokens", "step_count",
+    "langfuse_session_id", "langfuse_cost_usd",
 ]
 
 
@@ -189,12 +196,62 @@ def test_log_cost_migrates_stale_header(tmp_path, monkeypatch):
     assert legacy["step_count"] == ""  # backfilled empty
     assert legacy["langfuse_session_id"] == ""
     assert legacy["langfuse_cost_usd"] == ""
+    assert legacy["advisor_called_count"] == ""  # batch 70 fields backfilled empty
+    assert legacy["advisor_eligible_steps"] == ""
     new = dict(zip(_PROD_FIELDS, rows_raw[2], strict=True))
     assert new["url"] == "https://new.test"
     assert new["model"] == "claude-sonnet-4-6"
     assert new["input_tokens"] == "200"
     assert new["step_count"] == "4"
     assert new["langfuse_session_id"] == "suite_test"
+    assert new["advisor_called_count"] == "0"  # default when run did not pass advisor field
+    assert new["advisor_eligible_steps"] == "0"
+
+
+def test_log_cost_migrates_pre_batch_70_schema(tmp_path, monkeypatch):
+    """Pre-batch-70 10-col CSV → _log_cost adds advisor_* fields, backfills legacy rows."""
+    monkeypatch.chdir(tmp_path)
+    runs_dir = tmp_path / "runs"
+    runs_dir.mkdir()
+    log_path = runs_dir / "cost_log.csv"
+
+    with open(log_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_PRE_BATCH_70_FIELDS)
+        writer.writeheader()
+        writer.writerow({
+            "timestamp": "2026-04-28T00:00:00", "url": "https://stripe.com",
+            "run_type": "multi", "model": "claude-sonnet-4-6",
+            "input_tokens": 100000, "output_tokens": 5000, "total_tokens": 105000,
+            "step_count": 12, "langfuse_session_id": "suite_20260428_212327",
+            "langfuse_cost_usd": "1.23",
+        })
+
+    run_dir = runs_dir / "new_run"
+    run_dir.mkdir()
+    from run import _log_cost  # noqa: PLC0415
+    _log_cost(
+        run_dir,
+        "https://stripe.com",
+        "multi",
+        {
+            "input": 200, "output": 80, "total": 280, "step_count": 4,
+            "advisor_called_count": 2, "advisor_eligible_steps": 4,
+        },
+        session_id="suite_new",
+        model="claude-sonnet-4-6",
+    )
+
+    with open(log_path, newline="") as f:
+        rows_raw = list(csv.reader(f))
+
+    assert rows_raw[0] == _PROD_FIELDS  # header rewritten with 12 cols
+    legacy = dict(zip(_PROD_FIELDS, rows_raw[1], strict=True))
+    assert legacy["langfuse_cost_usd"] == "1.23"  # original data preserved
+    assert legacy["advisor_called_count"] == ""  # backfilled empty for old row
+    assert legacy["advisor_eligible_steps"] == ""
+    new = dict(zip(_PROD_FIELDS, rows_raw[2], strict=True))
+    assert new["advisor_called_count"] == "2"
+    assert new["advisor_eligible_steps"] == "4"
 
 
 def test_log_cost_refuses_mixed_schema_file(tmp_path, monkeypatch):

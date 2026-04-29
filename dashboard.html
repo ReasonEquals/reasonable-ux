@@ -277,10 +277,11 @@
                 <th style="text-align:right">Copy</th>
                 <th style="text-align:right">Flow</th>
                 <th style="text-align:right">Composite</th>
+                <th style="text-align:right">Adv. calls</th>
             </tr>
         </thead>
         <tbody id="variants-table">
-            <tr><td colspan="10" class="empty">Loading…</td></tr>
+            <tr><td colspan="11" class="empty">Loading…</td></tr>
         </tbody>
     </table>
 </section>
@@ -484,12 +485,12 @@ async function loadVariants() {
         if (!res.ok) throw new Error();
         rows = await res.json();
     } catch {
-        tbody.innerHTML = `<tr><td colspan="10" class="empty">No variants found. Run <code>python build_index.py</code> first.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">No variants found. Run <code>python build_index.py</code> first.</td></tr>`;
         return;
     }
 
     if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="10" class="empty">No variant rows. <code>cost_log.csv</code> may not have suite sessions yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="empty">No variant rows. <code>cost_log.csv</code> may not have suite sessions yet.</td></tr>`;
         return;
     }
 
@@ -508,6 +509,7 @@ async function loadVariants() {
         <td style="text-align:right">${(r.copy_quality || 0).toFixed(2)}</td>
         <td style="text-align:right">${(r.flow_smoothness || 0).toFixed(2)}</td>
         <td style="text-align:right"><strong>${(r.composite_score || 0).toFixed(2)}</strong></td>
+        <td style="text-align:right">${r.advisor_call_rate == null ? "N/A" : (r.advisor_call_rate * 100).toFixed(0) + "%"}</td>
     </tr>`).join("");
 }
 

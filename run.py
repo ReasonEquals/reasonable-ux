@@ -194,6 +194,8 @@ def _log_cost(run_dir: Path, url: str, run_type: str, tokens: dict, *, session_i
         "step_count": tokens.get("step_count", 0),
         "langfuse_session_id": session_id or "",
         "langfuse_cost_usd": lf_cost,
+        "advisor_called_count": tokens.get("advisor_called_count") or 0,
+        "advisor_eligible_steps": tokens.get("advisor_eligible_steps") or 0,
     }
     cost_summary_path = run_dir / "cost_summary.json"
     cost_summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
