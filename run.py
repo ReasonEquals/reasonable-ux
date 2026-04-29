@@ -583,7 +583,7 @@ if __name__ == "__main__":
             if page_results:
                 _log_cost(suite_folder, url, "multi", total_tokens,
                           session_id=suite_session_id, model=args.model)
-                drift_warning = check_drift(url, total_tokens["total"])
+                drift_warning = check_drift(url, "multi", total_tokens["total"])
                 if drift_warning:
                     print(f"\n⚠  {drift_warning}")
 
@@ -643,7 +643,7 @@ if __name__ == "__main__":
             if run_dir_for_pdf:
                 _log_cost(run_dir_for_pdf, url, "single", total_tokens,
                           session_id=str(run_dir_for_pdf), model=args.model)
-                drift_warning = check_drift(url, total_tokens["total"])
+                drift_warning = check_drift(url, "single", total_tokens["total"])
                 if drift_warning:
                     print(f"\n⚠  {drift_warning}")
 
