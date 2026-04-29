@@ -1111,6 +1111,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             "input": total_input + scout_input_tokens,
             "output": total_output + scout_output_tokens,
             "total": total_input + total_output + scout_input_tokens + scout_output_tokens,
+            "step_count": len(report),
             "scout_skipped": False,
             "scout_input_tokens": scout_input_tokens,
             "scout_output_tokens": scout_output_tokens,

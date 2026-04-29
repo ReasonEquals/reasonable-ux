@@ -191,6 +191,7 @@ def _log_cost(run_dir: Path, url: str, run_type: str, tokens: dict, *, session_i
         "input_tokens": tokens["input"],
         "output_tokens": tokens["output"],
         "total_tokens": tokens["total"],
+        "step_count": tokens.get("step_count", 0),
         "langfuse_session_id": session_id or "",
         "langfuse_cost_usd": lf_cost,
     }
@@ -234,7 +235,7 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
     suite_session_id = f"suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     page_results = []
-    total_tokens_all = {"input": 0, "output": 0, "total": 0}
+    total_tokens_all = {"input": 0, "output": 0, "total": 0, "step_count": 0}
 
     import tempfile
     auth_state_path = None
@@ -367,9 +368,10 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 continue
             path, full_url, tokens, run_folder = result
             if tokens:
-                total_tokens_all["input"]  += tokens["input"]
-                total_tokens_all["output"] += tokens["output"]
-                total_tokens_all["total"]  += tokens["total"]
+                total_tokens_all["input"]     += tokens["input"]
+                total_tokens_all["output"]    += tokens["output"]
+                total_tokens_all["total"]     += tokens["total"]
+                total_tokens_all["step_count"] += tokens.get("step_count", 0)
             if run_folder:
                 rp = run_folder / "report.json"
                 if rp.exists():

@@ -9,8 +9,8 @@ runs accumulate.
 
 Thresholds: per-type, uncalibrated placeholders. Multi-page runs have inherently
 higher token variance (more pages, stagger jitter) so use a looser threshold.
-Per-step normalization (total_tokens / step_count) would be more precise but
-requires a cost_log.csv schema change; deferred until step_count is tracked.
+When both rows carry step_count > 0, drift is measured on tokens/step rather
+than raw total — a run that spent more steps costs more tokens, which is expected.
 """
 
 import csv
@@ -29,6 +29,11 @@ def _threshold(run_type: str) -> float:
     return DRIFT_THRESHOLDS.get(run_type, DRIFT_THRESHOLDS[""])
 
 
+def _per_step(row: dict) -> float:
+    sc = row.get("step_count", 0)
+    return row["total_tokens"] / sc if sc > 0 else float(row["total_tokens"])
+
+
 def load_cost_log(path: str = "runs/cost_log.csv") -> list[dict]:
     """Return rows from cost_log.csv sorted ascending by timestamp."""
     rows = []
@@ -41,6 +46,7 @@ def load_cost_log(path: str = "runs/cost_log.csv") -> list[dict]:
                 "input_tokens": int(row.get("input_tokens") or 0),
                 "output_tokens": int(row.get("output_tokens") or 0),
                 "total_tokens": int(row.get("total_tokens") or 0),
+                "step_count": int(row.get("step_count") or 0),
             })
     return sorted(rows, key=lambda r: r["timestamp"])
 
@@ -69,17 +75,33 @@ def check_drift(
         return None  # current run is the baseline; no comparison possible
 
     prior = all_rows[:-1]
-    baseline = prior[0]["total_tokens"]
+    baseline_row = prior[0]
+    current_row = all_rows[-1]
     threshold = _threshold(run_type)
 
-    delta = (current_tokens - baseline) / baseline
+    normalized = baseline_row.get("step_count", 0) > 0 and current_row.get("step_count", 0) > 0
+    if normalized:
+        baseline_val = _per_step(baseline_row)
+        current_val = _per_step(current_row)
+    else:
+        baseline_val = float(baseline_row["total_tokens"])
+        current_val = float(current_tokens)
+
+    delta = (current_val - baseline_val) / baseline_val
     if abs(delta) <= threshold:
         return None
 
     direction = "+" if delta > 0 else ""
+    if normalized:
+        return (
+            f"DRIFT: {url}  "
+            f"current={current_val:,.0f}/step ({current_row['step_count']} steps)  "
+            f"baseline={baseline_val:,.0f}/step ({baseline_row['step_count']} steps)  "
+            f"({direction}{delta:.1%} vs baseline, threshold {threshold:.0%})"
+        )
     return (
-        f"DRIFT: {url}  current={current_tokens:,}  "
-        f"baseline={baseline:,}  ({direction}{delta:.1%} vs baseline, "
+        f"DRIFT: {url}  current={int(current_val):,}  "
+        f"baseline={int(baseline_val):,}  ({direction}{delta:.1%} vs baseline, "
         f"threshold {threshold:.0%})"
     )
 
@@ -97,17 +119,26 @@ def report(path: str = "runs/cost_log.csv") -> None:
 
     for (url, run_type), runs in sorted(by_key.items()):
         print(f"\n{url}  [{run_type or 'unknown'}]")
-        baseline = runs[0]["total_tokens"]
+        baseline_row = runs[0]
         threshold = _threshold(run_type)
+        normalized = all(r.get("step_count", 0) > 0 for r in runs)
         for i, r in enumerate(runs):
+            sc = r.get("step_count", 0)
+            per_step_str = f"  {r['total_tokens'] // sc:,}/step" if sc > 0 else ""
             if i == 0:
                 label = "(baseline)"
             else:
-                delta = (r["total_tokens"] - baseline) / baseline
+                if normalized:
+                    baseline_val = _per_step(baseline_row)
+                    current_val = _per_step(r)
+                else:
+                    baseline_val = float(baseline_row["total_tokens"])
+                    current_val = float(r["total_tokens"])
+                delta = (current_val - baseline_val) / baseline_val
                 flag = "  DRIFT" if abs(delta) > threshold else ""
                 direction = "+" if delta > 0 else ""
                 label = f"({direction}{delta:.1%} vs baseline){flag}"
-            print(f"  {r['timestamp']}  {r['total_tokens']:,} tokens  {label}")
+            print(f"  {r['timestamp']}  {r['total_tokens']:,} tokens{per_step_str}  {label}")
 
 
 if __name__ == "__main__":
