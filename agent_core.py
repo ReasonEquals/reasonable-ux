@@ -866,8 +866,12 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             print(f"\n--- Agent Step {step + 1} ---")
 
             screenshot_path = f"{screenshots_dir}/step_{step + 1}.png"
-            await page.screenshot(path=screenshot_path)
-            encoded = await screenshot_as_base64(page)
+            try:
+                await page.screenshot(path=screenshot_path)
+                encoded = await screenshot_as_base64(page)
+            except Exception as e:  # noqa: BLE001
+                print(f"⚠️  Screenshot failed on step {step + 1}: {e} — stopping run")
+                break
             step_url = page.url
             print(f"📸 Screenshot saved: {screenshot_path} ({step_url})")
 
@@ -1081,8 +1085,11 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         print(f"\n📄 JSON report saved: {report_path}")
 
         if persona:
-            from persona_library import save_inferred
-            await save_inferred(url, persona, run_dir)
+            try:
+                from persona_library import save_inferred
+                await save_inferred(url, persona, run_dir)
+            except Exception as e:  # noqa: BLE001
+                print(f"⚠️  Could not save inferred persona: {e}")
 
         # Build HTML report
         html = _build_html_report(report, goal, run_id, run_label, below_fold=below_fold)
@@ -1092,8 +1099,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         print(f"🌐 HTML report saved: {html_path}")
 
         await asyncio.sleep(0.5)
-        await asyncio.wait_for(context.close(), timeout=10)
-
+        try:
+            await asyncio.wait_for(context.close(), timeout=10)
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️  Browser context close failed: {e}", file=sys.stderr)
         await _flush_langfuse_spans()
 
         total_input = sum(r.get("input_tokens", 0) for r in report if "input_tokens" in r)
