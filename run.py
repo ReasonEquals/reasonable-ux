@@ -198,9 +198,29 @@ def _log_cost(run_dir: Path, url: str, run_type: str, tokens: dict, *, session_i
     cost_summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     log_path = Path("runs") / "cost_log.csv"
+    expected_fields = list(summary.keys())
+
+    if log_path.exists():
+        with log_path.open("r", newline="", encoding="utf-8") as f:
+            existing_header = next(csv.reader(f), [])
+        if existing_header != expected_fields:
+            with log_path.open("r", newline="", encoding="utf-8") as f:
+                existing_rows = list(csv.DictReader(f))
+            if any(None in row for row in existing_rows):
+                raise RuntimeError(
+                    f"{log_path}: data rows wider than header — schema-version "
+                    "skew that auto-migration cannot disambiguate. Rewrite the "
+                    "file by hand to match the current header before re-running."
+                )
+            with log_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=expected_fields)
+                writer.writeheader()
+                for row in existing_rows:
+                    writer.writerow({k: row.get(k, "") for k in expected_fields})
+
     write_header = not log_path.exists()
     with log_path.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(summary.keys()))
+        writer = csv.DictWriter(f, fieldnames=expected_fields)
         if write_header:
             writer.writeheader()
         writer.writerow(summary)

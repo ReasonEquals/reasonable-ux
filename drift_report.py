@@ -29,9 +29,9 @@ def load_cost_log(path: str = "runs/cost_log.csv") -> list[dict]:
                 "timestamp": row["timestamp"],
                 "url": row["url"],
                 "run_type": row.get("run_type", ""),
-                "input_tokens": int(row["input_tokens"]),
-                "output_tokens": int(row["output_tokens"]),
-                "total_tokens": int(row["total_tokens"]),
+                "input_tokens": int(row.get("input_tokens") or 0),
+                "output_tokens": int(row.get("output_tokens") or 0),
+                "total_tokens": int(row.get("total_tokens") or 0),
             })
     return sorted(rows, key=lambda r: r["timestamp"])
 

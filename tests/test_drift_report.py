@@ -10,15 +10,30 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # isort: split
 from drift_report import check_drift, load_cost_log  # noqa: E402
 
+_PROD_FIELDS = [
+    "timestamp", "url", "run_type", "model",
+    "input_tokens", "output_tokens", "total_tokens",
+    "langfuse_session_id", "langfuse_cost_usd",
+]
 
-def _write_csv(tmp_path: Path, rows: list[dict]) -> Path:
+
+def _write_csv(tmp_path: Path, rows: list[dict], fieldnames: list[str] | None = None) -> Path:
     path = tmp_path / "cost_log.csv"
-    fieldnames = ["timestamp", "url", "run_type", "input_tokens", "output_tokens", "total_tokens"]
+    fields = fieldnames or _PROD_FIELDS
     with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
     return path
+
+
+def _row(timestamp: str, url: str, total: int, *, inp: int = 0, out: int = 0) -> dict:
+    """Build a 9-col row. Only fields drift_report reads need real values."""
+    return {
+        "timestamp": timestamp, "url": url, "run_type": "multi",
+        "model": "", "input_tokens": inp, "output_tokens": out,
+        "total_tokens": total, "langfuse_session_id": "", "langfuse_cost_usd": "",
+    }
 
 
 def test_first_run_no_drift(tmp_path):
@@ -103,3 +118,120 @@ def test_load_cost_log_sorts_by_timestamp(tmp_path):
     rows = load_cost_log(str(p))
     timestamps = [r["timestamp"] for r in rows]
     assert timestamps == sorted(timestamps)
+
+
+def test_round_trip_log_cost_to_load_cost_log(tmp_path, monkeypatch):
+    """_log_cost writes a row that load_cost_log parses without column misalignment."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "runs").mkdir()
+    run_dir = tmp_path / "runs" / "test_run"
+    run_dir.mkdir()
+
+    from run import _log_cost  # noqa: PLC0415
+
+    _log_cost(
+        run_dir,
+        "https://example.com",
+        "multi",
+        {"input": 1234, "output": 567, "total": 1801},
+        session_id="suite_20260428_999999",
+        model="claude-sonnet-4-6",
+    )
+
+    rows = load_cost_log(str(tmp_path / "runs" / "cost_log.csv"))
+    assert len(rows) == 1
+    assert rows[0]["url"] == "https://example.com"
+    assert rows[0]["run_type"] == "multi"
+    assert rows[0]["input_tokens"] == 1234
+    assert rows[0]["output_tokens"] == 567
+    assert rows[0]["total_tokens"] == 1801
+
+
+def test_log_cost_migrates_stale_header(tmp_path, monkeypatch):
+    """Pre-existing 6-col CSV → _log_cost rewrites header, backfills legacy rows, appends new row."""
+    monkeypatch.chdir(tmp_path)
+    runs_dir = tmp_path / "runs"
+    runs_dir.mkdir()
+    log_path = runs_dir / "cost_log.csv"
+
+    legacy_fields = ["timestamp", "url", "run_type", "input_tokens", "output_tokens", "total_tokens"]
+    with open(log_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=legacy_fields)
+        writer.writeheader()
+        writer.writerow({
+            "timestamp": "2026-04-27T00:00:00", "url": "https://legacy.test", "run_type": "multi",
+            "input_tokens": 100, "output_tokens": 50, "total_tokens": 150,
+        })
+
+    run_dir = runs_dir / "new_run"
+    run_dir.mkdir()
+    from run import _log_cost  # noqa: PLC0415
+    _log_cost(
+        run_dir,
+        "https://new.test",
+        "multi",
+        {"input": 200, "output": 80, "total": 280},
+        session_id="suite_test",
+        model="claude-sonnet-4-6",
+    )
+
+    with open(log_path, newline="") as f:
+        rows_raw = list(csv.reader(f))
+
+    assert rows_raw[0] == _PROD_FIELDS  # header rewritten
+    assert len(rows_raw) == 3  # header + legacy + new
+    legacy = dict(zip(_PROD_FIELDS, rows_raw[1], strict=True))
+    assert legacy["url"] == "https://legacy.test"
+    assert legacy["input_tokens"] == "100"
+    assert legacy["model"] == ""  # backfilled empty
+    assert legacy["langfuse_session_id"] == ""
+    assert legacy["langfuse_cost_usd"] == ""
+    new = dict(zip(_PROD_FIELDS, rows_raw[2], strict=True))
+    assert new["url"] == "https://new.test"
+    assert new["model"] == "claude-sonnet-4-6"
+    assert new["input_tokens"] == "200"
+    assert new["langfuse_session_id"] == "suite_test"
+
+
+def test_log_cost_refuses_mixed_schema_file(tmp_path, monkeypatch):
+    """Header narrower than data rows → _log_cost raises rather than entrenching misalignment."""
+    monkeypatch.chdir(tmp_path)
+    runs_dir = tmp_path / "runs"
+    runs_dir.mkdir()
+    log_path = runs_dir / "cost_log.csv"
+
+    # 6-col header + 1 row written with 9 fields — the v1/v2 corruption shape.
+    log_path.write_text(
+        "timestamp,url,run_type,input_tokens,output_tokens,total_tokens\n"
+        "2026-04-28T20:42:00,https://stripe.com,multi,claude-sonnet-4-6,23239,4983,28222,suite_x,0.19\n",
+        encoding="utf-8",
+    )
+
+    run_dir = runs_dir / "new_run"
+    run_dir.mkdir()
+    import pytest  # noqa: PLC0415
+
+    from run import _log_cost  # noqa: PLC0415
+
+    with pytest.raises(RuntimeError, match="schema-version skew"):
+        _log_cost(
+            run_dir, "https://x.test", "multi",
+            {"input": 1, "output": 1, "total": 2},
+            session_id="s", model="m",
+        )
+
+
+def test_load_cost_log_tolerates_missing_columns(tmp_path):
+    """CSV missing optional token columns → load_cost_log returns rows with int defaults, no crash."""
+    minimal_fields = ["timestamp", "url", "total_tokens"]
+    p = _write_csv(
+        tmp_path,
+        [{"timestamp": "2026-04-28T00:00:00", "url": "https://x.test", "total_tokens": 100}],
+        fieldnames=minimal_fields,
+    )
+    rows = load_cost_log(str(p))
+    assert len(rows) == 1
+    assert rows[0]["total_tokens"] == 100
+    assert rows[0]["input_tokens"] == 0
+    assert rows[0]["output_tokens"] == 0
+    assert rows[0]["run_type"] == ""
