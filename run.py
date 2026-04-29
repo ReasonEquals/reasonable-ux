@@ -326,8 +326,11 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 path = path if path.startswith("/") else "/" + path
                 full_url = base_url.rstrip("/") + path
             try:
-                head = requests.head(
-                    full_url, timeout=8, allow_redirects=True,
+                head = await asyncio.to_thread(
+                    requests.head,
+                    full_url,
+                    timeout=8,
+                    allow_redirects=True,
                     headers={"User-Agent": "reasonable-ux/1.0"},
                 )
                 if 400 <= head.status_code < 500 and head.status_code != 405:
