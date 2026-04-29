@@ -27,7 +27,7 @@ def _save(records: list) -> None:
         json.dump(records, f, indent=2)
 
 
-async def _enrich(url: str, persona: str, run_dir: str | None = None) -> dict | None:
+async def _enrich(url: str, persona: str, run_dir: str | None = None, session_id: str | None = None) -> dict | None:
     """Expand a one-liner inferred persona into a structured object via Haiku."""
     load_dotenv()
     safe_url = sanitize_field(url)
@@ -52,7 +52,7 @@ Return only the JSON object, nothing else."""},
             ],
             model="claude-haiku-4-5-20251001",
             max_tokens=512,
-            metadata={"session_id": run_dir} if run_dir else None,
+            metadata={"session_id": session_id or run_dir} if (session_id or run_dir) else None,
         )
         clean = raw.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(clean)
@@ -61,9 +61,9 @@ Return only the JSON object, nothing else."""},
         return None
 
 
-async def save_inferred(url: str, persona: str, run_dir: str) -> None:
+async def save_inferred(url: str, persona: str, run_dir: str, session_id: str | None = None) -> None:
     """Append a step-1 inferred persona string from a UX run, enriched to structured form."""
-    enriched = await _enrich(url, persona, run_dir)
+    enriched = await _enrich(url, persona, run_dir, session_id=session_id)
     records = _load()
     records.append({
         "type": "inferred",
