@@ -10,6 +10,8 @@ from pathlib import Path
 
 import requests
 
+from drift_report import check_drift
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="reasonable-ux orchestrator", allow_abbrev=False)
@@ -507,6 +509,9 @@ if __name__ == "__main__":
             if page_results:
                 _log_cost(suite_folder, url, "multi", total_tokens,
                           session_id=suite_session_id, model=args.model)
+                drift_warning = check_drift(url, total_tokens["total"])
+                if drift_warning:
+                    print(f"\n⚠  {drift_warning}")
 
     else:
         before = _existing_run_names()
@@ -564,5 +569,8 @@ if __name__ == "__main__":
             if run_dir_for_pdf:
                 _log_cost(run_dir_for_pdf, url, "single", total_tokens,
                           session_id=str(run_dir_for_pdf), model=args.model)
+                drift_warning = check_drift(url, total_tokens["total"])
+                if drift_warning:
+                    print(f"\n⚠  {drift_warning}")
 
     print("\n✅ Run complete. Open dashboard to view results.")
