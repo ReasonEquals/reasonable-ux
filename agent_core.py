@@ -305,7 +305,7 @@ def _make_run_dir(url: str, run_type: str) -> str:
     if hostname.startswith("www."):
         hostname = hostname[4:]
     domain = hostname.replace(".", "_").replace("-", "_")
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     run_dir = f"runs/{domain}/{timestamp}_{run_type}"
     os.makedirs(run_dir, exist_ok=True)
     return run_dir

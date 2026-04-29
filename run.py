@@ -3,9 +3,10 @@ import asyncio
 import csv
 import json
 import os
+import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -45,6 +46,9 @@ def parse_args():
                         help="Render PDF using the compact 5-page skim template instead of the full deep-dive.")
     parser.add_argument("--theme", choices=["editorial", "technical", "studio"], default="editorial",
                         help="Visual theme for the PDF (default: editorial).")
+    parser.add_argument("--page-stagger", type=int, default=5, metavar="SECONDS",
+                        help="Seconds between page start times for concurrent runs (default: 5). "
+                             "Reliable folder attribution requires stagger >= 3.")
     return parser.parse_args()
 
 async def run_without_plan(url, goal, steps, token_budget, email, password, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", advisor: bool = False):
@@ -56,10 +60,10 @@ def _pdf_filename(domain, now, *, scope, compact, theme, persona):
     """Unified PDF naming: {domain}_{YYYY-MM-DD}_{HHMMSS}_{scope}_{template}_{theme}[_persona].pdf"""
     safe_domain = domain.replace(".", "_")
     date = now.strftime("%Y-%m-%d")
-    time = now.strftime("%H%M%S")
+    time_str = now.strftime("%H%M%S")
     template = "compact" if compact else "full"
     suffix = "_persona" if persona else ""
-    return f"{safe_domain}_{date}_{time}_{scope}_{template}_{theme}{suffix}.pdf"
+    return f"{safe_domain}_{date}_{time_str}_{scope}_{template}_{theme}{suffix}.pdf"
 
 
 def _existing_run_names(runs_dir="runs"):
@@ -107,6 +111,44 @@ def _newest_run_folder(before_names, runs_dir="runs"):
     # Fallback: most recently modified across all run folders
     all_folders = list(current.values())
     return sorted(all_folders, key=lambda f: f.stat().st_mtime, reverse=True)[0] if all_folders else None
+
+
+_FOLDER_TS_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})_(\d{4,6})_")
+
+
+def _run_folder_for(url: str, start_time: float, runs_dir: str = "runs") -> "Path | None":
+    """Return the earliest run folder for url's domain created at or after start_time (±2s buffer).
+
+    Reliable when --page-stagger >= 3. start_time must be recorded inside the semaphore,
+    immediately before agent_run() is called.
+    """
+    from urllib.parse import urlparse as _urlparse
+    hostname = _urlparse(url).hostname or url
+    if hostname.startswith("www."):
+        hostname = hostname[4:]
+    domain = hostname.replace(".", "_").replace("-", "_")
+    domain_dir = Path(runs_dir) / domain
+    if not domain_dir.exists():
+        return None
+    lower = datetime.fromtimestamp(start_time) - timedelta(seconds=2)
+    eligible = []
+    for d in domain_dir.iterdir():
+        if not d.is_dir():
+            continue
+        m = _FOLDER_TS_RE.match(d.name)
+        if not m:
+            continue
+        try:
+            ts = m.group(2)
+            fmt = "%Y-%m-%d_%H%M%S" if len(ts) == 6 else "%Y-%m-%d_%H%M"
+            folder_dt = datetime.strptime(f"{m.group(1)}_{ts}", fmt)
+        except ValueError:
+            continue
+        if folder_dt >= lower:
+            eligible.append((folder_dt, d))
+    if not eligible:
+        return None
+    return min(eligible, key=lambda x: x[0])[1]
 
 
 def _fetch_langfuse_cost(session_id: str) -> "float | None":
@@ -164,8 +206,8 @@ def _log_cost(run_dir: Path, url: str, run_type: str, tokens: dict, *, session_i
         writer.writerow(summary)
 
 
-async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", page_steps: int = None, advisor: bool = False):
-    """Run the agent once per page sequentially and return collected page_results."""
+async def run_pages(base_url, goal, steps, token_budget, email, password, pages, scout=False, scout_threshold=3, provider: str = "anthropic", model: str = "claude-sonnet-4-6", page_steps: int = None, advisor: bool = False, stagger: int = 5):
+    """Run the agent on each page with bounded concurrency (Semaphore 2) and return collected page_results."""
     from agent_core import run as agent_run
 
     effective_steps = page_steps if page_steps is not None else 12
@@ -253,18 +295,16 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
             print(f"   💾 Session saved to {auth_state_path}")
 
     try:
-        for path in pages:
+        import time as _time
+        sem = asyncio.Semaphore(2)
+
+        async def _run_one_page(path, stagger_idx):
+            await asyncio.sleep(stagger_idx * stagger)
             if path.startswith(("http://", "https://")):
                 full_url = path
             else:
                 path = path if path.startswith("/") else "/" + path
                 full_url = base_url.rstrip("/") + path
-
-            print(f"\n{'='*60}")
-            print(f"🌐 Page: {full_url}")
-            print(f"{'='*60}")
-
-            # HEAD check — skip 4xx paths before spending agent tokens
             try:
                 head = requests.head(
                     full_url, timeout=8, allow_redirects=True,
@@ -272,28 +312,41 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 )
                 if 400 <= head.status_code < 500 and head.status_code != 405:
                     print(f"⚠️  Skipping {path} — HEAD returned {head.status_code}")
-                    continue
+                    return None
             except requests.RequestException as e:
                 print(f"⚠️  HEAD request failed for {path}: {e} — skipping")
-                continue
-
+                return None
+            print(f"\n{'='*60}\n🌐 Page: {full_url}\n{'='*60}")
             from agent_core import _infer_goal_from_url
             page_goal = _infer_goal_from_url(full_url)
-            before = _existing_run_names()
-            tokens = await agent_run(
-                url=full_url, goal=page_goal, max_steps=effective_steps,
-                token_budget=token_budget, email=email, password=password,
-                scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
-                storage_state=auth_state_path, advisor=advisor,
-                session_id=suite_session_id,
-            )
-            run_folder = _newest_run_folder(before)
+            async with sem:
+                start_time = _time.time()
+                tokens = await agent_run(
+                    url=full_url, goal=page_goal, max_steps=effective_steps,
+                    token_budget=token_budget, email=email, password=password,
+                    scout=scout, scout_threshold=scout_threshold, provider=provider, model=model,
+                    storage_state=auth_state_path, advisor=advisor,
+                    session_id=suite_session_id,
+                )
+            run_folder = _run_folder_for(full_url, start_time)
+            return path, full_url, tokens, run_folder
 
+        raw = await asyncio.gather(
+            *[_run_one_page(p, i) for i, p in enumerate(pages)],
+            return_exceptions=True,
+        )
+
+        for result in raw:
+            if isinstance(result, Exception):
+                print(f"⚠️  Page run failed: {result}")
+                continue
+            if result is None:
+                continue
+            path, full_url, tokens, run_folder = result
             if tokens:
                 total_tokens_all["input"]  += tokens["input"]
                 total_tokens_all["output"] += tokens["output"]
                 total_tokens_all["total"]  += tokens["total"]
-
             if run_folder:
                 rp = run_folder / "report.json"
                 if rp.exists():
@@ -471,7 +524,8 @@ if __name__ == "__main__":
                       args.email, args.password, pages,
                       scout=args.scout, scout_threshold=args.scout_threshold,
                       provider=args.provider, model=args.model,
-                      page_steps=args.page_steps, advisor=args.advisor)
+                      page_steps=args.page_steps, advisor=args.advisor,
+                      stagger=args.page_stagger)
         )
 
         build_index()
