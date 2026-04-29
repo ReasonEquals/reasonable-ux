@@ -9,6 +9,7 @@ from generate_report import _render_jinja, _render_pdf_via_playwright
 ROOT = Path(__file__).parent
 DECISIONS_MD = ROOT / "DECISIONS.md"
 OUTPUT_PDF = ROOT / "DECISIONS.pdf"
+OUTPUT_HTML = ROOT / "DECISIONS.html"
 
 
 # ── Inline markdown → HTML ───────────────────────────────────────────────────
@@ -165,6 +166,10 @@ def main():
     html = _render_jinja("decisions.html.j2", doc)
     _render_pdf_via_playwright(html, ROOT, OUTPUT_PDF)
     print(f"✓  {OUTPUT_PDF.relative_to(ROOT)}")
+
+    web_html = _render_jinja("decisions_web.html.j2", doc)
+    OUTPUT_HTML.write_text(web_html, encoding="utf-8")
+    print(f"✓  {OUTPUT_HTML.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DECISIONS.md — reasonable-ux</title>
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg-elev: #111114;
+    --surface-2: #16161b;
+    --fg: #e8e8ea;
+    --muted: #8a8a93;
+    --border: #232327;
+    --accent: #c77dff;
+    --accent-hover: #d69bff;
+    --code-bg: #0d1117;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --measure: 68ch;
+    --content-max: 760px;
+    --lh-body: 1.6;
+    --lh-display: 1.15;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #fafafb;
+      --bg-elev: #ffffff;
+      --surface-2: #f4f4f6;
+      --fg: #111113;
+      --muted: #555560;
+      --border: #e1e1e6;
+      --accent: #7b2cbf;
+      --accent-hover: #5a1e94;
+      --code-bg: #f6f8fa;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark light; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: var(--lh-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding: 4rem clamp(1rem, 5vw, 2rem) 6rem;
+  }
+  header.doc-head {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 0.5rem;
+  }
+  .eyebrow .accent { color: var(--accent); }
+  h1 {
+    font-size: clamp(1.75rem, 1.43rem + 1.64vw, 2.5rem);
+    font-weight: 600;
+    line-height: var(--lh-display);
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: clamp(1.375rem, 1.2rem + 0.9vw, 1.75rem);
+    font-weight: 600;
+    line-height: var(--lh-display);
+    letter-spacing: -0.015em;
+    margin: 4rem 0 1rem;
+    text-wrap: balance;
+  }
+  h2 .num {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    margin-right: 0.4em;
+  }
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 2.5rem 0 0.75rem;
+    color: var(--fg);
+  }
+  p { margin: 0 0 1rem; max-width: var(--measure); }
+  .intro p { color: var(--muted); }
+  .section-intro p { color: var(--muted); }
+  .field {
+    margin: 0.75rem 0;
+    max-width: var(--measure);
+  }
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 0.5em;
+  }
+  .field-content { color: var(--fg); }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  code.code-ref, .code-ref {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: var(--accent);
+  }
+  hr.decision-sep {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+  strong { font-weight: 600; color: var(--fg); }
+  em { font-style: italic; }
+  a {
+    color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+  a:hover { color: var(--accent-hover); }
+  footer.doc-foot {
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer.doc-foot a { color: var(--muted); }
+  footer.doc-foot a:hover { color: var(--fg); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="doc-head">
+  <p class="eyebrow">reasonable-ux <span class="accent">·</span> decisions log</p>
+  <h1>DECISIONS.md</h1>
+</header>
+
+<section class="intro">
+  <p>reasonable-ux started as a single Playwright + Claude loop that took a screenshot, asked "what do you see?", and clicked the next thing. By the end it was over 100 commits: multi-provider LLM routing, authenticated multi-page crawls, Langfuse observability with a hard-won memory-leak fix, a calibrated eval harness with regression detection, and a PDF reporting pipeline backed by Haiku synthesis. This document records the decisions that shaped the system — what was chosen, what was considered, what was given up, and what broke along the way.</p>
+</section>
+
+<section>
+  <h2><span class="num">1.</span>Token Economics</h2>
+  <div class="section-intro">
+    <p>Vision models are expensive per-call. Multi-step runs with 8–12 screenshots, a JSON schema, and a growing conversation history compound fast. Each eval run came out of pocket — this is a self-funded project. Every decision in this section was made under that constraint.</p>
+  </div>
+  <article class="decision">
+    <h3>Strip images from conversation history after each step</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Each agent step appends a new user message to the conversation history, which is re-sent in full on the next call. Screenshots are large base64-encoded blobs. After 8 steps, the history contains 8 screenshots that will be re-sent on every subsequent call.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Before appending the current step's screenshot, walk all prior user messages and drop any <code>"type": "image"</code> content blocks. Only the new step's screenshot travels in the payload. <code class="code-ref">agent_core.py:850</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Keep full multi-turn vision context so the model can reason across frames; window to the last N screenshots rather than stripping all.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">The model loses visual continuity between steps. This is acceptable because Playwright navigates to a new page state on each step — the prior screenshot doesn't reflect what's currently on screen anyway.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Enabled 12-step defaults without hitting cost ceilings. Image history was the largest single cost driver; stripping it was the highest-leverage change in the section.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Two JPEG quality tiers — 40 for steps, 60 for full-page</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Per-step screenshots are encoded, sent, then immediately stripped (see above). The full-page below-fold screenshot is a single larger call used once per run.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Two constants: quality 40 for per-step screenshots (<code class="code-ref">agent_core.py:221</code>), quality 60 for the below-fold full-page capture (<code class="code-ref">agent_core.py:396</code>, <code class="code-ref">agent_core.py:403</code>).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Single quality level everywhere (80); PNG for lossless fidelity; adaptive quality based on image content.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Slightly lower visual fidelity on per-step screenshots. In practice, buttons, nav labels, and body copy remain legible at quality 40. The full-page screenshot warrants 60 because it covers more visual surface and is used for a single more detailed analysis call.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Materially smaller payloads on per-step screenshots without legibility loss. No fidelity regressions observed across author-run evaluations. No systematic test has been conducted at alternative quality levels — the numbers were set once during early development and have not been revisited.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Model tiering — Sonnet executor, Haiku synthesizer</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Early eval runs used Opus 4.5 as the default executor. A single eval run cost approximately $8. That's not viable for iterative calibration work.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Swapped the default executor from Opus to <code>claude-sonnet-4-6</code> (Batch 31). Reserved <code>claude-haiku-4-5-20251001</code> for the exec summary synthesis step, which has lower quality requirements (<code class="code-ref">generate_report.py:91</code>).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Opus everywhere for maximum quality; Haiku everywhere for minimum cost; a cost gate that escalates to Opus when confidence is low.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Sonnet emitted malformed JSON on a substantial share of steps initially — a smoke test fired the <code>json-repair</code> fallback on 3 of 7 steps (~40%); the first full eval after the swap fired repair on 49 of 58 steps (84.5%). This required adding the fallback (Batch 32) and a full baseline recalibration (Batch 33). The quality gap is real but acceptable for a tool that surfaces directional UX signals, not precise scores.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Cost down ~4× ($8 Opus → ~$2 Sonnet per 20-URL eval run, sourced from the Batch 31 Anthropic-dashboard reconciliation). The swap regressed the pass rate to 5/20 against Opus-tuned bands; Batch 33 recalibrated labels for Sonnet's actual scoring behavior, restoring 19/20. Haiku exec synthesis runs at an estimated ~$0.002 per report.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Check token budget after the LLM call, not before</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Without a hard cap, long multi-page runs could accumulate unbounded token spend. But observability requires that each call's data land in Langfuse before the process exits.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>step_budget = 2048 if advisor else 1024</code>. The budget check fires after the call is logged, raising an exception that exits the loop gracefully. <code class="code-ref">agent_core.py:878</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Check budget before each call and refuse if exceeded; let the model manage its own budget via the token-counting API.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">One additional LLM call fires at the budget boundary before the exception is raised.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Langfuse captures the final step before exit. The report shows "stopped: budget exceeded" rather than a silent timeout. The hard cap has never been the wrong call — runs that hit it were exploratory runs that needed a ceiling.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">2.</span>Agent Architecture</h2>
+  <article class="decision">
+    <h3>LLMAdapter with a special-case path for the Advisor tool</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The tool needs to support Anthropic, OpenAI, and Google models interchangeably. But the advisor-beta tool — which uses Anthropic's extended thinking and tool_use features — is Anthropic-only. LiteLLM doesn't support the advisor-beta API surface.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>LLMAdapter.complete()</code> routes everything through <code>litellm.acompletion()</code> (<code class="code-ref">agent_core.py:154</code>) except when advisor mode is active, which routes directly to <code>_complete_anthropic_advisor()</code> (<code class="code-ref">agent_core.py:168</code>). The adapter class unifies tracing across both paths. <code class="code-ref">agent_core.py:123</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Separate provider classes with a factory; hard-code Anthropic everywhere and treat multi-provider as a future concern; run the advisor through LiteLLM with a custom plugin.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Two code paths to maintain. When <code>--advisor</code> is enabled with a non-Anthropic provider, the advisor tool is silently dropped — the request still routes through LiteLLM with the chosen provider, but no advisor capability is available. There is no automatic fallback to Anthropic.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content"><code>--provider openai/gpt-4o</code> works for standard evaluation runs. Advisor functionality is unaffected by provider choice. The two paths share the same Langfuse tracing hooks.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`nav:&lt;Label&gt;` prefix instead of CSS selectors for navigation</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The agent was emitting CSS selectors like <code>a[href="/pricing"]</code> or <code>a:has-text("Pricing")</code> for main navigation links. These are fragile: class names change, <code>:has-text()</code> is unsupported in Playwright's strict selector engine, and generated markup varies wildly across frameworks.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">The prompt instructs Claude to emit <code>nav:<Visible Label></code> (e.g., <code>nav:Pricing</code>) for main-navigation links. The agent loop detects the prefix and routes to <code>_click_nav_by_label()</code>, which uses Playwright's semantic <code>page.get_by_role("link", name=…)</code> API, with an <code>a:has-text()</code> fallback. <code class="code-ref">agent_core.py:241</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">CSS selectors everywhere; XPath; Playwright's <code>get_by_text</code>; require the user to supply selectors.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">This is a prompt-engineering contract, not a code contract. If the model drifts back to CSS selectors for nav links, clicks fail without an obvious error message. That made regression detection essential.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Navigation reliability improved substantially across diverse frameworks. The eval harness was extended with <code>_NAV_DRIFT_RE</code> (Batch 43) to catch drift automatically — see Eval Harness section below.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Infer persona on step 1, thread it through the entire run</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">UX evaluation should reflect a specific buyer archetype, not a generic "user." But requiring a <code>--persona</code> flag on every invocation adds friction and produces worse output when users make poor guesses about their own customers.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">On step 1, <code>_build_prompt</code> receives <code>persona=None</code> and asks Claude to infer a plausible evaluator persona from the first screenshot, URL, and page title, returning it as a top-level <code>persona</code> field in the JSON response. From step 2 onward, the inferred persona is passed back into <code>_build_prompt</code> and Claude is told to stay in character. The same string is threaded into the below-fold analysis call. <code class="code-ref">agent_core.py:294</code>, <code class="code-ref">agent_core.py:836</code>, <code class="code-ref">agent_core.py:1037</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Always require <code>--persona</code> flag; re-infer each step; skip personas and evaluate from a neutral perspective.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">The persona is locked after step 1. If the inferred persona is wrong, the entire run reflects it. There is no mid-run correction.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Multi-site validation (Batch 44) produced site-appropriate personas without user input — DTC sites got "eco-conscious millennial shopper," content platforms got "aspiring paid newsletter creator." The persona is written to <code>report.json</code> so runs are reproducible.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">3.</span>Auth and Multi-Page Orchestration</h2>
+  <article class="decision">
+    <h3>Pre-authenticate once, serialize browser storage state, reuse across pages</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Multi-page runs against authenticated SaaS products initially required re-authenticating for each page. That meant 3× the runtime cost and a constant risk of session invalidation mid-suite.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>_do_auth()</code> (<code class="code-ref">run.py:124</code>) logs in once via a dedicated Playwright context, calls <code>context.storage_state()</code> (cookies + localStorage), writes the result to a tempfile, and passes the tempfile path to every subsequent page evaluation via the agent's <code>storage_state=</code> parameter. <code class="code-ref">run.py:227</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Re-authenticate per page; pass session tokens as environment variables; API-key-based auth bypass for supported apps.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Tempfile cleanup is required on every exit path, including error paths. Session expiry between pages is a silent failure mode.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Multi-step login flows (email → Continue → password → Submit) work reliably. Auth happens once per suite. The auth debug screenshot written to <code>runs/auth_debug_{PID}.png</code> on failure (Batch 40) has been the primary diagnostic tool for auth regressions.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Hard stop on auth failure, no silent fallback</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">If auth failed silently, the agent would start evaluating the login page as if it were the product — producing confident, detailed, completely worthless UX reports with no indication that anything was wrong.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Auth failure raises an exception immediately (Batch 12b). A debug screenshot is written to <code>runs/auth_debug_{PID}.png</code> before the exception propagates so there's something to inspect.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Log a warning and continue unauthenticated; retry once with a longer timeout; degrade to a single-page unauthenticated run.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Transient auth failures abort the entire run. There is no automatic retry.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Forces the caller to fix auth before spending tokens. Every instance of auth failure in practice has been a genuine problem (wrong selector, changed login flow, rate-limited endpoint) rather than a transient blip.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Bounded concurrent page execution (Semaphore 2)</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Sequential execution was the original design (reversed in Batch 62). Wall-clock time for multi-page suites is meaningful when running 5–10 pages; halving it matters.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>run_pages()</code> runs at most 2 pages concurrently via <code>asyncio.Semaphore(2)</code>. Pages are launched together via <code>asyncio.gather</code> with a configurable stagger delay (<code>--page-stagger</code>, default 5s) between start times. <code class="code-ref">run.py</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Rate limit note</span>
+      <span class="field-content">Tier 1 Anthropic limits (50 RPM, 30k ITPM). 2 concurrent pages is borderline at scale but acceptable for typical 4–6 page suites where each page idles between steps (screenshot capture, Playwright navigation) and doesn't saturate ITPM continuously.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Folder attribution</span>
+      <span class="field-content"><code>_make_run_dir</code> was updated to second-precision timestamps (<code>%H%M%S</code>) to prevent same-minute folder collision for concurrent same-domain pages. Each concurrent task records <code>start_time</code> inside the semaphore immediately before calling <code>agent_run()</code>, then <code>_run_folder_for()</code> returns the earliest run folder created at or after <code>start_time − 2s</code>. Reliable for <code>--page-stagger ≥ 3</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Per-page error isolation</span>
+      <span class="field-content"><code>asyncio.gather(..., return_exceptions=True)</code> means one page's failure does not abort others. Auth tempfile cleanup is still guaranteed via <code>finally</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Stagger < 3s may misattribute folders (documented, not guarded). Rate limit risk increases relative to sequential. Print output from concurrent pages interleaves — acceptable for a CLI tool. Shared auth session is read-only across concurrent contexts; no cross-context state collision.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">4.</span>Observability — The Langfuse Journey</h2>
+  <div class="section-intro">
+    <p>This section has more narrative than the others because the observability work was the most instructive failure sequence in the project.</p>
+  </div>
+  <article class="decision">
+    <h3>Replace `AnthropicInstrumentor` with `@observe` on the three direct-SDK paths</h3>
+    <p class="field">
+      <span class="field-label">Context (Batch 38.1)</span>
+      <span class="field-content">LiteLLM's per-step calls were traced via <code>litellm.callbacks = ["langfuse_otel"]</code>. But the advisor, below-fold analysis, and scout functions used the Anthropic SDK directly — bypassing LiteLLM entirely. Those three paths accounted for 15–20% of all tokens and were completely invisible in Langfuse.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">First attempt (Batch 39)</span>
+      <span class="field-content">Added <code>opentelemetry-instrumentation-anthropic</code> and called <code>AnthropicInstrumentor().instrument()</code> after the Langfuse TracerProvider was initialized. Appeared to work. Shipped.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Root cause discovered (Batch 45)</span>
+      <span class="field-content"><code>AnthropicInstrumentor().instrument()</code> runs at import time — before the TracerProvider is initialized. The spans were silently discarded. No error. No warning. Just missing traces in the Langfuse UI. The only way to catch this was to count spans per session and notice the gap.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision (Batch 45)</span>
+      <span class="field-content">Removed the entire OTel approach. Replaced with langfuse v4's <code>@observe(as_type="generation", capture_input=False, capture_output=False)</code> via the <code>@_lf_observe</code> wrapper (<code class="code-ref">agent_core.py:42</code>). Each of the three functions (<code>_complete_anthropic_advisor</code> at <code class="code-ref">agent_core.py:167</code>, <code>_run_below_fold_analysis</code> at <code class="code-ref">agent_core.py:388</code>, <code>scout_page</code> at <code class="code-ref">agent_core.py:448</code>) is decorated with <code>@_lf_observe</code>. Each call site wraps the invocation in <code>with propagate_attributes(session_id=run_dir)</code> to group spans under the correct Langfuse session.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Fix the OTel init ordering (fragile — depends on import order); instrument at the <code>httpx</code> layer (too low-level, loses semantic context); accept the blind spots.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Manual <code>_lf_update_generation()</code> call required inside each decorated function to preserve prompt/response visibility without triggering auto-capture. More boilerplate per function.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">All three paths surface as named generations in Langfuse under the correct session. Runtime-verified end-to-end via two smoke tests against a live Langfuse instance: a 4-step LiteLLM run produced step generations plus a <code>_run_below_fold_analysis</code> generation; a separate <code>--scout --advisor</code> run produced <code>scout_page</code>, <code>_complete_anthropic_advisor</code>, and <code>_run_below_fold_analysis</code> generations. Both runs were correctly grouped under their respective <code>session_id</code> (<code>runs/<domain>/<timestamp>_single_page</code>), confirming <code>propagate_attributes</code> works across both LiteLLM and direct-SDK paths.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`capture_input=False, capture_output=False` — never let `@observe` auto-serialize</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The first version of <code>@_lf_observe</code> used default <code>@observe</code> settings, which auto-serialize all function arguments and return values to JSON for the trace.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">What broke</span>
+      <span class="field-content"><code>_run_below_fold_analysis(page, ...)</code> receives a Playwright <code>Page</code> object as its first argument. <code>@observe</code> attempted to JSON-serialize it, recursively touching every internal browser and DOM attribute. CPU pegged at 100%. The process consumed over 50 GB of RAM trying to serialize the object graph and had to be killed manually. The same problem would have occurred with <code>messages</code> in <code>_complete_anthropic_advisor</code> — base64-encoded screenshots inside message content blocks are enormous.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>capture_input=False, capture_output=False</code> on every <code>@_lf_observe</code> call (<code class="code-ref">agent_core.py:52</code>). Each decorated function manually calls <code>_lf_update_generation()</code> after its LLM call, passing only text and scalar values. The advisor's path extracts <code>safe_input</code> by stripping image content blocks from messages before logging.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Prompt/response visibility in Langfuse requires a manual call inside each function. Forgetting it produces a trace with no content.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Zero memory regression. Trace content is present and readable in Langfuse. This invariant is documented in CLAUDE.md section 5 to prevent future regression.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`propagate_attributes` is a sync context manager — never `async with`</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content"><code>propagate_attributes(session_id=...)</code> returns <code>_AgnosticContextManager</code> from <code>opentelemetry.util._decorator</code>. It implements <code>__enter__</code> and <code>__exit__</code> but not <code>__aenter__</code> and <code>__aexit__</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">What broke</span>
+      <span class="field-content"><code>async with propagate_attributes(...)</code> raises a runtime error immediately. The agent loop is async throughout, so this was a natural mistake.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Always <code>with propagate_attributes(...)</code> (sync context manager). Inside the <code>with</code> block, <code>await</code> async functions normally — OTel context propagates through <code>contextvars</code> across <code>await</code> boundaries.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Slightly counterintuitive in an async codebase. The sync <code>with</code> block can contain <code>await</code> expressions, which looks wrong but is correct.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Documented as a section-5 invariant in CLAUDE.md. Has not regressed since.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">5.</span>Reporting Pipeline</h2>
+  <article class="decision">
+    <h3>Jinja2 HTML → Playwright headless PDF</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Reports need complex CSS layouts: dark theme, gradient backgrounds, screenshot embeds, per-step tables, score callouts.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Render the report to a Jinja2 HTML template written to a temp file, then open it in a headless Playwright Chromium context and call <code>page.pdf()</code>. Screenshots are rewritten to <code>file://</code> URIs so Chromium can load them locally. <code class="code-ref">generate_report.py:168</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content"><code>reportlab</code> (Python-native but requires manual layout math); <code>weasyprint</code> (HTML→PDF without a browser but CSS support is limited); plain text output with no PDF.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Requires a Playwright/Chromium install. Slower than native PDF generation. The temp HTML file must be cleaned up on every exit path.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Full HTML/CSS fidelity. The template is editable by anyone who knows HTML. Screenshot embeds render correctly. <code>document.fonts.ready</code> is awaited before rendering to ensure fonts load.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Haiku for exec summary synthesis, not deterministic aggregation</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Multi-page runs produce per-page JSON friction lists. A synthesized cross-page summary is more useful than a flat concatenation, but deterministic aggregation (pick the top N friction points by frequency) loses nuance.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Pass all page findings to <code>claude-haiku-4-5-20251001</code> with a prompt that explicitly requires actionable recommendations: "name actual UI elements, not generic advice." Strict JSON output. Degrades gracefully if Haiku fails — the page-by-page report is always generated regardless. <code class="code-ref">generate_report.py:61</code>, <code class="code-ref">generate_report.py:91</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Frequency-weighted top-N aggregation; Sonnet for better synthesis; skip exec summary for single-page runs.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Non-deterministic. Haiku occasionally produces malformed JSON (~2% of runs). The fallback is an empty exec summary, not a crashed report.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Synthesized summaries naturally weight findings that appear across multiple pages. Haiku is fast (~2 seconds) and cheap (~$0.002 per report). The strict JSON output constraint has held.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Dedup pass before Haiku synthesis</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">If every page in a 4-page run flags "CTA is unclear," Haiku receives and likely repeats that finding four times, wasting space and obscuring other patterns.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">A 7-line pass in <code>stitch_reports</code> iterates page summaries before passing them to Haiku, clearing any <code>top_finding</code> string that has already appeared. First occurrence wins. <code class="code-ref">generate_report.py:287</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Let Haiku deduplicate (it sometimes does, unreliably); include all findings and post-process the summary; deduplicate after synthesis.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Order-dependent — the first page's version of a repeated finding survives. Pages that appear later in the suite may have a better articulation of the same finding.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Exec summaries present novel cross-page findings. The dedup pass has caught repeated findings in multi-page runs against real SaaS products where a broken nav pattern propagated across every page.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">6.</span>Eval Harness</h2>
+  <article class="decision">
+    <h3>Isolated `eval_runs/` directory with a `manifest.json` per run</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Eval runs generate agent artifacts (screenshots, JSON, PDFs) identical in structure to real audit runs. If they land in <code>runs/</code>, they pollute the audit history and make it hard to diff eval results over time.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Eval output goes to <code>eval_runs/<timestamp>_<label>/</code>. Each eval invocation writes <code>manifest.json</code> capturing pass rate, per-URL results, labels file SHA, and settings at time of run. <code class="code-ref">evals/run_evals.py</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Tag eval runs in <code>runs/</code> with a metadata field; a separate eval database; a dedicated eval repo.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Two output directories to maintain. <code>eval_runs/</code> requires its own cleanup policy.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Eval manifests are diffable. The same labels SHA means two manifests are directly comparable for regression detection. Audit history in <code>runs/</code> stays clean and readable. See <code class="code-ref">eval_results_sample.md</code> for a committed sample run.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`_NAV_DRIFT_RE` — automated regression detection for nav selector drift</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Prompt changes and model updates occasionally caused agents to revert to emitting CSS selectors (<code>a[href="/pricing"]</code>) for navigation links instead of the required <code>nav:Pricing</code> prefix. This produced silent click failures — the selector would fail without an obvious error.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">A compiled regex pattern at <code class="code-ref">evals/run_evals.py:137</code> matches CSS anti-patterns (<code>a[href</code>, <code>a:has-text</code>, <code>a:contains</code>, <code>.nav-</code>, <code>.nav_</code>, <code>nav a</code>, <code>header a</code>) in step <code>target</code> fields. Labels with <code>assert_nav_drift: true</code> fail the eval if the pattern matches any step. All 7 <code>saas_landing</code> labels carry this flag. <code class="code-ref">evals/run_evals.py:143</code>, <code class="code-ref">evals/run_evals.py:194</code></span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Manual review of eval output after each run; a separate linting pass; no regression detection.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">The regex can false-positive on legitimately complex CSS selectors for non-navigation elements on unusual pages.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Drift caught automatically on every eval run. The regression that prompted this change (Batch 43) would have been invisible in production without it.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Calibrate eval baseline to the model&#39;s actual behavior, not ideal output</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The first locked baseline had a 52.6% pass rate — completely unusable as a regression signal. Running the eval against changes would produce noise rather than signal.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Root cause</span>
+      <span class="field-content">10 label bugs surfaced iteratively: substring mismatches (<code>subscribe</code> matched <code>subscription</code>), wrong expected keywords for specific pages, score bands set too narrow around ideal expected values rather than around observed model behavior.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision (Batches 28 + 28.5 — Opus arc)</span>
+      <span class="field-content">Batch 28 fixed 6 label bugs and widened score bands by ±12 (52.6% → 65%). Batch 28.5 fixed 4 more label bugs and recalibrated bands against observed Opus output (65% → 19/20).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision (Batch 33 — Sonnet arc)</span>
+      <span class="field-content">The Opus → Sonnet swap (Batch 31) regressed the pass rate to 5/20 against Opus-tuned bands. Batch 33 recalibrated labels for Sonnet's actual scoring behavior, restoring 19/20 (95%) — the locked baseline used today.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Lesson learned</span>
+      <span class="field-content">Narrower score bands are not stricter — they are unstable. A band calibrated to ideal output will fail legitimately correct responses. A band calibrated to observed model behavior within a reasonable range is both stable and sensitive to regressions. Write the rubric based on what the model actually does, then tighten if the model improves.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Bot-block preflight before spending vision tokens</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Some URLs in eval fixtures return a Cloudflare CAPTCHA at the CDN edge before Playwright even loads the application. Running the full agent on a blocked URL costs tokens and produces a meaningless report.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">HTTP HEAD/GET check before each eval URL (<code class="code-ref">evals/run_evals.py:60</code>). Checks HTTP status code, content type, and text patterns (<code>"just a moment"</code>, <code>"captcha"</code>, <code>"access denied"</code>). Blocked URLs are marked <code>"skipped"</code>, not <code>"failed"</code>, so they don't contaminate the pass rate.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Let the agent handle it and detect failure in the report; skip blocked URLs manually before each eval run; use a proxy to bypass CDN challenges.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Only catches CDN-edge challenges. JS-rendered CAPTCHAs served by the application after page load slip through to the agent run.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Eval pass rates are not polluted by external infrastructure failures. The skipped count in the manifest distinguishes infrastructure problems from product regressions.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">7.</span>Security and Product Framing</h2>
+  <article class="decision">
+    <h3>`_sanitize_extracted.py` — indirect prompt injection defense</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Personas and friction strings extracted from agent output are fed back into downstream prompts — exec summary synthesis, multi-persona analysis, persona generation from the URL. A malicious website could embed instructions in on-page text that Claude captures and later re-injects into a downstream prompt.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>_sanitize_extracted.py</code> caps persona strings at 200 characters, friction and recommendation fields at 500 characters, and strips strings matching patterns for role markers and instruction smuggles before any re-injection into a prompt.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Trust model output; validate only at the final output boundary; use a dedicated guardrail model.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Overly aggressive sanitization could truncate legitimate UX findings on verbose pages.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Indirect injection surface reduced. Added in Batch 27 after mapping the full data flow from extraction to re-injection. The character caps have not truncated meaningful findings in practice.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`TERMS.md` covering third-party TOS compliance and data handling</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">Running automated browser sessions against third-party websites touches their terms of service. Without explicit terms of use, the tool's commercial viability is ambiguous and potential users have no documented basis for their own compliance decisions.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content"><code>TERMS.md</code> added (Batch 46) covering: third-party TOS compliance (user's responsibility to verify), data retention (runs/ is gitignored and never transmitted), API cost model (user bears LLM costs), acceptable use, no-warranty disclaimer.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">README footnote; no terms; full legal terms drafted by counsel.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">The TERMS.md provides clarity but not legal protection. It is not a substitute for counsel if the tool is used commercially at scale.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Reduces ambiguity for potential users evaluating the tool. Required milestone before any public release.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>`html.escape()` on all LLM-extracted fields in HTML report output</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content"><code>_build_html_report</code> and <code>_build_below_fold_html</code> build HTML via f-strings. All LLM-extracted strings — friction points, recommendations, observations, verdicts, first impressions, score notes, persona, below-fold findings — were interpolated directly without HTML escaping. <code>_sanitize_extracted.py</code> strips prompt-injection patterns (role markers, instruction smuggles) but does not HTML-escape.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">The gap</span>
+      <span class="field-content">A malicious site under audit could embed <code><script></code> tags, event handlers, or other HTML in its page copy. Claude might extract these verbatim into friction points or observations. When the HTML report is opened — including when sent to a founder or client — the injected markup executes in the browser. This is a stored XSS in the tool's primary deliverable artifact.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision (Batch 56+57)</span>
+      <span class="field-content"><code>import html</code> (stdlib, zero dependencies). Every LLM-extracted string is wrapped with <code>html.escape()</code> before f-string injection into report HTML. <code class="code-ref">agent_core.py:356</code>, <code class="code-ref">agent_core.py:636</code>, <code class="code-ref">agent_core.py:656</code>, <code class="code-ref">agent_core.py:659</code>, <code class="code-ref">agent_core.py:661</code>, <code class="code-ref">agent_core.py:616</code>, <code class="code-ref">agent_core.py:670–679</code>. Internal values (step numbers, pass/fail labels, confidence colors) are not escaped — they are generated by application code, not model output.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Alternatives considered</span>
+      <span class="field-content">Sanitize at write time in <code>_sanitize_extracted.py</code> (would require extending that module's scope beyond prompt-injection defense to HTML hygiene — two responsibilities in one module); switch f-string HTML to a Jinja2 template with autoescape enabled (Jinja2 is already used and autoescaped in <code>generate_report.py</code> — would improve consistency but requires migrating ~130 lines of inline HTML per function); accept the risk given local-only use (unacceptable because the HTML report is the primary deliverable, intended to be sent to founders/clients).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content"><code>html.escape()</code> encodes <code>&</code>, <code><</code>, <code>></code>, <code>"</code>, <code>'</code> — legitimate angle brackets in LLM output (e.g., "clarity < 3" in a note) will render as <code>&lt;</code> in the raw HTML but display correctly in the browser. No observable visual regression.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Stored XSS surface eliminated in both the inline HTML path (<code>_build_html_report</code>, <code>_build_below_fold_html</code>) and the below-fold adj table. The Jinja2 path in <code>generate_report.py</code> was already protected via <code>autoescape=jinja2.select_autoescape(["html", "j2"])</code>.</span>
+    </p>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Repo visibility — pre-public checklist passed</h3>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The repo is private during development. Before flipping it public, a pre-release checklist was run (2026-04-26) to confirm no secrets in history, no hardcoded credentials in the working tree, all dependency licenses are permissive, the README is externally readable, and the CI workflows are in working order.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Conditions met as of 2026-04-26. Repo is ready to flip public; the visibility toggle itself is intentionally a separate manual step.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Conditions verified</span>
+      <span class="field-content">- Git history content scan (<code>git log --all -S</code>) — all <code>sk-ant</code> hits are the placeholder string <code>ANTHROPIC_API_KEY=sk-ant-...</code> in docs; no real key values in history. - Working tree credential grep — nothing outside <code>.env.example</code>. - Dependency licenses — all MIT / Apache-2.0 / BSD: anthropic (MIT), playwright (Apache-2.0), beautifulsoup4 (MIT), python-dotenv (BSD-3-Clause), requests (Apache-2.0), openai (Apache-2.0), google-generativeai (Apache-2.0), Pillow (MIT-CMU), Jinja2 (BSD), json-repair (MIT), litellm (MIT), langfuse (MIT), opentelemetry-api/sdk/exporter (Apache-2.0). - README externally readable — accurate after Batch 49 cleanup. - CI workflows — <code>test.yml</code> fixed in Batch 52; <code>pytest.yml</code> added in Batch 51.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">Once public, commit history is permanently visible. The history scan covered known key prefixes; a more exhaustive scan (e.g. trufflehog) would add confidence but was assessed as out of proportion given the project's dev history.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Dependency license audit cadence set to annual.</span>
+    </p>
+  </article>
+</section>
+<section>
+  <h2><span class="num">8.</span>Deferred — Considered, Not Built</h2>
+  <div class="section-intro">
+    <p>Naming what was decided against is as informative as naming what was built. Each item below was considered, sized, and deliberately left out — not forgotten.</p>
+  </div>
+  <article class="decision">
+    <h3>Multi-step auth (OAuth, MFA, SSO)</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Unit and integration tests for the agent loop itself</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>LLM response caching</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Persistent eval database</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Browser fingerprint or bot-detection evasion</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Web UI / hosted control plane</h3>
+<hr class="decision-sep">  </article>
+  <article class="decision">
+    <h3>Parallel page execution</h3>
+  </article>
+</section>
+
+<footer class="doc-foot">
+  <p>Source: <code>DECISIONS.md</code> · Rendered with <code>render_decisions.py</code> · <a href="DECISIONS.pdf">PDF version</a></p>
+</footer>
+
+</div>
+</body>
+</html>
