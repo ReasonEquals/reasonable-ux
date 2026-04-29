@@ -859,6 +859,7 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
         conversation = []
         report = []
         persona = None
+        advisor_called_count = 0
         screenshots_dir = f"{run_dir}/screenshots"
         os.makedirs(screenshots_dir, exist_ok=True)
 
@@ -910,6 +911,10 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
                     conversation, model, step_budget, tools=advisor_tools,
                     metadata={"session_id": lf_session_id, "step": step + 1}
                 )
+                if advisor and _raw_content and any(
+                    getattr(b, "type", None) == "advisor_tool_result" for b in _raw_content
+                ):
+                    advisor_called_count += 1
             except TokenBudgetExceeded as e:
                 print(f"💰 Token budget exceeded ({e.tokens_used:,}/{e.budget:,}), stopping test")
                 report.append({
@@ -1117,6 +1122,8 @@ async def run(url=None, goal=None, max_steps=8, suite_dir=None, token_budget=Non
             "scout_output_tokens": scout_output_tokens,
             "console_logs": console_logs,
             "network_events": network_events,
+            "advisor_called_count": advisor_called_count,
+            "advisor_eligible_steps": len(report) if advisor else 0,
         }
 
 if __name__ == "__main__":

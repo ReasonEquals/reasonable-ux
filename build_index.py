@@ -167,6 +167,7 @@ def main(runs_dir: Path = Path("runs")) -> None:
                 "flow_smoothness": r.flow_smoothness,
                 "composite_score": r.composite_score,
                 "persona": r.persona,
+                "advisor_call_rate": r.advisor_call_rate,
             }
             for r in rows
         ]
