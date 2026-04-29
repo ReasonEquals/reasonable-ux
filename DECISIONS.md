@@ -138,17 +138,19 @@ Vision models are expensive per-call. Multi-step runs with 8–12 screenshots, a
 
 ---
 
-### Decision: Sequential page execution, not parallel
+### Decision: Bounded concurrent page execution (Semaphore 2)
 
-**Context:** Parallel Playwright contexts could theoretically speed up multi-page evaluation suites.
+**Context:** Sequential execution was the original design (reversed in Batch 62). Wall-clock time for multi-page suites is meaningful when running 5–10 pages; halving it matters.
 
-**Decision:** `run_pages()` executes pages sequentially. [`run.py:108`](run.py#L108)
+**Decision:** `run_pages()` runs at most 2 pages concurrently via `asyncio.Semaphore(2)`. Pages are launched together via `asyncio.gather` with a configurable stagger delay (`--page-stagger`, default 5s) between start times. [`run.py`](run.py)
 
-**Alternatives considered:** `asyncio.gather` over all pages simultaneously; a bounded concurrency pool (e.g., 2 at a time).
+**Rate limit note:** Tier 1 Anthropic limits (50 RPM, 30k ITPM). 2 concurrent pages is borderline at scale but acceptable for typical 4–6 page suites where each page idles between steps (screenshot capture, Playwright navigation) and doesn't saturate ITPM continuously.
 
-**Tradeoffs accepted:** Slower wall-clock time for large suites. More importantly: if `agent_run` raises an uncaught exception mid-suite, the loop exits early and subsequent pages do not run — there is no per-page error isolation. The auth tempfile is always cleaned up via `finally` regardless. Each Playwright context is independent and closed by the agent loop after each page, so memory does not accumulate across a long suite.
+**Folder attribution:** `_make_run_dir` was updated to second-precision timestamps (`%H%M%S`) to prevent same-minute folder collision for concurrent same-domain pages. Each concurrent task records `start_time` inside the semaphore immediately before calling `agent_run()`, then `_run_folder_for()` returns the earliest run folder created at or after `start_time − 2s`. Reliable for `--page-stagger ≥ 3`.
 
-**Outcome:** Shared auth session is trivially correct — no cross-context state collision. Error recovery is page-by-page without cascading failures. Rate limit headroom is preserved. The wall-clock cost is acceptable for a tool that runs a handful of pages per session rather than hundreds.
+**Per-page error isolation:** `asyncio.gather(..., return_exceptions=True)` means one page's failure does not abort others. Auth tempfile cleanup is still guaranteed via `finally`.
+
+**Tradeoffs accepted:** Stagger < 3s may misattribute folders (documented, not guarded). Rate limit risk increases relative to sequential. Print output from concurrent pages interleaves — acceptable for a CLI tool. Shared auth session is read-only across concurrent contexts; no cross-context state collision.
 
 ---
 
