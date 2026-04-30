@@ -468,7 +468,7 @@ async def _run_below_fold_analysis(page, run_dir, url, persona, advisor=False, s
 
 @_lf_observe
 async def scout_page(url: str, storage_state: str = None, run_dir: str = None, session_id: str = None) -> dict:
-    """Fetch page HTML, extract key text elements, ask claude-sonnet-4-6 to score interest 1-5.
+    """Fetch page HTML, extract key text elements, ask claude-haiku-4-5-20251001 to score interest 1-5.
     Returns {interest_score, reason, extracted_text, input_tokens, output_tokens}.
     """
     cookie_jar = requests.cookies.RequestsCookieJar()
@@ -545,7 +545,7 @@ Respond with a JSON object with exactly these two fields:
     adapter = LLMAdapter("anthropic")
     raw, in_tok, out_tok, _ = await adapter.complete(
         messages=[{"role": "user", "content": scout_prompt}],
-        model="claude-sonnet-4-6",
+        model="claude-haiku-4-5-20251001",
         max_tokens=256,
         metadata={"session_id": session_id or run_dir} if (session_id or run_dir) else None,
     )
@@ -553,10 +553,10 @@ Respond with a JSON object with exactly these two fields:
     _lf_update_generation(
         input=scout_prompt,
         output=raw,
-        model="claude-sonnet-4-6",
+        model="claude-haiku-4-5-20251001",
         input_tokens=in_tok,
         output_tokens=out_tok,
-        cost_usd=_calc_cost_usd("claude-sonnet-4-6", in_tok, out_tok),
+        cost_usd=_calc_cost_usd("claude-haiku-4-5-20251001", in_tok, out_tok),
     )
     try:
         clean = raw.replace("```json", "").replace("```", "").strip()

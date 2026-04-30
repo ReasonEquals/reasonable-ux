@@ -1,0 +1,992 @@
+[
+  {
+    "step": 1,
+    "url": "https://stripe.com/",
+    "observation": "Stripe's homepage hero presents a broad value proposition with two conversion CTAs and a row of enterprise logos, captured above the fold.",
+    "action": "click",
+    "target": "nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual design and social proof, but the hero prioritizes conversion over evaluation, creating friction for a mid-market buyer still vetting vendors.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Both 'Get started' and 'Sign up with Google' demand commitment upfront \u2014 no low-friction 'See how it works' or demo option for a still-evaluating buyer."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Clean and readable, but 'Financial infrastructure' is a category label, not a differentiator \u2014 doesn't tell a CTO why Stripe over Adyen or Braintree."
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "Visual hierarchy is strong and the logo social-proof bar loads confidently, but the journey jumps straight to signup with no intermediate evaluation path."
+    },
+    "severity": 2,
+    "first_impression": "Polished and credible, but optimized for conversion rather than evaluation \u2014 a mid-market buyer comparing vendors has no clear 'learn more before committing' ramp.",
+    "friction_points": [
+      "The '1.64508599%' GDP stat is overly precise with zero context on what it means for a buyer's decision \u2014 reads as a vanity metric rather than a trust signal.",
+      "Both primary CTAs immediately demand account creation, leaving no low-commitment path (demo, product tour) for a persona still comparing processors.",
+      "The hero sub-copy lists broad categories ('accept payments, offer financial services') without surfacing any differentiator versus direct competitors like Adyen or Braintree."
+    ],
+    "recommendations": [
+      "Replace the raw percentage with a plain-language stat (e.g., 'Powering 1 in 60 dollars of global GDP') paired with a tooltip or link for context.",
+      "Add a tertiary 'Watch a demo' or 'See how it works' CTA below the primary buttons to serve evaluators who aren't ready to sign up.",
+      "Add a one-line differentiator beneath the sub-headline (e.g., 'The only platform combining payments, billing, tax, and banking in one API') to anchor the comparison."
+    ],
+    "confidence": "high",
+    "persona": "Mid-market SaaS founder or CTO evaluating payment processors to scale from early traction to enterprise volume."
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/pricing",
+    "observation": "The Pricing page shows a two-tier model \u2014 Standard (2.9%+30\u00a2) and Custom \u2014 with feature bullets for Custom but no volume thresholds to guide tier selection.",
+    "action": "navigate",
+    "target": "https://stripe.com/pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing page is unusually transparent for standard rates but creates a decision wall for mid-market buyers who fall between the two tiers with no self-qualification signal.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Get started' vs. 'Contact sales' is a clear split, but there's no guidance on which a $1M-$10M ARR SaaS should choose."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'No setup fees, monthly fees, or hidden fees' directly neutralizes a key objection, but the Custom tier has no indicative numbers to anchor a comparison."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The jump from self-serve to 'Contact sales' is a cliff with no intermediate ramp \u2014 mid-market buyers are forced into a sales conversation before they have enough data."
+    },
+    "severity": 3,
+    "first_impression": "Pricing is admirably transparent for the standard tier but creates a hard wall between self-serve and custom that will stall mid-market evaluation.",
+    "friction_points": [
+      "No volume threshold or revenue indicator tells a mid-market SaaS founder whether they qualify for Custom pricing, forcing them to guess or contact sales prematurely.",
+      "The Custom tier lists feature labels (IC+ pricing, Volume discounts, Country-specific rates) with zero ballpark numbers, making spreadsheet-based vendor comparison impossible without a sales call.",
+      "Only card transaction pricing is visible above the fold \u2014 a CTO evaluating total platform cost (Billing, Radar, Tax, Connect) must scroll or navigate away before seeing the full picture."
+    ],
+    "recommendations": [
+      "Add a volume signal such as 'Processing over $80K/month? See custom rates' beneath the Standard CTA to help buyers self-qualify.",
+      "Include at least one illustrative rate (e.g., 'IC+ rates typically 0.8%\u20131.5% for high-volume merchants') on the Custom card to give comparison-mode buyers a starting anchor.",
+      "Add a product-switcher or tab row above the pricing cards to let visitors toggle between Payments, Billing, and Radar pricing without leaving the page."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/pricing",
+    "observation": "Stripe's Pricing page confirms the two-tier model: Standard at 2.9%+30\u00a2 with a 'Get started' CTA, and Custom with feature labels (IC+ pricing, Volume discounts, Multi-product discounts, Country-specific rates) plus a 'Contact sales' CTA \u2014 no volume thresholds visible.",
+    "action": "navigate",
+    "target": "https://stripe.com/payments",
+    "pass_fail": "in_progress",
+    "verdict": "The pricing page is transparent on standard rates but creates a hard decision wall for mid-market buyers who have no self-qualification signal and must enter a sales funnel to get the numbers they need.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Get started' and 'Contact sales' are visually distinct but there is still no self-qualification signal telling a mid-market founder which path applies to them."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'No setup fees, monthly fees, or hidden fees' is a strong trust statement, but 'unique business models' on the Custom card is vague and doesn't help a SaaS founder self-identify."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The bottom tab strip (Standard pricing / Custom pricing / FAQs) is partially cut off and unclickable above the fold, hiding the deeper content this persona needs most."
+    },
+    "severity": 3,
+    "first_impression": "Clear for a micro-business, but a mid-market SaaS doing $500K\u2013$5M in payments has no way to know whether they're a Standard or Custom customer without making a sales call.",
+    "friction_points": [
+      "The Custom card lists four feature labels with zero example rates or thresholds, forcing a volume-sensitive SaaS CTO into a sales call just to get a ballpark number for their model.",
+      "The 'Chat with Stripe sales' widget overlaps the bottom-right corner of the pricing card area, obscuring the Country-specific rates label \u2014 a distraction for an international SaaS buyer.",
+      "There is no 'price estimator' or 'volume calculator' on this page, so a founder processing $2M/year can't model their effective rate versus the 2.9%+30\u00a2 standard without leaving the page."
+    ],
+    "recommendations": [
+      "Add an indicative volume threshold to the Custom card copy, e.g., 'Typically for businesses processing over $80K/month,' so buyers can self-select without a sales call.",
+      "Anchor the live chat widget to the bottom-right viewport edge with a higher z-offset that doesn't overlap pricing card content on standard 1280px-wide screens.",
+      "Add a simple interactive rate calculator (enter monthly volume \u2192 see estimated monthly cost) between the two pricing cards to let founders build their own TCO model on-page."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/payments",
+    "observation": "The Stripe Payments product page loads with a strong hero headline, but is visually split \u2014 left side shows Stripe's own marketing while the right side shows an embedded checkout flow for a third-party product called 'Quantum' with a $1,400/year plan, creating significant context confusion.",
+    "action": "click",
+    "target": "nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Strong product copy is critically undermined by a confusing split-screen layout where a live third-party checkout widget competes with Stripe's own messaging, creating context collapse for an evaluating buyer.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start accepting payments' and 'Contact sales' are clear in isolation, but the competing Quantum checkout widget on the right half of the screen fractures attention and undermines both CTAs."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'Unified, global payments to grow your revenue' is concise and benefit-led, but the sub-headline 'from scaling startups to global enterprises' is a segment-spanning claim that doesn't sharpen focus for a mid-market buyer."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The right-panel checkout widget for 'Quantum Professional' appears to be a live embedded Stripe checkout demo that has loaded a real third-party product, severely disrupting the evaluation journey."
+    },
+    "severity": 3,
+    "first_impression": "A confused split-screen: Stripe's own product messaging on the left competes with what appears to be a third-party embedded payment form on the right, making it genuinely unclear what page this is.",
+    "friction_points": [
+      "The Quantum checkout widget on the right half \u2014 showing a real $1,400 plan with live card fields \u2014 is indistinguishable from Stripe's own content, causing a mid-market CTO to question whether they are being charged or demos are mixed with live forms.",
+      "The secondary nav tabs (Overview, Features, Payment methods, Authentication, AI, Docs) are visible but partially obscured by the overlapping demo widget, blocking access to the technical depth this persona needs.",
+      "The 'Sessions 2026 \u00b7 Watch the keynote' banner above the hero is an unrelated event promo that competes with the primary value proposition and delays the founder from reaching product details."
+    ],
+    "recommendations": [
+      "Replace the live embedded third-party checkout demo with a clearly labelled, non-interactive mockup or sandbox preview so it cannot be mistaken for a real transaction form.",
+      "Ensure the product sub-nav tabs (Features, Payment methods, etc.) are fully visible and clickable without overlap from any demo widget at standard viewport widths.",
+      "Move the Sessions 2026 event banner to a dismissible top ribbon or the footer, keeping the hero viewport exclusively focused on the payments value proposition."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/pricing",
+    "observation": "The Pricing page is now fully visible with two cards \u2014 Standard (2.9%+30\u00a2, 'Get started') and Custom (feature labels only, 'Contact sales') \u2014 plus a 'Chat with Stripe sales' widget in the bottom-right corner and a partially visible tab strip below.",
+    "action": "click",
+    "target": "a[href*='custom-pricing'], a[href*='enterprise']",
+    "pass_fail": "in_progress",
+    "verdict": "The pricing page is transparent and clean for small businesses but creates a hard decision wall for mid-market SaaS founders who have no self-qualification signal and must enter a sales funnel to get comparison-ready numbers.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Get started' vs 'Contact sales' split is visually clear, but nothing on the page tells a $2M ARR SaaS founder which tier they belong in."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'No setup fees, monthly fees, or hidden fees' is precise and trust-building, but 'large payments volume or unique business models' is too vague to help a mid-market founder self-qualify."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The tab strip (Standard pricing / Custom pricing / FAQs) is cut off at the bottom of the viewport, hiding the deeper comparison content this persona needs without any scroll prompt."
+    },
+    "severity": 3,
+    "first_impression": "Clean and credible layout, but a mid-market SaaS founder processing $1M\u2013$5M/year is left guessing which card applies to them \u2014 the pricing wall requires a sales call to resolve.",
+    "friction_points": [
+      "The Custom card lists four feature labels (IC+ pricing, Volume discounts, Multi-product discounts, Country-specific rates) with zero example rates, forcing a CTO building a vendor-comparison spreadsheet to enter a sales call before they have baseline numbers.",
+      "No volume threshold or indicative revenue signal separates Standard from Custom \u2014 a founder processing $80K/month doesn't know if they're in the wrong tier and potentially overpaying.",
+      "The 'Chat with Stripe sales' widget overlaps the bottom-right corner of the Custom card, obscuring 'Country-specific rates' text \u2014 a specific concern for a SaaS company with international customers."
+    ],
+    "recommendations": [
+      "Add one illustrative IC+ rate range to the Custom card (e.g., 'IC+ rates typically reduce effective rate by 0.5\u20131.0% at scale') so buyers can model savings without a sales call.",
+      "Add a volume self-qualifier beneath the Standard card CTA: 'Processing over $80K/month? Custom pricing may lower your costs \u2192' with a link to the Contact sales flow.",
+      "Reposition the chat widget to the far bottom-right viewport corner with a higher bottom offset (min 80px) to prevent it from overlapping any card content at 1280px viewport width."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/pricing",
+    "observation": "The pricing page screenshot confirms the two-card layout \u2014 Standard (2.9%+30\u00a2) and Custom (labels only, no rates) \u2014 with a partially visible tab strip at the bottom and a 'Chat with Stripe sales' widget in the bottom-right overlapping content.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Stripe's site is visually excellent and transparent on standard rates, but mid-market SaaS buyers are stranded between a self-serve tier and an opaque custom tier with no self-qualification signal, no rate calculator, and no evaluation path short of a sales call.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "CTAs are visually distinct across all pages, but no self-qualification signal exists anywhere in the journey to tell a mid-market SaaS founder whether they belong in Standard or Custom."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Copy is consistently clean, benefit-led, and objection-aware ('no setup fees, no hidden fees'), but never differentiates Stripe from Adyen or Braintree on the dimensions a CTO comparison-shops."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The homepage-to-pricing journey is intuitive but hits a hard wall at the Standard/Custom split \u2014 a mid-market buyer is forced into a sales call without enough information to judge if it's worth their time."
+    },
+    "severity": 3,
+    "first_impression": "Visually polished and credible throughout, but optimized for two extremes \u2014 self-serve micro-businesses and enterprise sales \u2014 leaving mid-market buyers stranded in the middle.",
+    "friction_points": [
+      "The Custom pricing card lists only feature category labels (IC+ pricing, Volume discounts) with zero indicative rates \u2014 a CTO building a vendor-comparison spreadsheet cannot model costs without entering a sales funnel.",
+      "Neither the homepage nor the pricing page provides any volume threshold or revenue signal to help a $1M\u2013$5M ARR SaaS founder self-select between the two pricing tiers.",
+      "All primary CTAs across the site route to account creation or sales contact \u2014 there is no low-commitment evaluation path (demo, sandbox preview, rate calculator) for a persona still in the comparison phase."
+    ],
+    "recommendations": [
+      "Add at least one indicative IC+ rate range to the Custom card (e.g., 'Effective rates typically 1.5%\u20132.2% at $500K+/month volume') so buyers can self-model before calling sales.",
+      "Add a volume-based self-qualifier beneath the Standard CTA: 'Processing over $80K/month? Custom pricing may lower your costs \u2192' to bridge the tier gap without a sales call.",
+      "Introduce a low-commitment CTA on the homepage hero \u2014 'Try the interactive demo' or 'Explore the sandbox' \u2014 to serve evaluators who are not yet ready to create an account or talk to sales."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/pricing",
+    "observation": "Stripe pricing page shows a two-tier layout above the fold: Standard (2.9% + 30\u00a2 per domestic card transaction) and a Custom tier with feature callouts but no price anchor.",
+    "action": "navigate",
+    "target": "https://stripe.com/pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Above the fold is clean but incomplete for a cost-forecasting founder \u2014 the Custom tier is a black box and international rates are hidden.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Get started' vs 'Contact sales' covers two extremes but offers no middle path for a self-serve cost estimate."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Standard plan copy is concise and reassuringly no-hidden-fees, but Custom tier copy is vague with zero pricing signal."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "'for domestic cards' qualifier is visible but the international rate\u2014a key comparison point\u2014is absent above the fold."
+    },
+    "severity": 2,
+    "first_impression": "Clean and confident layout, but a cost-conscious founder is immediately aware that half the pricing page gives no price.",
+    "friction_points": [
+      "The Custom tier provides zero volume thresholds or savings estimates, forcing the founder into a sales call to self-qualify.",
+      "International card rates are not shown above the fold despite being critical for SaaS companies with global customers.",
+      "No cost calculator or volume slider exists to help the founder estimate real monthly fees at their projected volume."
+    ],
+    "recommendations": [
+      "Add a 'Starting at' volume hint or a sample savings comparison (e.g., 'businesses processing $1M+') to let buyers self-qualify for Custom.",
+      "Surface the international card rate (e.g., +1.5%) directly beneath the domestic rate headline to pre-empt the next obvious question.",
+      "Introduce a simple interactive cost estimator (monthly volume input \u2192 estimated fee) near the Standard plan CTA."
+    ],
+    "confidence": "high",
+    "persona": "Early-stage SaaS founder evaluating payment processors and trying to forecast monthly processing costs without a sales call"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/pricing",
+    "observation": "Above-the-fold confirms two tiers: Standard (2.9% + 30\u00a2 domestic) and Custom (opaque), with sub-nav tabs hinting at 'Standard pricing', 'Custom pricing', and 'FAQs' just below the fold.",
+    "action": "click",
+    "target": "a[href='#standard-pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "Hero is clean and credible, but the SaaS founder still can't calculate their real cost or self-qualify for Custom from above the fold alone.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Get started' and 'Contact sales' are visually clear but the gap between them leaves a self-serve cost-estimation path entirely absent."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'No setup fees, monthly fees, or hidden fees' is a strong trust signal, but Custom tier copy still offers zero pricing context."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Sub-nav tabs (Standard pricing / Custom pricing / FAQs) suggest more detail is below, but the founder must scroll or click to reach it \u2014 no progressive disclosure above the fold."
+    },
+    "severity": 2,
+    "first_impression": "Polished and trustworthy, but the founder immediately sees that half the page's pricing requires a sales conversation to unlock.",
+    "friction_points": [
+      "The Standard rate is only shown for domestic cards \u2014 a SaaS founder with international customers can't calculate blended cost without leaving the hero section.",
+      "Custom tier features (IC+ pricing, volume discounts) are listed but no volume floor or indicative saving is given, making it impossible to self-qualify.",
+      "The 'Chat with Stripe sales' widget competes visually with the 'Contact sales' CTA, creating minor decision paralysis on next step."
+    ],
+    "recommendations": [
+      "Add '+1.5% for international cards' as a secondary line directly beneath the domestic rate to pre-empt the next obvious question.",
+      "Add a one-line qualifier such as 'Typically for businesses processing $80k+/mo' under the Custom tier description to enable self-qualification.",
+      "Consolidate chat and contact-sales into a single contextual entry point to reduce competing CTAs in the same viewport."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/pricing#standard-pricing",
+    "observation": "The Standard pricing section opens with a left-nav category list (Global payments, Money management, Revenue and finance, etc.) and a 'Payments' feature card is visible \u2014 but no rate is shown yet, with '2.9% + 30\u00a2' only partially appearing at the very bottom cut-off.",
+    "action": "click",
+    "target": "a[href*='#payments']",
+    "pass_fail": "in_progress",
+    "verdict": "The pricing section frontloads product marketing over actual rates, creating a catalog-browsing experience that frustrates a cost-focused founder.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Payments card is clear, but the founder hasn't seen any rate yet and is being asked to commit before pricing is visible."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Feature bullets (100+ methods, Link checkout, ML fraud) are benefit-oriented but don't help the founder answer 'what will I pay per transaction?'"
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The left-nav lists 15+ product categories, forcing the founder to mentally map which products they actually need before finding relevant rates \u2014 high cognitive load."
+    },
+    "severity": 3,
+    "first_impression": "This feels like a product catalog, not a pricing page \u2014 rates are buried below feature marketing copy.",
+    "friction_points": [
+      "The actual transaction rate (2.9% + 30\u00a2) is not visible until the founder scrolls past the full feature card, burying the most important pricing signal.",
+      "The 15-item left-nav product list creates cognitive overload \u2014 a founder just wants 'what does accepting cards cost me?' not a full platform directory.",
+      "No context is given for which products are included in the Standard rate vs. which add incremental fees, making total cost forecasting impossible at this view."
+    ],
+    "recommendations": [
+      "Move the rate (e.g., '2.9% + 30\u00a2 per transaction') into the card header or subtitle, above the feature bullets, so price is visible before features.",
+      "Collapse the left-nav into 3\u20134 top-level categories (Payments, Billing, Fraud, More) to reduce decision fatigue for a founder scanning for core payment costs.",
+      "Add a one-line 'Included in Standard rate' vs. 'Additional fee' label to each product card so cost scope is immediately clear."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/pricing#payments",
+    "observation": "The 'Cards and wallets' section now clearly shows 2.9% + 30\u00a2 domestic, +1.5% international, +0.5% manually entered, and +1% currency conversion \u2014 the most detailed rate breakdown visible so far.",
+    "action": "scroll",
+    "target": "main",
+    "pass_fail": "in_progress",
+    "verdict": "Rate granularity is good once found, but additive fees and payment-method-specific rates still require significant mental arithmetic from the founder.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Payments hero card still appears before rates, while per-product 'Learn more' links below don't clarify whether clicking adds cost or just explains the feature."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The additive rate format (+0.5%, +1.5%, +1%) is honest and scannable \u2014 a founder can now build a rough blended rate for their customer mix."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Rates appear in a separate right-column card below the Payments hero, so the founder must scroll past feature marketing to reach the first concrete number."
+    },
+    "severity": 2,
+    "first_impression": "The Cards and wallets rate card is the clearest pricing element on the page so far \u2014 but it's still mid-page, not at the top.",
+    "friction_points": [
+      "The 5.99% + 30\u00a2 Klarna rate appears at the very bottom of the viewport with no context on whether it's opt-in or default, making cost forecasting unclear for a founder who might not use BNPL.",
+      "Link shows two separate rates (2.9% + 30\u00a2 and 2.6% + 30\u00a2) with no plain-English explanation of when each applies \u2014 'Instant Bank Payments' is jargon without a tooltip or parenthetical.",
+      "There is no running total or 'typical blended rate' example to help the founder see what all these additive fees actually look like on a realistic transaction mix."
+    ],
+    "recommendations": [
+      "Add a one-line parenthetical to Klarna's rate making it explicit that BNPL fees only apply if the founder enables that payment method.",
+      "Replace 'Instant Bank Payments' with 'ACH / bank transfer' or add a short tooltip so founders without Stripe context immediately understand the product.",
+      "Add a worked example (e.g., '100 domestic card transactions at $50 avg = $X in fees') near the Cards and wallets rate card to make additive costs concrete."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/pricing#payments",
+    "observation": "Screenshot confirms the Cards & wallets rate card (2.9% + 30\u00a2 with additive international/currency/manual-entry fees) and Link showing two distinct rates (2.9% + 30\u00a2 and 2.6% + 30\u00a2) \u2014 plus Klarna at 5.99% + 30\u00a2 appearing at the bottom.",
+    "action": "click",
+    "target": "a[href*='faqs'], a[href='#faqs']",
+    "pass_fail": "in_progress",
+    "verdict": "Rate granularity is commendable, but unexplained jargon and missing examples still prevent a founder from confidently forecasting their actual monthly cost.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Payments hero sits above all rates, asking for commitment before the founder has seen a single number."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Additive rate format is honest and scannable, but 'Instant Bank Payments' is unexplained jargon next to a completely different rate with no context."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Rates are only visible by scrolling past the full Payments feature card \u2014 the information hierarchy buries price below marketing."
+    },
+    "severity": 2,
+    "first_impression": "The rate detail here is genuinely useful, but the founder must do mental arithmetic across multiple additive fees with no worked example or blended-rate helper.",
+    "friction_points": [
+      "Link's two rates (2.9% + 30\u00a2 vs 2.6% + 30\u00a2) appear without any plain-English trigger condition \u2014 'Instant Bank Payments' is unexplained jargon that blocks cost forecasting.",
+      "Klarna at 5.99% + 30\u00a2 is shown with no opt-in/opt-out signal, making it unclear whether this fee applies automatically or only if BNPL is enabled.",
+      "No example calculation or blended-rate estimator exists \u2014 a founder with a mix of domestic, international, and wallet transactions cannot easily derive their real monthly cost."
+    ],
+    "recommendations": [
+      "Replace 'Instant Bank Payments' with 'ACH / bank-to-bank transfer' and add a parenthetical like '(applies when customer pays via linked bank account)' to clarify the trigger.",
+      "Add a one-line note under Klarna's rate: 'Only charged when you enable Klarna as a payment method' to eliminate ambiguity about automatic cost exposure.",
+      "Insert a simple cost estimator widget (monthly volume \u00d7 assumed average order value \u2192 estimated fee) adjacent to the Cards & wallets rate card."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/pricing#faqs",
+    "observation": "The FAQs section shows 5 collapsed accordions covering fee calculation, tax, refund fees, setup/monthly fees, and discounts \u2014 all closed by default, none pre-expanded.",
+    "action": "click",
+    "target": ".AccordionItem:first-child",
+    "pass_fail": "in_progress",
+    "verdict": "FAQ question selection is spot-on for this persona, but collapsed-by-default layout and a missing chargeback fee entry leave critical cost questions unanswered at a glance.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only CTA in this section is 'Contact sales' in the sticky nav \u2014 there's no FAQ-level CTA guiding the founder to next steps after reading answers."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Question labels are exactly what a founder would ask, but all answers are hidden behind clicks, forcing interaction before any value is delivered."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "All 5 FAQ items are collapsed by default \u2014 a founder landing here via anchor link sees only question titles and must click each individually to get answers."
+    },
+    "severity": 2,
+    "first_impression": "The FAQ questions are perfectly matched to founder concerns, but zero answers are visible without interaction \u2014 high friction for a scan-first buyer.",
+    "friction_points": [
+      "All accordions are collapsed by default, meaning a cost-focused founder must click 5 separate times to read all answers rather than scanning them at once.",
+      "'Are there additional fees for refunds?' \u2014 the single most important hidden-cost question \u2014 appears visually greyed out compared to other items, suggesting it may be disabled or less important.",
+      "There is no FAQ entry addressing dispute/chargeback fees ($15 is a critical cost for SaaS), leaving a key cost line entirely absent from the FAQ section."
+    ],
+    "recommendations": [
+      "Pre-expand the first two FAQs ('How are payment fees calculated?' and 'Are there additional fees for refunds?') by default since they directly answer the founder's primary cost questions.",
+      "Restore normal text weight/color to 'Are there additional fees for refunds?' \u2014 the grey styling incorrectly signals this question is secondary or inactive.",
+      "Add a sixth FAQ entry: 'What is the dispute/chargeback fee?' with the $15 fee explicitly stated, as this is a material cost SaaS founders must budget for."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/pricing#faqs",
+    "observation": "FAQs section is now visible with the first accordion ('How are payment fees calculated?') expanded, showing a one-sentence answer with a 'More details on fees by payment method' link \u2014 four other questions remain collapsed.",
+    "action": "click",
+    "target": ".AccordionItem:nth-child(3)",
+    "pass_fail": "in_progress",
+    "verdict": "FAQ questions are well-targeted but answers are too thin to serve a cost-forecasting founder \u2014 the most important question defers to a different page entirely.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only CTA visible in this entire section is 'Contact sales' in the sticky nav \u2014 there is no 'Get started' or cost-estimator prompt at the FAQ level to convert a now-informed founder."
+    },
+    "copy_quality": {
+      "score": 2,
+      "note": "The answer to 'How are payment fees calculated?' is a single vague sentence that defers entirely to a linked page, delivering no standalone value to the founder."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "First accordion opened cleanly, but four remaining questions are still collapsed and must be clicked individually \u2014 no 'Expand all' option available."
+    },
+    "severity": 2,
+    "first_impression": "The FAQ section looks tidy but the first answer is so thin it functionally requires the founder to leave the pricing page to get real information.",
+    "friction_points": [
+      "The answer to the most critical FAQ ('How are payment fees calculated?') contains zero numbers \u2014 it defers entirely to a linked page, breaking the founder's ability to evaluate costs without navigating away.",
+      "No 'Expand all' or 'Show all answers' control exists, forcing the founder to click every accordion individually to perform a complete cost evaluation.",
+      "No chargeback/dispute fee entry exists anywhere in the FAQ \u2014 a $15 per-dispute cost is material for SaaS businesses and is completely absent from this section."
+    ],
+    "recommendations": [
+      "Expand the 'How are payment fees calculated?' answer to include at least one worked example (e.g., '$100 transaction = $3.20 in fees') so the founder gets a concrete answer without leaving the page.",
+      "Add an 'Expand all answers' toggle above the accordion list to let comparison-shopping founders scan all answers in one pass.",
+      "Add a sixth FAQ: 'What is the fee for disputed transactions?' with the explicit $15 chargeback fee stated, matching the transparency level of other fee disclosures on the page."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://stripe.com/pricing#faqs",
+    "observation": "FAQs section shows first accordion ('How are payment fees calculated?') open with a vague one-liner deferring to a link, and third accordion ('Are there additional fees for refunds?') open with detailed bullet answers distinguishing standard vs. custom pricing \u2014 but processing fees from original transactions are explicitly flagged as non-refundable.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Stripe's pricing page is structurally transparent and visually polished, but an early-stage SaaS founder must work too hard to assemble a complete cost picture \u2014 missing chargeback fees, deferred FAQ answers, and no cost estimator are the three most impactful gaps to close.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only persistent CTA across the entire page is 'Contact sales' in the sticky nav \u2014 there is no 'Get started' or cost-estimator CTA at the bottom of the page to convert a now-informed founder."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Refund fee answer is thorough and clearly differentiates standard vs. custom pricing, but the lead FAQ answer is a near-empty sentence that defers all substance to a hyperlink."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The pricing page forces the founder through hero \u2192 feature catalog \u2192 rate cards \u2192 FAQs with no progressive summary or running cost estimate \u2014 the journey is long and non-linear."
+    },
+    "severity": 3,
+    "first_impression": "The refund fee answer is genuinely useful, but arriving here after 7 steps reveals a systemic information architecture problem: the most critical cost details are scattered and require significant exploration to assemble.",
+    "friction_points": [
+      "The lead FAQ answer \u2014 the most prominent question on the page \u2014 contains zero numbers and defers entirely to an offsite link, failing the founder's core need to forecast costs without navigating away.",
+      "Dispute/chargeback fees ($15 per dispute) are entirely absent from the FAQ and the rate cards \u2014 a material SaaS cost that a founder cannot find anywhere on stripe.com/pricing.",
+      "The page ends with no conversion CTA or cost-estimator prompt, leaving a fully-informed founder with no clear next step other than a sales call they were trying to avoid."
+    ],
+    "recommendations": [
+      "Rewrite the 'How are payment fees calculated?' answer to include at least one concrete worked example (e.g., '2.9% + 30\u00a2 on a $50 transaction = $1.75') so it stands alone without requiring a click-through.",
+      "Add an explicit FAQ entry or footnote on the rate card: 'Disputed transactions: $15 per dispute, refunded if you win' \u2014 this is a standard cost SaaS founders must budget for.",
+      "Add a sticky or end-of-page CTA pairing 'Get started free' alongside a 'Estimate your fees' cost calculator link so an informed founder has a self-serve conversion path."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/customers",
+    "observation": "Stripe's customer stories page loads with a bold headline, brief mission copy, and a grid of video-heavy customer thumbnails (Brightwheel, Figma, URBN, Lovable, ElevenLabs) \u2014 no filters, no outcome metrics visible above the fold.",
+    "action": "navigate",
+    "target": "https://stripe.com/customers",
+    "pass_fail": "in_progress",
+    "verdict": "The page is visually strong but under-serves a mid-market evaluator who needs filterable, metric-backed proof points and a clear next step \u2014 not a video gallery.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only conversion CTA is 'Contact sales' in the global nav \u2014 there is no in-page CTA guiding the buyer toward a next step after reading stories."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'The payments platform behind millions of businesses' is aspirational but generic \u2014 it doesn't help a mid-market SaaS buyer self-identify or understand relevance to their segment."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The page invites browsing but provides no filtering by industry, company size, or use case, forcing the persona to scan randomly rather than find relevant peers quickly."
+    },
+    "severity": 2,
+    "first_impression": "Visually polished and brand-consistent, but reads as a video media gallery rather than a decision-support resource for a buyer building a business case.",
+    "friction_points": [
+      "No filtering or categorization by industry, company size, or use case \u2014 this persona cannot quickly find companies similar to theirs without scrolling through every card.",
+      "All CTAs on the cards are 'Watch video,' demanding high time investment compared to scannable outcome summaries with metrics (e.g., '40% reduction in payment failures').",
+      "There is no in-page conversion path \u2014 the only next step visible above the fold is the global 'Contact sales' button, which is a large commitment leap from early-stage browsing."
+    ],
+    "recommendations": [
+      "Add filter chips (by industry, company size, product used) so the persona can surface relevant peers in one click.",
+      "Surface one key metric or outcome on each card (e.g., '2\u00d7 faster checkout conversion') so buyers can scan value without watching a video.",
+      "Add a contextual mid-page CTA such as 'See how Stripe works for SaaS companies \u2192 Get started' to bridge the gap between browsing proof and taking action."
+    ],
+    "confidence": "high",
+    "persona": "Mid-market SaaS product or engineering leader evaluating payment infrastructure and looking for peer validation from comparable companies"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/customers",
+    "observation": "Above-the-fold confirms: hero headline is generic, customer cards are purely video-CTA-driven with no metrics, and the only navigational tabs are 'Overview' and 'All customer stories' \u2014 no filters visible.",
+    "action": "click",
+    "target": "a[href*='all-customer-stories'], .customers-nav a:last-child",
+    "pass_fail": "in_progress",
+    "verdict": "The above-the-fold experience prioritizes visual polish over decision-support, creating real friction for a mid-market evaluator trying to find relevant peer validation fast.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Every card CTA says 'Watch video' \u2014 there is no scannable text path for a time-pressed engineering leader who won't commit to a video."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The subheadline body copy describes Stripe's mission well but reads as brand marketing, not as proof-point copy that helps a SaaS evaluator build a business case."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The persona lands here seeking peer validation but must choose between 'Overview' and 'All customer stories' tabs with no guidance on what each contains or how they differ."
+    },
+    "severity": 2,
+    "first_impression": "A media-rich but decision-poor page \u2014 impressive logos and production quality don't compensate for the absence of filterable, metric-backed proof.",
+    "friction_points": [
+      "The tab labels 'Overview' vs. 'All customer stories' are ambiguous \u2014 a mid-market SaaS evaluator doesn't know if 'Overview' means curated highlights or a product overview, causing hesitation.",
+      "No customer card shows company size, industry, or use case at a glance, so the persona cannot quickly determine if any featured company is comparable to theirs.",
+      "The 'Chat with Stripe sales' widget appears immediately and competes with early-stage browsing \u2014 the persona hasn't absorbed enough proof yet to be sales-ready."
+    ],
+    "recommendations": [
+      "Rename or add a descriptor to tabs, e.g., 'Featured Stories' and 'Browse All (200+)' so the persona knows what to expect before clicking.",
+      "Add a two-line card summary with company type and key outcome metric beneath each logo so evaluators can self-qualify without watching a video.",
+      "Delay or reduce the prominence of the chat widget until the user has scrolled past at least two story cards, signaling genuine consideration intent."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/customers",
+    "observation": "The screenshot confirms two tab links in the top-right sub-nav: 'Overview' (unlinked/active) and 'All customer stories' \u2014 I'll click the visible 'All customer stories' link using its text-position in the nav.",
+    "action": "click",
+    "target": "a[href='/customers/stories']",
+    "pass_fail": "in_progress",
+    "verdict": "The page is brand-strong but format-inflexible \u2014 forcing video on a scan-first technical evaluator is a meaningful conversion barrier.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Watch video' is the only CTA on every card \u2014 a SaaS engineering leader scanning for written case studies with technical depth has no alternative path."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Hero copy is polished but aspirational ('ambitious companies around the world') rather than specific enough to help a mid-market SaaS buyer self-identify."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'Chat with Stripe sales' widget overlaps the bottom-right of the page immediately, competing with the browsing task before the persona has formed any intent to convert."
+    },
+    "severity": 2,
+    "first_impression": "Visually confident but the page feels like a brand showcase rather than a buyer-enabling resource with scannable proof points.",
+    "friction_points": [
+      "Every featured customer card leads only to a video \u2014 there is no written case study or summary option for a technical leader who wants to skim outcomes without watching a 2-minute video.",
+      "The 'All customer stories' tab is not obviously clickable from a visual hierarchy standpoint \u2014 it appears as plain text in the sub-nav, easy to overlook as a navigation option.",
+      "The persistent 'Chat with Stripe sales' widget appears before the user has engaged with any story content, creating premature conversion pressure that may cause the persona to dismiss it and lose the option."
+    ],
+    "recommendations": [
+      "Add a 'Read case study' text link alongside each 'Watch video' CTA so evaluators can choose their preferred format.",
+      "Style the 'All customer stories' tab with a more distinct active/hover state (underline, pill, or border) to signal it is a navigable section, not a label.",
+      "Trigger the chat widget only after a user has scrolled 60%+ of the page or spent 45+ seconds, indicating genuine research intent rather than arriving cold."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/customers",
+    "observation": "Screenshot confirms the page layout clearly: global nav with Products/Solutions/Developers/Resources/Pricing, a sub-nav with 'Overview' and 'All customer stories' tabs, and a video-only card grid \u2014 I'll click 'All customer stories' using the visible sub-nav tab.",
+    "action": "click",
+    "target": "a[href*='customer-stories']",
+    "pass_fail": "in_progress",
+    "verdict": "The page's biggest UX gap remains format inflexibility and missing segmentation \u2014 a mid-market SaaS evaluator is left to guess which stories are relevant and must commit to video to learn anything.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Every card shows only 'Watch video' \u2014 the Lovable card appears to have a document icon suggesting a different format, but no label distinguishes it, creating inconsistent and unclear CTA signaling."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Body copy under the hero ('simple, borderless, and programmatic') is developer-flavored but doesn't address mid-market SaaS pain points like reliability, integration complexity, or revenue optimization."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'All customer stories' tab is the only navigational path for this persona to self-qualify, yet two prior selector attempts have failed \u2014 suggesting the tab's DOM structure is not straightforward to reach."
+    },
+    "severity": 2,
+    "first_impression": "A visually polished hero that speaks to brand scale but not to the mid-market SaaS buyer's specific evaluation needs \u2014 no industry segmentation, no outcome metrics, no format choice.",
+    "friction_points": [
+      "The Lovable card shows a document icon (implying a written format) while others show a play icon \u2014 but no label differentiates them, so the persona can't tell which cards offer a readable case study vs. video-only.",
+      "The sub-nav 'All customer stories' tab is visually indistinct from the 'Overview' active state \u2014 low contrast and small type make it easy to miss as a navigation affordance.",
+      "The 'Chat with Stripe sales' widget appears immediately on page load before the persona has read a single customer story, creating a premature and interruptive conversion prompt."
+    ],
+    "recommendations": [
+      "Add explicit format labels on each card ('Watch video' vs. 'Read case study') and use consistent iconography so the persona can filter by preferred content type at a glance.",
+      "Apply a more visible active/inactive state to the sub-nav tabs \u2014 e.g., a pill background or bottom border \u2014 so 'All customer stories' reads unambiguously as a clickable tab.",
+      "Delay the chat widget trigger until the user has scrolled past 50% of the page or spent 30+ seconds, indicating genuine research engagement rather than a cold arrival."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/customers",
+    "observation": "Screenshot confirms the sub-nav 'All customer stories' link and a Lovable card with a document icon (distinct from the video-play-icon cards for Brightwheel, Figma, URBN) \u2014 I'll click into the Figma card to evaluate the detail page experience.",
+    "action": "click",
+    "target": "a[href*='figma']",
+    "pass_fail": "in_progress",
+    "verdict": "Mixed card formats without labels and a premature sales widget create real friction for a mid-market evaluator trying to self-qualify before committing to any content.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Two different card icon types (play vs. document) coexist on the grid with no label explaining the format difference \u2014 a SaaS evaluator can't tell which cards lead to written case studies vs. video-only."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The hero body copy frames Stripe as developer-friendly and global, but never addresses mid-market SaaS pain points like subscription billing reliability or integration overhead."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "Three failed attempts to reach 'All customer stories' via sub-nav links reveal the tab's DOM structure is opaque \u2014 a real user scanning the sub-nav might click it and expect a filtered list that feels seamless."
+    },
+    "severity": 2,
+    "first_impression": "The page visually signals scale and brand credibility, but mixed card formats without labels create immediate decision ambiguity for a time-pressed technical evaluator.",
+    "friction_points": [
+      "The Lovable card uses a document icon while other cards use a play icon, but no text label differentiates the formats \u2014 a SaaS evaluator seeking written case studies must click blind to discover format.",
+      "The 'All customer stories' sub-nav link has no visible affordance distinguishing it from the 'Overview' active label \u2014 low contrast and lack of underline/hover state makes it easy to miss as a tab.",
+      "The 'Chat with Stripe sales' widget appears on page load before the user has engaged with any content, interrupting the early-stage browsing mode of an evaluator who isn't yet ready to talk to sales."
+    ],
+    "recommendations": [
+      "Add explicit format badges ('Case study' vs. 'Video') on every card thumbnail so evaluators can filter by preferred format at a glance.",
+      "Style the sub-nav tabs with a clear active/inactive pill or border treatment so 'All customer stories' reads unambiguously as a clickable navigation item.",
+      "Delay the chat widget until scroll depth > 50% or time-on-page > 45 seconds to avoid interrupting the evaluation-stage browsing journey."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/customers/figma",
+    "observation": "The Figma detail page shows a written case study with a headline, intro paragraph, a right-rail sidebar listing 'Products used' (Billing, Payments, Elements, Invoicing, +2 more), company size tier ('Enterprise'), and market ('Global') \u2014 this is substantively more useful than the card suggested.",
+    "action": "navigate",
+    "target": "https://stripe.com/customers",
+    "pass_fail": "in_progress",
+    "verdict": "The detail page is written and substantive \u2014 a genuine improvement over the card \u2014 but an Enterprise-scale story without a post-read CTA leaves a mid-market evaluator informed but unconverted.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The detail page has no visible in-page CTA \u2014 no 'Start building,' 'Get a demo,' or 'See pricing' \u2014 leaving a now-engaged evaluator with no next step other than the global 'Contact sales' nav button."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline 'Figma completes rollout of new billing model' is specific and outcome-oriented \u2014 a clear upgrade over the generic card thumbnail the persona saw on the listing page."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "Figma is an Enterprise-scale company \u2014 a mid-market SaaS evaluator gets a technically interesting story but no signal that Stripe works equally well for their smaller scale and simpler billing needs."
+    },
+    "severity": 2,
+    "first_impression": "The detail page is far richer than the card implied \u2014 written content, product taxonomy, and company context are all present \u2014 but the lack of a conversion CTA and mismatched company scale limit its value for this persona.",
+    "friction_points": [
+      "Figma is labeled 'Enterprise' with a complex multi-product Stripe stack \u2014 a mid-market SaaS evaluator has no way to know if this story is relevant to their scale and may disengage as non-comparable.",
+      "There is no in-page CTA below the headline \u2014 after reading a compelling story, the persona has no guided next step toward starting a trial, requesting a demo, or viewing pricing.",
+      "The '+2 more products' truncation in the sidebar hides part of Figma's Stripe product stack behind an extra click, reducing the completeness of the 'Products used' proof point the persona came here to see."
+    ],
+    "recommendations": [
+      "Add a 'Find stories like yours' filter prompt on the detail page (e.g., 'See more SaaS stories' or 'Browse mid-market companies') so evaluators can self-qualify and find relevant peers.",
+      "Add a contextual CTA at the bottom of each story \u2014 e.g., 'Ready to modernize your billing? Start for free' \u2014 to capture intent while the persona is most engaged.",
+      "Expand the full product list inline in the sidebar rather than truncating at 4 \u2014 the persona is specifically evaluating which Stripe products they'd need, and hiding items adds unnecessary friction."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/customers",
+    "observation": "Back on the /customers overview page \u2014 the screenshot confirms: hero with generic headline, 5 visible customer cards all marked 'Watch video' except Lovable (document icon), sub-nav shows 'Overview' (active, dark text) and 'All customer stories' (purple/link text), and 'Chat with Stripe sales' widget overlays bottom-right.",
+    "action": "click",
+    "target": "a[href*='all']",
+    "pass_fail": "in_progress",
+    "verdict": "The sub-nav tab styling actively misleads on current location, and the absence of format filtering leaves a written-content-seeking SaaS evaluator with no efficient path to what they need.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Four of five visible cards say 'Watch video' with a play icon while Lovable silently uses a document icon \u2014 no label explains the format difference, so the persona can't filter by preferred content type."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'From startups to Fortune 500s' in the hero body copy gestures at scale range but gives this persona no hook specific to mid-market SaaS \u2014 no billing complexity, subscription management, or churn recovery language."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'All customer stories' tab is visually styled as a purple hyperlink while 'Overview' appears as plain dark text \u2014 the active/inactive state is counter-intuitive and may confuse which tab is currently selected."
+    },
+    "severity": 2,
+    "first_impression": "The page returns exactly as before \u2014 visually polished but evaluation-opaque, with no filtering, no metrics on cards, and a persistent sales widget that presumes purchase intent before any story has been read.",
+    "friction_points": [
+      "The active tab ('Overview') is styled in plain dark text while the inactive tab ('All customer stories') is styled in purple \u2014 this inverts the conventional active-state visual pattern and may disorient the persona scanning for navigation.",
+      "The Lovable card's document icon is the only signal that a written case study format exists, but there is no label, tooltip, or filter to help the persona find all written stories without clicking each card.",
+      "The 'Chat with Stripe sales' widget is present on every return to this page \u2014 a mid-market evaluator who dismissed it once now faces it again, adding noise without adding value at this browsing stage."
+    ],
+    "recommendations": [
+      "Swap the tab styling so the active tab ('Overview') has a visible selected state (pill, underline, or bold weight) and the inactive tab is clearly secondary \u2014 follow standard tab convention.",
+      "Add a visible format filter above the card grid (e.g., 'All | Video | Case study') so the persona can surface all written stories in one click without hunting by icon.",
+      "Make the chat widget dismissible with persistent session memory \u2014 once a user closes it, don't re-surface it on the same visit."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://stripe.com/customers/all",
+    "observation": "The 'All customer stories' tab reveals a fully-featured filtering system with five dropdowns \u2014 Region, Industry, Solution, Business Size, and Content type \u2014 plus a card grid with document-icon cards (AdaptedMind, Adore Me) and a persistent 'Chat with Stripe sales' widget.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Stripe's customer stories section has the right ingredients \u2014 rich filters, written case studies, and product taxonomy \u2014 but buries its best decision-support tools behind a discoverable-only-if-you-look sub-nav tab, and consistently fails to convert a now-qualified mid-market evaluator with any in-page CTA.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Even on the filtered listing page, every card CTA is format-icon-only with no in-page conversion CTA \u2014 a now-qualified, high-intent evaluator has no next step beyond the global 'Contact sales' nav button."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Businesses of all types accelerate their growth with Stripe' is an improvement over the Overview headline but still generic \u2014 no SaaS-specific language despite SaaS being a filterable industry option."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The filtering system is a significant UX upgrade \u2014 Region, Industry, Solution, Business Size, and Content type dropdowns all exist \u2014 but they are buried one tab-click away from the Overview landing, meaning most evaluators won't discover them without deliberate exploration."
+    },
+    "severity": 2,
+    "first_impression": "The 'All customer stories' tab is the real decision-support tool this persona needs \u2014 rich filters, content-type selector, and a broad story library \u2014 but its placement behind a low-visibility sub-nav tab makes it effectively hidden from the default landing experience.",
+    "friction_points": [
+      "The five-filter system (Industry, Solution, Business Size, Content type, Region) is exactly what this persona needs, but it is hidden one click deep behind a low-contrast sub-nav tab \u2014 the Overview page gives no visual hint this filtering capability exists.",
+      "The 'Business Size' filter does not appear to include a 'Mid-market' tier label by default \u2014 a mid-market SaaS evaluator may not know which size bucket their company maps to without opening the dropdown and reading all options.",
+      "There is still no contextual in-page CTA after filtering \u2014 a high-intent evaluator who has just filtered to 'SaaS / Mid-market / Case study' has done significant self-qualification work but is given no guided next step toward a trial, demo, or pricing page."
+    ],
+    "recommendations": [
+      "Surface the filter bar (or at least teaser chips like 'Browse by: Industry | Size | Product') on the Overview tab so the persona immediately knows powerful filtering exists without needing to discover the second tab.",
+      "Label Business Size filter options with clear revenue or employee-count ranges (e.g., 'Mid-market: 100\u2013999 employees') so evaluators can self-classify confidently without guessing.",
+      "Add a sticky or end-of-results CTA block \u2014 e.g., 'Seeing enough? Start building or talk to our SaaS team \u2192' \u2014 that appears after the persona has applied filters, capturing intent at peak engagement."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Stripe enterprise hero features aspirational headline, single 'Contact sales' CTA, credibility tickers, and a payment UI mockup \u2014 above-the-fold content is visible.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Strong production quality and brand trust, but the page needs sharper enterprise-specific copy and a lower-friction exploration path before a final pass/fail can be assigned.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only CTA \u2014 no self-serve demo or sandbox path for technical evaluators who want to explore before committing."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Build the next era of your enterprise' is aspirational but doesn't communicate a concrete enterprise-specific differentiator vs. Stripe's standard product."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Clean visual hierarchy but no secondary path for enterprise buyers who aren't yet ready to talk to sales."
+    },
+    "severity": 2,
+    "first_impression": "Polished, high-production page with strong credibility signals but vague differentiation and a single high-commitment CTA.",
+    "friction_points": [
+      "The headline 'Build the next era of your enterprise' is marketing-speak that doesn't tell a VP of Payments what Stripe uniquely offers over competitors like Adyen or Braintree.",
+      "Only one CTA ('Contact sales') forces an enterprise buyer to commit to a sales conversation before seeing pricing tiers, SLAs, or compliance details.",
+      "The news ticker and UI mockup compete visually for attention, making it unclear what the page's primary message hierarchy is."
+    ],
+    "recommendations": [
+      "Add a concrete enterprise differentiator to the headline or sub-headline (e.g., 'Custom contracts, 99.99% uptime SLAs, and dedicated support').",
+      "Add a secondary CTA such as 'Explore platform' or 'View enterprise features' to serve buyers who need more information before engaging sales.",
+      "Simplify above-the-fold by moving the news ticker below the hero or reducing it to a single static credibility stat."
+    ],
+    "confidence": "high",
+    "persona": "VP of Engineering or Head of Payments at a large enterprise evaluating payment infrastructure partners"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Above-the-fold shows hero headline, single 'Contact sales' CTA, news ticker with credibility stats, enterprise logos (H&M, Maersk, Marriott), a Finance automation card with 'Explore' link, and a 'Chat with Stripe sales' widget \u2014 all confirmed visible in the screenshot.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Polished but vague hero section that fails to immediately justify enterprise-grade differentiation for a technical buyer doing competitive due diligence.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is prominent but the 'Explore' link on the Finance automation card uses a downward arrow icon that is ambiguous \u2014 does it scroll, expand, or navigate?"
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW name-drops add credibility but the sub-headline stays generic ('revolutionize their business') without stating a measurable enterprise outcome."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The live 'Chat with Stripe sales' widget partially overlaps page content and introduces a competing sales channel alongside the hero CTA without hierarchy."
+    },
+    "severity": 2,
+    "first_impression": "High-production, visually impressive page that leads with brand names but withholds concrete enterprise differentiators above the fold.",
+    "friction_points": [
+      "A VP of Payments cannot determine from this screen what enterprise-specific capabilities Stripe offers vs. its standard product \u2014 no mention of SLAs, compliance certifications, or dedicated support.",
+      "The 'Explore' CTA on the Finance automation card uses a downward arrow with no label, forcing the evaluator to guess whether it expands inline content or navigates to a product page.",
+      "The persistent 'Chat with Stripe sales' bubble overlaps the bottom-right of the page without a dismiss option, creating visual noise before the user has read any product detail."
+    ],
+    "recommendations": [
+      "Add 2\u20133 enterprise differentiator bullets beneath the headline (e.g., 'SOC 2 Type II certified \u00b7 99.99% uptime SLA \u00b7 Custom commercial terms') to immediately answer the enterprise buyer's qualification question.",
+      "Replace the ambiguous down-arrow 'Explore' with a labeled button ('Explore Finance Automation \u2192') so the action and destination are unambiguous.",
+      "Make the chat widget collapsible or delay its appearance until 30+ seconds on page so it doesn't compete with above-the-fold content evaluation."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Full above-the-fold screenshot confirms: large hero headline, 'Contact sales' CTA, news ticker with $1.4T volume and Gartner Leader mention, Finance automation card with ambiguous 'Explore \u2193' CTA, H&M/Maersk/Marriott logos, and persistent 'Chat with Stripe sales' widget bottom-right.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Strong brand equity and logo credibility but the information architecture and hero copy are misaligned with an enterprise technical buyer's evaluation checklist.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is clear but stands alone \u2014 no secondary CTA for a technical evaluator wanting to explore APIs, compliance docs, or feature depth before committing to a sales call."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW references are compelling social proof but 'revolutionize their business' is filler copy that a VP of Payments will discount immediately as unmeasurable."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Finance automation card appears mid-hero and introduces a second topic before the primary value proposition has been fully communicated, fragmenting the narrative."
+    },
+    "severity": 2,
+    "first_impression": "Visually polished and brand-credible, but a technical enterprise buyer gets no concrete capability or differentiation signal from the hero alone.",
+    "friction_points": [
+      "No enterprise-specific differentiators (uptime SLAs, dedicated TAM, compliance certifications) are visible above the fold, forcing a VP of Payments to scroll with no guarantee those answers exist.",
+      "The news ticker cycles through three unrelated headlines simultaneously \u2014 a Gartner ranking, an AI feature, and a volume stat \u2014 creating cognitive load with no clear relevance hierarchy for an enterprise evaluator.",
+      "The 'Finance automation' card appears before the buyer understands Stripe's core enterprise payments value prop, making the information architecture feel product-catalog-first rather than buyer-journey-first."
+    ],
+    "recommendations": [
+      "Add a scannable trust bar directly below the headline listing 3\u20134 enterprise credentials (e.g., 'SOC 2 Type II \u00b7 PCI DSS Level 1 \u00b7 99.99% uptime SLA \u00b7 50+ enterprise customers globally').",
+      "Pin the most relevant credibility stat (e.g., $1.4T volume or Gartner Leader) as a static badge rather than cycling it through a ticker that competes with three other headlines.",
+      "Restructure the page so payments infrastructure is section 1 and Finance automation is section 2, mirroring the enterprise buyer's decision sequence (core capability \u2192 adjacent value)."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Screenshot now confirms full above-the-fold: hero headline 'Build the next era of your enterprise', sub-copy referencing Amazon and BMW, single 'Contact sales' CTA, news ticker with three cycling items, Finance automation card with 'Explore \u2193' link, H&M/Maersk/Marriott logo strip, dashboard analytics mockup, and persistent 'Chat with Stripe sales' widget.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Credible brand presence but the hero section is optimized for brand impression rather than enterprise buyer qualification, creating friction for a technical decision-maker.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only primary CTA \u2014 no demo, sandbox, or 'See how it works' option for a technical evaluator who wants to validate capabilities before talking to a salesperson."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW references are strong anchors but the sub-headline 'revolutionize their business' is unmeasurable fluff that a VP of Payments will mentally skip."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Finance automation card overlaps the hero section visually and introduces a second product narrative before the primary payments value proposition is established."
+    },
+    "severity": 2,
+    "first_impression": "Visually confident and credibly branded, but immediately presents a high-commitment CTA with no intermediate exploration path for a skeptical enterprise evaluator.",
+    "friction_points": [
+      "The dashboard mockup (MRR growth, Active subscribers, Net volume $429K) reads like a mid-market SaaS analytics tool, not enterprise-scale payments infrastructure \u2014 a VP evaluating billion-dollar volume flows may question relevance.",
+      "Three simultaneously cycling ticker items (news, story, report) require the evaluator to wait or manually advance to see all signals, and none are enterprise-payments-specific (Gartner Billing leadership is adjacent, not core).",
+      "No visible link or path to technical documentation, API reference, or compliance certifications from the hero \u2014 a Head of Payments needs these before any sales conversation is worthwhile."
+    ],
+    "recommendations": [
+      "Replace or supplement the dashboard mockup with enterprise-scale visuals (e.g., multi-currency high-volume transaction views or reconciliation dashboards) to signal fit for large payment operations.",
+      "Convert the ticker to a static 'As seen in' credibility strip showing the single most relevant enterprise proof point (e.g., Gartner Leader badge + $1.4T volume stat) rather than cycling unrelated headlines.",
+      "Add a secondary CTA beneath 'Contact sales' such as 'View developer docs' or 'Download enterprise overview' to give technical evaluators a non-sales engagement path."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/enterprise",
+    "observation": "First actual screenshot confirms the full above-the-fold: hero headline with pink 'enterprise' accent, sub-copy citing Amazon and BMW, single 'Contact sales' CTA, news ticker with three cycling items, a dashboard mockup showing MRR growth and $429K net volume, a 'Finance automation / Explore' card, H&M/Maersk/Marriott logos, and 'Chat with Stripe sales' widget.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual design and brand recognition but hero-section metrics and competing narratives actively signal SMB fit rather than enterprise-grade infrastructure to a technical buyer.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the sole CTA \u2014 a VP of Payments has no self-serve path to evaluate technical depth, compliance posture, or pricing before committing to a sales conversation."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW are strong anchors but 'revolutionize their business' is vague; no measurable outcome (latency, auth rate, uptime) is stated to resonate with a technical buyer."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The 'Finance automation' card bleeds into the hero and introduces a second product topic before the core payments narrative is complete, fragmenting the buyer's reading path."
+    },
+    "severity": 2,
+    "first_impression": "Polished and brand-credible, but the dashboard mockup shows $429K net volume and 909 subscribers \u2014 figures that signal SMB scale, not enterprise infrastructure.",
+    "friction_points": [
+      "The dashboard mockup displays $429,777 net volume and 909 new subscribers \u2014 both SMB-scale metrics that actively undermine credibility with a VP overseeing billion-dollar payment flows.",
+      "The 'Finance automation' card and globe icon appear alongside the hero without explanation, forcing an enterprise evaluator to decide whether Stripe is pitching payments, ERP automation, or both before they've established fit on either.",
+      "The news ticker cycles through three unrelated items (Gartner Billing Leader, AI Adaptive Acceptance, $1.4T volume) with no way to pause or jump \u2014 a busy VP will miss the most relevant stat without waiting through the cycle."
+    ],
+    "recommendations": [
+      "Replace the SMB-scale dashboard mockup with enterprise-appropriate visuals showing multi-currency high-volume flows, reconciliation views, or 8\u20139 figure transaction data.",
+      "Separate the payments hero from the Finance automation section with a clear visual divider and section label so the enterprise buyer can parse two distinct value propositions sequentially rather than simultaneously.",
+      "Convert the ticker to a static credibility bar displaying the single most enterprise-relevant proof point (e.g., '$1.4T processed \u00b7 Gartner Leader \u00b7 PCI DSS Level 1') without animation."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/enterprise",
+    "observation": "First confirmed screenshot shows the full above-the-fold: hero headline with pink 'enterprise' accent, sub-copy citing Amazon and BMW, single 'Contact sales' CTA, three-item news ticker, a payment method UI mockup (Bacs direct debit, bank transfer, card), a 'Global payments / Explore \u2193' card beginning to appear, H&M/Maersk/Marriott logos, and 'Chat with Stripe sales' widget.",
+    "action": "click",
+    "target": ".Explore",
+    "pass_fail": "in_progress",
+    "verdict": "The page projects brand strength but its visual language, copy, and social proof skew toward SMB and mid-market buyers rather than the enterprise infrastructure evaluator it targets.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is clear but 'Explore \u2193' on the Global payments card is ambiguous \u2014 the downward arrow suggests scroll but it is unclear whether it expands inline or navigates to a dedicated page."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW name-drops are compelling but 'revolutionize their business' is generic marketing language that provides no measurable outcome a VP of Payments can use to justify evaluation."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Global payments card bleeds in from below the fold without completing the hero narrative, forcing the evaluator to choose between reading the hero copy and engaging the product card."
+    },
+    "severity": 2,
+    "first_impression": "Credible brand logo strip and strong-name social proof, but the payment UI mockup shows Bacs direct debit and small dollar amounts that feel consumer-oriented rather than enterprise-scale.",
+    "friction_points": [
+      "The payment method mockup displays Bacs direct debit and sub-$300 transaction amounts \u2014 a VP overseeing enterprise-scale payment volumes will not see themselves reflected in this UI.",
+      "The 'Global payments / Explore \u2193' card appears at the bottom of the fold with no supporting copy, giving the enterprise buyer no context for what 'Global payments' means in terms of currencies, regions, or settlement capabilities.",
+      "Three simultaneously visible ticker items (news, story, report) present unrelated headlines that compete for attention rather than building a coherent enterprise narrative \u2014 the URBN $5B story is the most enterprise-relevant but is buried in the middle slot."
+    ],
+    "recommendations": [
+      "Replace or supplement the payment UI mockup with enterprise-appropriate imagery showing multi-currency, high-volume, or cross-border transaction flows to signal scale fit.",
+      "Add a two-line summary beneath 'Global payments' (e.g., '135+ currencies \u00b7 local acquiring in 46 countries \u00b7 real-time FX') so the card communicates value without requiring a click.",
+      "Promote the most enterprise-relevant ticker item (URBN $5B consolidation story) to a persistent featured badge and remove the cycling animation to ensure it is not missed."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Full above-the-fold screenshot confirmed: hero headline 'Build the next era of your enterprise', sub-copy citing Amazon and BMW, single 'Contact sales' CTA, three-item news ticker, dashboard mockup showing $429K net volume and 909 subscribers, 'Finance automation / Explore \u2193' card, H&M/Maersk/Marriott logos, and persistent 'Chat with Stripe sales' widget \u2014 no scroll has occurred yet.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Stripe's enterprise page passes on visual polish and brand credibility but has a meaningful gap between its enterprise targeting and its hero-section evidence \u2014 a VP of Payments will see SMB metrics, a single high-commitment CTA, and vague copy that doesn't justify a sales call or confirm competitive differentiation over Adyen or Braintree.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only primary CTA with no secondary path (demo, docs, pricing) for a technical buyer who needs to validate fit before committing to a sales conversation."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW anchors are strong but 'revolutionize their business' is unmeasurable filler; no concrete enterprise differentiator (SLA, uptime, compliance cert) appears anywhere above the fold."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Finance automation card and dashboard mockup introduce competing product narratives before the primary payments value proposition is fully established, fragmenting the enterprise buyer's reading path."
+    },
+    "severity": 2,
+    "first_impression": "Polished and brand-credible but immediately presents a high-commitment CTA alongside SMB-scale dashboard metrics that undermine enterprise positioning.",
+    "friction_points": [
+      "The dashboard mockup displays $429,777 net volume and 909 subscribers \u2014 both SMB-scale figures that actively signal a mismatch to a VP managing enterprise-scale payment infrastructure.",
+      "The sole CTA is 'Contact sales' \u2014 no demo, no sandbox, no technical overview \u2014 forcing a VP of Payments to initiate a sales relationship before confirming Stripe can meet their compliance, uptime, or volume requirements.",
+      "The 'Finance automation / Explore \u2193' card appears in the hero without any supporting copy, asking an enterprise evaluator to click into a second product topic before understanding Stripe's core payments enterprise value proposition."
+    ],
+    "recommendations": [
+      "Replace the SMB-scale dashboard mockup with enterprise-appropriate visuals (e.g., multi-currency reconciliation views, 8\u20139 figure transaction flows) to immediately signal scale fit.",
+      "Add a secondary CTA such as 'Download enterprise overview' or 'Explore developer docs' below 'Contact sales' so technical evaluators have a non-sales engagement path.",
+      "Add a two-line capability summary beneath 'Finance automation' (e.g., '135+ currencies \u00b7 automated revenue recognition \u00b7 ERP integrations') so the card is self-explanatory without requiring a click."
+    ],
+    "confidence": "high"
+  }
+]
