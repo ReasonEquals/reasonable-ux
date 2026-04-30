@@ -6,6 +6,12 @@ Built to explore what LLM-driven browser agents can actually do in practice.
 
 Image history is stripped from the conversation after each step, keeping per-run token cost predictable. Full architectural details in [DECISIONS.md](DECISIONS.md).
 
+## Highlights
+
+- **[Variant comparison](artifacts/variant_comparison.md)** — Four evaluation configs (baseline, +advisor, 8-step, 8-step+advisor) across Stripe, Linear, and Glossier. Cost vs. quality data with tok/step normalization and composite scores.
+- **[LLM-as-judge](artifacts/variant_judge.md)** — Pairwise variant scoring by Claude Opus 4.7 against a pre-registered rubric. Quantifies specificity, actionability, coverage, and persona fidelity across 9 pairs.
+- **[Show your work](DECISIONS.md)** — Architecture, security, and tradeoff log: prompt injection defense, XSS mitigation in the PDF deliverable, Langfuse instrumentation, and the pre-public checklist.
+
 ---
 
 ## How it works
