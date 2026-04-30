@@ -369,6 +369,8 @@ This section has more narrative than the others because the observability work w
 
 **Outcome:** Dependency license audit cadence set to annual.
 
+**Refresh (2026-04-29):** History scan re-run through batch 71 — clean. Working tree credential grep — clean.
+
 ---
 
 ## 8. Deferred — Considered, Not Built
