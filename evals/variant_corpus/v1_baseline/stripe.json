@@ -1,0 +1,1230 @@
+[
+  {
+    "step": 1,
+    "url": "https://stripe.com/",
+    "observation": "Stripe's homepage hero shows a bold value proposition, two CTAs, and a scrolling logo bar of enterprise customers above the fold.",
+    "action": "click",
+    "target": "nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Strong first impression with excellent copy, but pricing opacity and a high-commitment primary CTA create friction for a mid-market buyer in evaluation mode.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' is prominent but implies self-serve signup \u2014 enterprise buyers wanting a sales conversation must find the secondary 'Contact sales' in the top-right corner."
+    },
+    "copy_quality": {
+      "score": 5,
+      "note": "Headline is crisp and benefit-led; the sub-headline scales ambition from first transaction to billionth, covering both SMB and enterprise personas cleanly."
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "Above-the-fold layout is clean with minimal distraction, but the global GDP ticker adds cognitive load without clear relevance to a new visitor's decision."
+    },
+    "severity": 2,
+    "first_impression": "Polished, confident, and developer-friendly brand that signals scale and reliability immediately.",
+    "friction_points": [
+      "Pricing is not surfaced above the fold \u2014 a SaaS founder comparing payment processors must actively navigate away to understand cost structure before committing.",
+      "The 'Global GDP running on Stripe' stat (1.64%) lacks immediate context \u2014 a founder doesn't know if that's impressive or trivial without a benchmark.",
+      "'Get started' leads to account creation, but a mid-market buyer may want a product tour or demo before giving personal details, and no such option is visible."
+    ],
+    "recommendations": [
+      "Add a 'See pricing' text link beneath the primary CTA so cost-sensitive evaluators don't have to hunt through the nav.",
+      "Replace the raw percentage with a translated figure (e.g., '$X trillion in payments annually') to make the social proof instantly legible.",
+      "Introduce a 'Watch demo' or 'Explore product' secondary CTA alongside 'Get started' to reduce commitment friction for mid-market evaluators."
+    ],
+    "confidence": "high",
+    "persona": "Mid-market SaaS founder evaluating payment infrastructure to replace or adopt a primary payments stack"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/pricing",
+    "observation": "Pricing page shows two tiers \u2014 Standard at 2.9%+30\u00a2 and Custom with volume discounts \u2014 with a clear two-CTA structure visible above the fold.",
+    "action": "click",
+    "target": "a[href*='pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "Transparent base pricing earns trust, but missing volume guidance and opaque add-on costs leave a mid-market founder unable to assess true TCO without extra research.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' vs 'Contact sales' maps cleanly to the two tiers, but there's no indication of what 'Get started' triggers \u2014 a free trial, account creation, or live billing."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'No setup fees, monthly fees, or hidden fees' directly addresses a key objection, which is strong reassurance copy for an evaluator."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Standard card is visually cut off by the Custom card overlay, making the pricing layout feel crowded and slightly disjointed on first glance."
+    },
+    "severity": 2,
+    "first_impression": "Pricing is refreshingly transparent at first glance, but the two-tier binary choice feels abrupt without any volume-based guidance for mid-market scale.",
+    "friction_points": [
+      "A mid-market SaaS founder processing $500K\u2013$5M annually doesn't know whether they qualify for Custom pricing or should just 'Get started' \u2014 no volume threshold or guidance is provided.",
+      "IC+ pricing is listed as a Custom benefit but unexplained \u2014 a founder unfamiliar with interchange-plus pricing must leave the page to understand if it's relevant to their model.",
+      "There is no pricing comparison for add-ons like Radar, Billing, or Revenue Recognition \u2014 a SaaS founder evaluating total stack cost can't estimate true TCO from this view."
+    ],
+    "recommendations": [
+      "Add a simple volume callout (e.g., 'Processing over $100K/month? See Custom pricing') to help mid-market founders self-select the right tier without ambiguity.",
+      "Add a tooltip or inline link on 'IC+ pricing' explaining it in one sentence so founders can evaluate its relevance without leaving the page.",
+      "Include an expandable 'Add-on pricing' section or a link to a full product pricing breakdown so founders can estimate total cost in one session."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/pricing",
+    "observation": "Pricing page confirmed: two-card layout shows Standard (2.9%+30\u00a2) and Custom with IC+, volume discounts, multi-product discounts, and country-specific rates listed as benefits.",
+    "action": "click",
+    "target": "a[href*='faq'], a[href*='FAQ'], .faq, nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing page is clean and honest but fails to guide a mid-market founder to the right tier, risking unnecessary sales-call friction or under-informed self-serve signups.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' and 'Contact sales' are visually distinct and map to tiers, but 'Get started' still doesn't communicate whether it triggers a free trial or immediate billing setup."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'Pricing built for businesses of all sizes' is inclusive but generic \u2014 it doesn't signal where a $1M ARR SaaS company specifically fits."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Standard card is visually truncated by the Custom card's dark overlay, creating an unbalanced layout that makes Standard feel like the lesser, incomplete option."
+    },
+    "severity": 3,
+    "first_impression": "Clean and confident pricing page, but the binary tier structure forces a mid-market founder to self-diagnose which bucket they belong to without any qualifying guidance.",
+    "friction_points": [
+      "No volume threshold or ARR guidance is given to distinguish Standard vs Custom \u2014 a founder processing $500K/year can't tell if Custom pricing applies to them or only to enterprises.",
+      "Custom tier benefits like 'Multi-product discounts' and 'Country-specific rates' are listed without any example figures, making it impossible to estimate savings vs Standard without booking a sales call.",
+      "The Standard card visually appears cut off and less complete than the Custom card, which may bias a mid-market founder toward 'Contact sales' unnecessarily, adding friction to self-serve adoption."
+    ],
+    "recommendations": [
+      "Add a volume callout such as 'Typically for businesses processing over $80K/month' beneath the Custom header to help founders self-qualify instantly.",
+      "Include at least one illustrative discount example (e.g., 'Customers typically save 15\u201325% on volume deals') to give Custom pricing tangible weight without requiring a sales call.",
+      "Equalize the visual weight of both cards \u2014 give Standard a full-width card with equal height \u2014 so self-serve founders don't feel steered toward the sales funnel by design."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/pricing",
+    "observation": "Stripe pricing page shows two tiers \u2014 Standard (2.9% + 30\u00a2) and Custom \u2014 with clean layout and a colorful gradient background above the fold.",
+    "action": "scroll",
+    "target": null,
+    "pass_fail": "in_progress",
+    "verdict": "Strong first impression with clear standard pricing, but subscription-specific costs and Custom tier self-qualification friction are real blockers for a SaaS buyer persona.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' and 'Contact sales' are clearly differentiated, but there's no CTA to compare plans side-by-side."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Standard tier copy is concise and benefit-led; Custom tier copy is vague about what 'unique business models' actually qualifies."
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "Two-tier layout is immediately scannable, but the Custom column's feature bullets (IC+, Volume discounts, etc.) lack explanatory tooltips or links."
+    },
+    "severity": 2,
+    "first_impression": "Clean, confident pricing page that surfaces the key number (2.9% + 30\u00a2) immediately, but leaves subscription-specific pricing and international card rates buried.",
+    "friction_points": [
+      "A SaaS founder handling subscriptions cannot see recurring billing or Billing/Radar add-on costs above the fold \u2014 the standard rate shown is for one-off card payments only, creating potential sticker shock later.",
+      "The Custom tier's four benefit bullets (IC+ pricing, Volume discounts, Multi-product discounts, Country-specific rates) have no explanatory copy or links, making it impossible to self-qualify without contacting sales.",
+      "There is no social proof (logos, transaction volume stats) near the pricing to reassure a mid-market buyer that peers their size use Stripe at this price point."
+    ],
+    "recommendations": [
+      "Add a prominent callout or toggle beneath the standard rate showing subscription/recurring billing fees (e.g., +0.5% for Billing) so SaaS founders see their real all-in cost immediately.",
+      "Expand each Custom benefit bullet into a one-line description or link to a details section so buyers can self-qualify without a sales call.",
+      "Insert a trust bar with recognizable SaaS brand logos and a stat (e.g., 'Used by 100k+ businesses') directly beneath the pricing cards to reduce mid-market hesitation."
+    ],
+    "confidence": "high",
+    "persona": "Mid-market SaaS founder evaluating payment processors to integrate into a subscription product, comparing total cost and feature depth before committing"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/pricing",
+    "observation": "Above-the-fold confirms two-tier layout \u2014 Standard at 2.9% + 30\u00a2 and Custom \u2014 with sticky sub-nav tabs (Standard pricing, Custom pricing, FAQs) just entering view at the bottom.",
+    "action": "click",
+    "target": "a[href='#standard-pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "Visually strong above the fold, but the missing subscription billing fee disclosure is a severity-3 issue that directly misleads a SaaS founder evaluating total cost.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' vs 'Contact sales' split is clear, but no secondary CTA for a free trial or demo specifically for SaaS use cases."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'No setup fees, monthly fees, or hidden fees' is reassuring but omits subscription-specific billing fees (Stripe Billing adds 0.5\u20130.8%) that a SaaS founder would need to know."
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "The sticky sub-nav tabs are a good affordance for navigating a long page, but they're barely visible at this scroll depth, reducing discoverability."
+    },
+    "severity": 3,
+    "first_impression": "Clean and professional, but the headline fee is for one-off domestic cards \u2014 a SaaS subscription founder immediately needs to know this isn't their all-in rate.",
+    "friction_points": [
+      "The 2.9% + 30\u00a2 rate is scoped to 'domestic cards per successful transaction' but Stripe Billing's recurring fee (0.5\u20130.8%) is not surfaced anywhere above the fold, meaning a SaaS founder sees an incomplete cost picture immediately.",
+      "Custom tier's four benefit labels (IC+ pricing, Volume discounts, Multi-product discounts, Country-specific rates) are presented as bare chips with no hover tooltips, links, or explanatory text \u2014 self-qualification is impossible without a sales call.",
+      "The sticky sub-nav tabs (Standard pricing / Custom pricing / FAQs) are partially obscured at this viewport position, so a SaaS founder scanning for subscription-specific details may not realize deeper sections exist."
+    ],
+    "recommendations": [
+      "Add a visible footnote or inline callout beneath the 2.9% + 30\u00a2 rate stating 'Stripe Billing adds 0.5% per recurring transaction' so SaaS founders can calculate their true marginal cost immediately.",
+      "Expand each Custom benefit chip into an accordion or add a tooltip with a one-line explanation and a 'Learn more' link so founders can self-qualify without initiating a sales conversation.",
+      "Increase the sticky sub-nav tab bar's visual contrast and ensure it is fully visible (not clipped) as soon as the user scrolls past the hero, so the deeper pricing sections are discoverable."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/pricing#standard-pricing",
+    "observation": "Standard pricing section is now visible with a left-side product category nav (Global payments, Money management, Revenue and finance) and a Payments card showing benefits bullets \u2014 but no fee is visible yet for this product card, only a 'Start now' CTA.",
+    "action": "click",
+    "target": "a[href*='billing']",
+    "pass_fail": "in_progress",
+    "verdict": "The product explorer is comprehensive but its taxonomy and card layout actively hide the subscription billing fees a SaaS founder needs most, creating a severity-3 friction.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Payments card has no price anchor visible at this scroll depth, so the CTA asks for commitment before the founder sees cost."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The Payments card leads with acquisition/conversion benefits, not pricing \u2014 useful context but frustrating for a cost-comparison persona who is here specifically for numbers."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Left-side nav is well-structured but 'Billing' \u2014 the most critical category for a SaaS subscription founder \u2014 is buried under 'Revenue and finance' rather than surfaced at the top level."
+    },
+    "severity": 3,
+    "first_impression": "The product explorer layout is thorough but buries Billing/subscription pricing behind a generic Payments entry that leads with marketing copy instead of fee rates.",
+    "friction_points": [
+      "A SaaS founder's primary concern is subscription/recurring billing fees, but 'Billing' sits under a third category group ('Revenue and finance') in the left nav \u2014 requiring extra scanning to locate the most relevant pricing.",
+      "The Payments product card shows four benefit bullets and a 'Start now' CTA but the fee (2.9% + 30\u00a2) is only partially visible at the very bottom of the viewport, forcing a scroll before cost context is available for decision-making.",
+      "The left-nav category labels (Global payments, Money management, Revenue and finance) are product-architecture terms, not job-to-be-done language \u2014 a founder thinking 'subscription billing' won't instinctively map that to 'Revenue and finance.'"
+    ],
+    "recommendations": [
+      "Promote 'Billing' or create a top-level 'Recurring / Subscriptions' nav item so SaaS founders can jump directly to the most relevant pricing section without scanning unfamiliar taxonomy.",
+      "Show the fee rate (e.g., 2.9% + 30\u00a2 + 0.5% for Billing) inline on each product card header so the cost is visible before \u2014 not after \u2014 the 'Start now' CTA.",
+      "Relabel left-nav categories using buyer job language (e.g., 'Accept Payments,' 'Manage Subscriptions,' 'Pay Out & Issue Cards') rather than internal product-architecture groupings."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/pricing#standard-pricing",
+    "observation": "The Standard pricing section is visible with a left-side nav showing Global payments, Money management, and Revenue and finance categories \u2014 'Billing' must be under Revenue and finance, which is not yet expanded in view.",
+    "action": "click",
+    "target": "nav:Revenue and finance",
+    "pass_fail": "in_progress",
+    "verdict": "The left nav's product-centric taxonomy creates a severity-3 navigation burden for a SaaS founder who needs to locate subscription billing fees quickly.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Payments card has no price visible at this scroll position, so the CTA precedes cost context."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The section headline 'Explore pricing for the full Stripe platform' is aspirational but doesn't orient a SaaS founder to where subscription billing fees live."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "A SaaS founder's most relevant product \u2014 Billing \u2014 is buried under a third category group that isn't even visible without scrolling, adding unnecessary hunt time."
+    },
+    "severity": 3,
+    "first_impression": "Well-structured left nav, but the taxonomy prioritizes Stripe's product architecture over buyer jobs-to-be-done, pushing subscription billing to the bottom of a long list.",
+    "friction_points": [
+      "The left-side nav lists 'Revenue and finance' as a collapsed/below-fold group, meaning a SaaS founder cannot see 'Billing' without first scrolling past Global payments and Money management \u2014 the wrong starting point for this persona.",
+      "The Payments card above the fold shows four benefit bullets and a 'Start now' CTA but no fee rate is visible at this scroll depth, forcing the founder to scroll further before understanding cost.",
+      "Category labels like 'Global payments' and 'Money management' are Stripe-internal product groupings, not buyer intent language \u2014 a founder thinking 'subscription billing' has no clear visual cue where to look first."
+    ],
+    "recommendations": [
+      "Pin a 'Subscriptions & Billing' shortcut at the top of the left-side nav (or as a hero quick-link) so SaaS founders can jump directly to the most relevant pricing section.",
+      "Show the fee rate inline in the Payments card header row so cost is visible before \u2014 not after \u2014 the 'Start now' CTA.",
+      "Rename or annotate nav categories with buyer-intent language, e.g., 'Revenue and finance (Billing, Tax, Revenue Recognition)' so founders can self-route without trial-and-error clicking."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/pricing#revenue-and-finance-automation",
+    "observation": "Billing card is now visible showing two pricing options: 'Pay monthly' starting at $620/month (1-year contract) and 'Pay as you go' at 0.7% of billing volume, plus a 'Compare plans' link.",
+    "action": "click",
+    "target": "a[href*='compare']",
+    "pass_fail": "in_progress",
+    "verdict": "Real Billing pricing numbers are now visible, but missing tier details and ambiguous CTA anchoring create a severity-2 friction that undermines confident decision-making for a SaaS founder.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Start now' on the Billing card jumps straight to signup without clarifying which plan tier you'd be starting \u2014 the founder can't tell if $620 is the entry point or the mid-tier."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Starting at $620.00 per month, 1-year contract' surfaces cost but immediately raises the question of what the starting tier includes vs. higher tiers \u2014 no feature summary is shown inline."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Two pricing options (monthly vs. pay-as-you-go) are cleanly separated, but there's no guidance helping a founder decide which model fits a mid-market SaaS revenue volume."
+    },
+    "severity": 2,
+    "first_impression": "Billing pricing is finally visible and contains real numbers, but '$620 starting at' with no tier breakdown creates immediate uncertainty about what that price actually covers.",
+    "friction_points": [
+      "The $620/month 'Pay monthly' option says 'based on a volume tier that works for your business' but shows no tier thresholds \u2014 a SaaS founder cannot estimate their own cost without clicking away to 'Compare plans'.",
+      "The 'Pay as you go' option at 0.7% of billing volume has a '?' tooltip icon but no inline explanation visible, meaning the founder has to hover/click to understand what 'billing volume' is calculated on (GMV? net revenue? Stripe-processed only?).",
+      "'Start now' CTA on the Billing card is not anchored to either pricing option \u2014 it's ambiguous whether clicking it defaults to the monthly plan or pay-as-you-go, which could trap a founder on the wrong contract type."
+    ],
+    "recommendations": [
+      "Show at least 2\u20133 volume tier thresholds inline on the 'Pay monthly' card (e.g., $620/mo up to $X MRR, $X/mo up to $Y MRR) so founders can self-qualify without leaving the pricing page.",
+      "Replace the '?' tooltip on 'billing volume' with an always-visible one-line definition (e.g., 'Total transaction value processed through Stripe Billing') directly beneath the 0.7% figure.",
+      "Split 'Start now' into two distinct CTAs \u2014 one per pricing option \u2014 or add a radio toggle to select a plan before proceeding, so the founder knows which contract they're entering."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/pricing#revenue-and-finance-automation",
+    "observation": "The Billing card is fully visible with 'Pay monthly' ($620/mo, 1-year contract) and 'Pay as you go' (0.7% of billing volume) options, plus a 'Compare plans' link at the bottom of the card.",
+    "action": "click",
+    "target": "a.Link--primary",
+    "pass_fail": "in_progress",
+    "verdict": "Billing pricing is finally surfaced with real numbers, but the missing tier details and de-emphasized 'Compare plans' CTA create a severity-3 barrier for a SaaS founder trying to model costs.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Start now' is the only primary CTA on the Billing card but it's not anchored to either pricing option, leaving the founder unsure which plan they'd be entering."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Based on a volume tier that works for your business' is deliberately vague \u2014 a SaaS founder needs actual tier thresholds to model their cost, not a placeholder phrase."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "'Compare plans' is the most important link for a founder choosing between $620 flat vs. 0.7% variable, but it's visually de-emphasized as a small ghost link at the bottom of the card."
+    },
+    "severity": 3,
+    "first_impression": "Billing pricing is now fully in view and structurally clear, but critical decision-making information \u2014 tier thresholds and plan comparison \u2014 is hidden behind a low-prominence 'Compare plans' link.",
+    "friction_points": [
+      "The 'Pay monthly' option says 'Starting at $620' but gives no volume thresholds, forcing a SaaS founder to click away to 'Compare plans' just to understand if $620 is their actual price or a floor for a lower tier.",
+      "'Compare plans' \u2014 the most decision-relevant action on the card \u2014 is styled as a small blue text link below the fold of the card, visually subordinate to 'Start now,' which inverts the priority for a founder still in evaluation mode.",
+      "The '?' tooltip icons next to '1-year contract' and 'Billing volume' are the only explanation available for two key pricing terms, and are not accessible without hover \u2014 a founder on mobile or scanning quickly will miss critical definitions."
+    ],
+    "recommendations": [
+      "Add at least a two-row tier table inline on the 'Pay monthly' option (e.g., 'Up to $X MRR: $620/mo; Up to $Y MRR: $X/mo') so founders can self-qualify without navigating to a separate comparison page.",
+      "Elevate 'Compare plans' to a secondary button style (outlined, full-width) placed above 'Start now' on the Billing card to match the decision sequence \u2014 compare first, then start.",
+      "Replace hover-only '?' tooltips with always-visible parenthetical definitions inline (e.g., 'Billing volume = total transaction value processed through Stripe Billing') to serve mobile and skim readers."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/pricing#revenue-and-finance-automation",
+    "observation": "Billing card is fully visible with 'Pay monthly' ($620/mo, 1-year contract), 'Pay as you go' (0.7% of billing volume), a 'Choose a plan' toggle, 'Start now' CTA, and a 'Compare plans' text link at the bottom.",
+    "action": "click",
+    "target": "a[href*='billing/plans']",
+    "pass_fail": "in_progress",
+    "verdict": "Billing pricing is visible with real numbers, but CTA ambiguity and a buried 'Compare plans' link create a severity-3 barrier for a founder in active cost-comparison mode.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Start now' sits at the top-right of the card but is not connected to either pricing option \u2014 a founder clicking it doesn't know if they're committing to $620/mo or 0.7%."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Based on a volume tier that works for your business' is filler copy that tells a SaaS founder nothing about what volume tier they'd actually land on."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "'Compare plans' is the most critical link for evaluating Billing options but is styled as a small ghost link at the card footer, far below 'Start now' \u2014 inverting the natural evaluation flow."
+    },
+    "severity": 3,
+    "first_impression": "The Billing card finally shows real numbers but buries the plan comparison behind a low-prominence footer link while surfacing a commitment CTA at the top \u2014 backwards for an evaluating founder.",
+    "friction_points": [
+      "'Start now' at the top-right of the card is unanchored to either pricing model (monthly vs. pay-as-you-go), so a founder who clicks it cannot know which contract type they're entering.",
+      "'Pay monthly: Starting at $620' gives no volume bracket context \u2014 a founder with $200K MRR cannot tell if $620 is their price, the floor, or the ceiling without navigating away to 'Compare plans'.",
+      "'Compare plans' \u2014 the highest-value action for a cost-comparing SaaS founder \u2014 is a small, low-contrast text link at the card's bottom edge, visually outranked by a commitment CTA the founder isn't ready to click."
+    ],
+    "recommendations": [
+      "Tie 'Start now' to the selected pricing option via the 'Choose a plan' toggle, or replace with two explicit CTAs: 'Start monthly plan' and 'Start pay-as-you-go' so the founder knows what they're committing to.",
+      "Add a one-line tier hint beside '$620/mo' (e.g., 'for up to $X MRR \u2014 see all tiers') so a founder can self-qualify without leaving the card.",
+      "Promote 'Compare plans' to a full-width secondary button above 'Start now' so the evaluation action is visually prioritized over the commitment action."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://stripe.com/pricing#revenue-and-finance-automation",
+    "observation": "The Billing card is now fully visible in the screenshot showing 'Pay monthly' ($620/mo, 1-year contract), 'Pay as you go' (0.7% of billing volume), three benefit bullets, and a 'Compare plans' link at the bottom.",
+    "action": "click",
+    "target": "a[href*='compare']",
+    "pass_fail": "in_progress",
+    "verdict": "Billing pricing is visible and structurally sound, but the CTA hierarchy actively discourages evaluation and pushes premature commitment \u2014 a severity-3 issue for a cost-comparing SaaS founder.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Start now' button is prominent but floats top-right of the card, unanchored to either the monthly or pay-as-you-go option \u2014 a founder can't tell which plan they're starting."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Based on a volume tier that works for your business' is intentionally vague where a founder needs a concrete number \u2014 this reads as a deflection rather than useful pricing copy."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "'Compare plans' is the most critical evaluation action on this card but is styled as a small ghost link at the very bottom, visually buried under 'Start now' which demands commitment first."
+    },
+    "severity": 3,
+    "first_impression": "The Billing card shows real structure with two pricing models, but the dominant CTA demands commitment before the founder can compare plans \u2014 a clear evaluation flow inversion.",
+    "friction_points": [
+      "'Start now' is the largest, most prominent interactive element on the Billing card but is not tied to either pricing option, so a founder who clicks it cannot know if they're entering a $620/mo contract or a 0.7% variable arrangement.",
+      "'Starting at $620.00 per month' gives no tier ceiling or MRR threshold \u2014 a SaaS founder at $300K MRR cannot tell if this price applies to them or if they'd be quoted something higher.",
+      "'Compare plans' \u2014 the exact action a cost-evaluating founder needs \u2014 is a small blue text link at the card footer, visually outranked by 'Start now' which is inappropriate at this decision stage."
+    ],
+    "recommendations": [
+      "Add a radio-button or tab selector for 'Pay monthly' vs. 'Pay as you go' that updates the 'Start now' button label to reflect the chosen option (e.g., 'Start monthly plan') before the founder commits.",
+      "Add a one-line tier hint next to '$620/mo' such as 'for up to $50K MRR \u2014 see all tiers \u2193' so founders can self-qualify without navigating to a separate page.",
+      "Swap the visual hierarchy: make 'Compare plans' a full-width outlined secondary button placed above 'Start now' so evaluation precedes commitment in the UI layout."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 9,
+    "url": "https://stripe.com/pricing#revenue-and-finance-automation",
+    "observation": "Screenshot confirms the Billing card with 'Pay monthly' ($620/mo, 1-year contract), 'Pay as you go' (0.7% of billing volume), three benefit bullets, 'Start now' CTA top-right, and 'Compare plans' link at the bottom.",
+    "action": "click",
+    "target": "a.Link",
+    "pass_fail": "in_progress",
+    "verdict": "The Billing card surfaces real pricing numbers but withholds the tier detail and plan-comparison prominence that a cost-evaluating SaaS founder needs, sustaining a severity-3 friction.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Start now' sits top-right of the card, unanchored to either pricing option \u2014 a founder cannot determine which plan they'd be committing to by clicking it."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Annual subscription. Paid monthly. Based on a volume tier that works for your business.' is deliberately vague where a founder needs an MRR threshold to self-qualify."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "'Compare plans' link is de-emphasized at the card footer while 'Start now' dominates \u2014 this inverts the natural evaluate-then-commit decision flow for a mid-market buyer."
+    },
+    "severity": 3,
+    "first_impression": "The Billing card shows real pricing structure but hides the volume tier details that a SaaS founder needs most, and buries the 'Compare plans' action below a premature commitment CTA.",
+    "friction_points": [
+      "'Starting at $620.00 per month' gives no tier ceiling or MRR range \u2014 a SaaS founder cannot determine their own price without clicking 'Compare plans' and leaving this evaluation view.",
+      "'Start now' button is visually dominant and positioned before plan selection, nudging the founder toward commitment before they've finished comparing the two pricing models on the same card.",
+      "The three benefit bullets focus on outcomes ('Reduce churn', 'Save engineering time') rather than feature specifics \u2014 a founder comparing Stripe Billing vs. competitors cannot extract differentiating capability detail from this card alone."
+    ],
+    "recommendations": [
+      "Add inline tier anchors next to '$620/mo' such as 'covers up to $X MRR; see all tiers' so a founder can self-qualify without navigating away.",
+      "Move 'Start now' below the 'Choose a plan' toggle and make it reflect the selected option (e.g., 'Start monthly plan') so commitment follows, not precedes, plan selection.",
+      "Add one concrete feature differentiator per bullet (e.g., 'Smart Retries reduces failed payment churn by X%') with a 'Learn more' link so founders can assess depth vs. competitors."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 10,
+    "url": "https://stripe.com/pricing",
+    "observation": "Page has scrolled back to the top hero, showing Standard (2.9% + 30\u00a2) and Custom tiers with 'Get started' and 'Contact sales' CTAs, plus a sub-nav bar (Standard pricing, Custom pricing, FAQs) partially visible at the bottom.",
+    "action": "click",
+    "target": "a[href='#custom-pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "The hero pricing is clean and immediately legible, but the absence of Billing-specific navigation, Custom tier self-qualification detail, and social proof creates sustained severity-3 friction for a SaaS subscription founder.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' vs 'Contact sales' split is clear, but neither CTA hints at what happens next \u2014 trial, signup form, or immediate billing \u2014 leaving a cautious founder uncertain about the commitment level."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Unique business models' in the Custom tier description is too vague to help a SaaS subscription founder determine if they qualify or would benefit from Custom pricing."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "Multiple failed selector attempts have returned the page to the hero; the Billing-specific pricing a SaaS founder needs is not reachable via visible, stable anchor links on this page."
+    },
+    "severity": 3,
+    "first_impression": "Clean hero with a clear rate, but a SaaS founder's core question \u2014 'what will Stripe Billing actually cost me for recurring subscriptions?' \u2014 remains unanswered at this scroll position.",
+    "friction_points": [
+      "The sub-nav bar's 'Standard pricing' tab is the only stable in-page navigation visible, but there is no 'Billing' or 'Subscriptions' shortcut tab \u2014 a SaaS founder must scroll through Global payments and Money management products before reaching Billing.",
+      "Custom tier's four benefit chips (IC+ pricing, Volume discounts, Multi-product discounts, Country-specific rates) have no explanatory copy, tooltip, or link \u2014 a founder with $500K MRR cannot self-qualify for Custom without contacting sales.",
+      "There is zero social proof on the hero or in either pricing card \u2014 no recognizable SaaS logos, transaction volume stats, or customer quotes \u2014 leaving a mid-market founder without peer validation at the most critical decision point."
+    ],
+    "recommendations": [
+      "Add a 'Subscriptions & Billing' tab to the sub-nav bar so SaaS founders can jump directly to recurring billing fees without scrolling through unrelated products.",
+      "Expand each Custom benefit chip with a one-line definition and a self-qualification hint (e.g., 'IC+ pricing: typically available for businesses processing $250K+/mo') to reduce unnecessary sales calls.",
+      "Add a social proof bar beneath the two pricing cards featuring 3\u20135 recognizable SaaS logos and a short stat (e.g., 'Powering subscription billing for 10,000+ SaaS companies') to validate the pricing for mid-market buyers."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 11,
+    "url": "https://stripe.com/pricing#custom-pricing",
+    "observation": "Custom pricing section is now visible showing 'Join leading enterprises on Stripe' headline, a 'Build your custom package' card listing products (Payments, Connect, Billing, Radar, Invoicing), support options, and four benefit tiles below (Flexible structures, Volume-based discounts, Global single rates, Cost transparency).",
+    "action": "done",
+    "target": null,
+    "pass_fail": "fail",
+    "verdict": "Stripe's pricing page is visually polished and surfaces Standard rates clearly, but consistently withholds the subscription-specific Billing tier details, volume thresholds, and Custom pricing eligibility signals that a mid-market SaaS founder needs to make a confident buying decision \u2014 resulting in a fail for this persona.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only CTA on the Custom section \u2014 appropriate, but there's no 'request a quote' or 'see if you qualify' path for a founder who isn't ready for a full sales conversation."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Join leading enterprises on Stripe' is enterprise-positioned language that may alienate a mid-market SaaS founder who doesn't self-identify as enterprise but still needs custom Billing pricing."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "A SaaS founder arriving here after failing to find Billing tier details in Standard pricing must now initiate a sales conversation \u2014 there is no self-serve path to understand whether Custom pricing is relevant to their volume."
+    },
+    "severity": 3,
+    "first_impression": "The Custom section is well-designed and lists Billing as a product, but gives zero pricing signal (no minimum volume, no example savings vs. Standard) \u2014 forcing a sales call just to qualify.",
+    "friction_points": [
+      "Custom pricing gives no eligibility threshold \u2014 a SaaS founder at $150K MRR cannot determine if they qualify for Custom without initiating a sales conversation, which is a significant commitment at the evaluation stage.",
+      "'Join leading enterprises' positions Custom as enterprise-only, which may prematurely disqualify a fast-growing mid-market founder who would benefit from volume discounts and IC+ pricing.",
+      "The 'Build your custom package' card lists Billing as a checkbox item but provides no comparison vs. Standard Billing pricing ($620/mo or 0.7%) \u2014 a founder cannot calculate potential savings from Custom without a sales call."
+    ],
+    "recommendations": [
+      "Add a visible eligibility signal such as 'Typically for businesses processing $100K+/mo' beneath the 'Contact sales' CTA so founders can self-qualify without a sales touchpoint.",
+      "Replace 'Join leading enterprises' with inclusive mid-market language such as 'Built for growing businesses' or 'Scale with custom pricing' to avoid alienating fast-growing SaaS founders.",
+      "Add a one-line savings estimate on the 'Billing' item in the custom package card (e.g., 'IC+ pricing can reduce effective rate vs. 0.7% pay-as-you-go at high volumes') to give founders a cost-comparison anchor before contacting sales."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/customers",
+    "observation": "Stripe Customers page shows a hero headline, descriptive copy, and a grid of customer story video cards (Brightwheel, Figma, Lovable, URBN, Pepsi, ElevenLabs) with no dominant conversion CTA above the fold.",
+    "action": "click",
+    "target": "a[href*='customer-stories'], a:has-text('All customer stories')",
+    "pass_fail": "in_progress",
+    "verdict": "Strong brand credibility but insufficient conversion scaffolding for a decision-maker who needs industry-matched evidence and a clear next step.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Watch video' CTAs are clear but there is no primary conversion action (e.g. 'Start building' or 'Talk to sales') anchored above the fold on this page."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is punchy and credible; supporting copy communicates scale and ambition concisely."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Page transitions from hero to customer cards fluidly, but a mid-market buyer has no clear next step after consuming social proof."
+    },
+    "severity": 2,
+    "first_impression": "Visually polished and trust-building, but the page functions as a brand brochure rather than a conversion tool for a buyer ready to act.",
+    "friction_points": [
+      "No industry or company-size filter on the customer grid forces the persona to manually scan for peers rather than quickly finding relevant analogues.",
+      "The only above-the-fold CTA is 'Contact sales' in the global nav \u2014 there is no contextual next-step CTA tied to the social proof content (e.g. 'See how companies like yours use Stripe').",
+      "'Watch video' cards do not surface any outcome metrics or use-case tags, so the persona cannot quickly judge relevance without clicking into each story."
+    ],
+    "recommendations": [
+      "Add industry/company-size filter chips above the customer grid so a SaaS buyer can instantly surface relevant stories.",
+      "Insert a sticky or section-level CTA (e.g. 'Start building' or 'Talk to sales') below the hero that persists as the user scrolls through customer evidence.",
+      "Add a one-line outcome stat or use-case label (e.g. '40% faster checkout' or 'Marketplace payments') as an overlay on each card to let the persona pre-qualify relevance before clicking."
+    ],
+    "confidence": "high",
+    "persona": "Mid-market SaaS founder or finance/engineering decision-maker evaluating whether Stripe is trusted by companies similar to theirs before committing to a payment infrastructure switch"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/customers/all",
+    "observation": "The 'All customer stories' sub-page is now visible with a strong headline and five filter dropdowns (Region, Industry, Solution, Business Size, Content type) above a grid of customer story cards.",
+    "action": "click",
+    "target": "select, [aria-label='Business Size'], div[class*='filter'] button",
+    "pass_fail": "in_progress",
+    "verdict": "Filter system is a meaningful improvement but the page still fails to convert a motivated buyer who has just found a relevant peer story.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Filters are present but there is still no conversion CTA on this page \u2014 a ready-to-act buyer has nowhere to go after finding relevant stories."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline 'Businesses of all types accelerate their growth with Stripe' is broad but credible and inclusive."
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "Filter bar directly addresses the previous friction point about discovery, making the experience notably smoother than the overview tab."
+    },
+    "severity": 2,
+    "first_impression": "Filter-rich and well-organized, but still lacks any outcome data or next-step CTA to convert a buyer who's found their peer company.",
+    "friction_points": [
+      "The 'Business Size' filter label is vague \u2014 a mid-market SaaS founder doesn't know whether their company qualifies as 'Mid-Market' vs 'SMB' by Stripe's definition, risking wrong filter selection.",
+      "Customer story cards visible below the fold show brand logos and content-type icons but no outcome metrics, so the persona can't gauge ROI relevance without clicking each card individually.",
+      "After consuming social proof there is no contextual CTA (e.g. 'Ready to switch? Talk to sales') anchoring the bottom of the filter results, leaving the buyer without a clear next step."
+    ],
+    "recommendations": [
+      "Add a tooltip or parenthetical on 'Business Size' filter options (e.g. 'Mid-Market: 100\u2013999 employees') so the persona can self-identify accurately.",
+      "Overlay each story card with a one-line outcome stat (e.g. '3\u00d7 revenue growth') so the persona can pre-qualify relevance before clicking.",
+      "Insert a sticky bottom bar or end-of-results CTA block ('Found a company like yours? Start building or talk to sales') to capture intent at the moment of peak social proof."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Region filter dropdown is open showing geographic options (Asia Pacific, Australia & NZ, Canada, Europe, Global, Greater China) with checkboxes, and '1 region selected' already pre-filtered \u2014 blocking the card grid behind the open dropdown.",
+    "action": "click",
+    "target": "select[aria-label='Business Size'], div[data-filter='business-size'], button[aria-label*='Business Size']",
+    "pass_fail": "in_progress",
+    "verdict": "Filter UX shows good intent but the pre-filtered default state and overlay dropdown behavior introduce unnecessary confusion for a buyer trying to quickly validate peer relevance.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' exists in the global nav but there is zero conversion CTA on the customer stories page itself to capture a buyer after they filter results."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Filter labels are clean and self-explanatory, though 'Global' as a region option is ambiguous \u2014 it's unclear if it means worldwide companies or companies without a specific HQ."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The open dropdown obscures customer story cards behind it, forcing the persona to close the dropdown before seeing any results \u2014 a disruptive interaction pattern."
+    },
+    "severity": 2,
+    "first_impression": "Functional filter system that shows intent to help buyers self-segment, but the pre-selected '1 region selected' state creates immediate confusion about what the default view is.",
+    "friction_points": [
+      "A pre-applied '1 region selected' filter on page load may silently exclude relevant SaaS companies from the persona's results without them realizing the default view is already narrowed.",
+      "The open Region dropdown fully obscures the card grid, creating a disorienting experience where the persona sees no results content while trying to filter \u2014 increasing perceived complexity.",
+      "There is no 'SaaS' or 'Software' option visible in the Industry filter from this view, so the persona cannot immediately confirm whether their vertical is represented in the story library."
+    ],
+    "recommendations": [
+      "Default to 'All regions' on page load and make any pre-applied filter visually prominent (e.g. a highlighted chip) so the persona knows the view is already scoped.",
+      "Switch from a cover-type dropdown to an inline filter panel or slide-in sidebar so the card grid remains visible while the persona adjusts filters.",
+      "Ensure 'SaaS' or 'Software/Technology' is a top-level Industry option and surface it prominently in the dropdown so the persona can quickly confirm Stripe serves their vertical."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://stripe.com/customers/all",
+    "observation": "The Region dropdown is still open showing geographic checkboxes, with '1 region selected' pre-applied and the customer card grid partially visible but obscured below.",
+    "action": "click",
+    "target": "button[aria-label='Business Size']",
+    "pass_fail": "in_progress",
+    "verdict": "The filter system's silent pre-selection and blocking dropdown interaction represent a meaningful usability regression for a buyer trying to quickly validate peer relevance.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Filter controls are visible but the only site-wide CTA is 'Contact sales' in the nav \u2014 no conversion action is contextually tied to the social proof content below."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Page headline is broad and inclusive but doesn't speak directly to SaaS infrastructure risk \u2014 the persona's primary concern when switching payment providers."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The pre-applied '1 region selected' filter silently narrows results on arrival, meaning the persona's first view of customer stories is already incomplete without their knowledge."
+    },
+    "severity": 3,
+    "first_impression": "Filter bar looks capable, but the open dropdown blocking content and the unexplained pre-selected region state immediately undermine trust in the results being shown.",
+    "friction_points": [
+      "The '1 region selected' default filter is never explained \u2014 a mid-market SaaS founder landing here may unknowingly see only a subset of relevant companies, causing them to underestimate Stripe's breadth.",
+      "The open Region dropdown blocks two of the four visible customer story cards, forcing the persona to dismiss the dropdown before they can even begin evaluating social proof.",
+      "The 'Business Size' filter button could not be interacted with while the Region dropdown was open \u2014 no visual affordance signals that only one dropdown can be active at a time."
+    ],
+    "recommendations": [
+      "Set the default to 'All regions' on page load and require an explicit user action to scope by region, preventing silent result-narrowing on arrival.",
+      "Use a non-blocking inline filter panel (e.g. horizontal chips or a sidebar) so customer cards remain fully visible while the persona browses filter options.",
+      "Close any open dropdown automatically when the user clicks a different filter, and add a visible 'active' state on the open filter button to communicate mutual exclusivity."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Screenshot confirms the Region dropdown is open with checkboxes, '1 region selected' pre-applied, and the Business Size filter button is visible but inaccessible while the dropdown is open.",
+    "action": "click",
+    "target": "div[class*='filter'] button:nth-of-type(4)",
+    "pass_fail": "in_progress",
+    "verdict": "The filter interaction pattern creates a blocking trap state that directly impedes the persona's core task of finding peer company stories \u2014 a significant usability failure on a high-intent page.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Five filter dropdowns are present but there is no conversion CTA anywhere on the page \u2014 a buyer who validates Stripe via this page has no next step presented to them."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'Businesses of all types accelerate their growth with Stripe' is confident but too broad \u2014 a mid-market SaaS founder wants acknowledgment of their specific switching risk, not generic growth claims."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The Region dropdown stays open and blocks interaction with all other filters, creating a trap state the persona must manually escape before continuing their evaluation."
+    },
+    "severity": 3,
+    "first_impression": "The filter bar looks comprehensive at a glance, but the open dropdown immediately blocks content and makes the page feel broken rather than helpful.",
+    "friction_points": [
+      "The pre-applied '1 region selected' state silently narrows the story library without any explanation, meaning a US-based SaaS founder may miss relevant North American case studies if a non-US region was pre-selected.",
+      "The open Region dropdown blocks all other filter buttons, creating an involuntary trap state \u2014 the persona cannot reach 'Business Size' or 'Industry' until they first close the Region dropdown.",
+      "There are no visible customer story cards while the dropdown is open, so the persona cannot scan results in parallel with filter selection, slowing their evaluation workflow significantly."
+    ],
+    "recommendations": [
+      "Remove any pre-applied region filter on page load; default to 'All regions' and let the persona opt in to geographic scoping explicitly.",
+      "Implement click-outside-to-close behavior on the dropdown AND auto-close it when another filter button is clicked, eliminating the trap state.",
+      "Use a non-overlay filter mechanism (e.g. inline chip row or sidebar) so the card grid remains scannable while the persona adjusts filter parameters."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Screenshot confirms the Region dropdown is open with '1 region selected' pre-applied, blocking the card grid \u2014 the Business Size and other filter buttons are visible but the open dropdown creates an interaction trap.",
+    "action": "click",
+    "target": "button[class*='BusinessSize'], button[class*='business']",
+    "pass_fail": "in_progress",
+    "verdict": "The pre-applied region filter and overlay dropdown combine to create a broken first impression on the page most critical to a buyer's peer-validation task.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is only in the top-right nav \u2014 zero contextual CTA exists on the customer stories page to capture a buyer who has just validated Stripe via peer stories."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is confident but generic \u2014 a mid-market SaaS founder switching infrastructure needs acknowledgment of migration complexity, not a broad 'all types' message."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The '1 region selected' pre-applied filter on page load silently restricts the story library, and the open dropdown blocks card content \u2014 two compounding friction points before the persona has seen a single story."
+    },
+    "severity": 3,
+    "first_impression": "Page looks polished and organized at a glance, but the pre-applied region filter and blocking dropdown immediately create a confusing, restricted experience.",
+    "friction_points": [
+      "'1 region selected' is pre-applied on load with no indication of which region \u2014 a US-based SaaS decision-maker may unknowingly be viewing only APAC or European stories, skewing their perception of Stripe's fit.",
+      "The open Region dropdown covers the customer card grid entirely in the lower viewport, meaning the persona cannot see any social proof content until they actively dismiss the dropdown.",
+      "The five-filter row has no 'Reset all' or 'Clear filters' affordance visible \u2014 a persona who accidentally applies wrong filters has no obvious escape route back to the full story library."
+    ],
+    "recommendations": [
+      "Default to 'All regions' on page load and require the user to explicitly opt in to regional scoping \u2014 never pre-apply a filter silently on arrival.",
+      "Use a non-overlay dropdown implementation (e.g. absolute-positioned below the filter bar without z-index blocking the card grid) so stories remain visible during filter interaction.",
+      "Add a persistent 'Clear all filters' text link next to the filter row that activates whenever any filter is applied, giving the persona a clear escape hatch."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Screenshot clearly shows the Region dropdown open with checkboxes for Asia Pacific, Australia & New Zealand, Canada, Europe, Global, Greater China \u2014 '1 region selected' is pre-applied and the Business Size button is visible but blocked by the open dropdown.",
+    "action": "click",
+    "target": "button[class*='Size']",
+    "pass_fail": "in_progress",
+    "verdict": "A critical interaction bug combined with a silently pre-filtered default state make this filter bar actively harmful to the persona's goal of quickly finding relevant peer company stories.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Only 'Contact sales' in the top-right nav serves as a conversion action \u2014 no contextual CTA exists on the page to capture a buyer after they've found a relevant story."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is broad and inclusive but misses the specific anxiety of a mid-market SaaS founder considering a payment infrastructure switch \u2014 migration risk, reliability, and uptime are unaddressed."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The Region dropdown opens on page load in a way that blocks the card grid \u2014 combined with '1 region selected' pre-applied silently, the persona's first experience is filtered, restricted, and visually cluttered."
+    },
+    "severity": 3,
+    "first_impression": "The page looks structured and data-rich but the open dropdown blocking content and unexplained pre-selected region filter immediately undermine confidence in the completeness of results shown.",
+    "friction_points": [
+      "The '1 region selected' label gives no indication of which region was pre-selected \u2014 a North American SaaS founder cannot know without clicking whether they're seeing US-relevant stories or an entirely different market's results.",
+      "The open Region dropdown is visually dominant and obscures customer story cards below, meaning the persona's first visual impression is of a filter UI rather than of the social proof content they came to see.",
+      "The Business Size dropdown button is visible in the screenshot but has repeatedly failed to respond to clicks while the Region dropdown is open, confirming a trap-state interaction bug that blocks the persona's segmentation task."
+    ],
+    "recommendations": [
+      "Display the pre-selected region as a visible pill/chip tag (e.g. '\u00d7 United States') so the persona immediately knows which region is active and can remove it with one click.",
+      "Close the Region dropdown on page load \u2014 never auto-open a dropdown on arrival; let the filter bar render in a collapsed, scannable state so card content is the first thing the persona sees.",
+      "Fix the interaction bug where other filter buttons are unresponsive while the Region dropdown is open \u2014 either auto-close on outside-click or ensure all filter buttons remain interactive regardless of dropdown state."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Screenshot confirms the Region dropdown is open with checkboxes visible, '1 region selected' pre-applied, and all five filter buttons (Region, Industry, Solution, Business Size, Content type) visible in the filter bar with the card grid partially visible below.",
+    "action": "click",
+    "target": "button[data-testid*='business'], div[class*='Filter'] button:nth-child(4), button[class*='filter']:nth-of-type(4)",
+    "pass_fail": "in_progress",
+    "verdict": "The persistently open Region dropdown with a silently pre-applied filter creates a blocking, disorienting experience that directly impedes the persona's peer-validation task before they see a single customer story.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' sits isolated in the top-right nav with zero contextual CTA anchored to the customer stories content \u2014 a high-intent buyer has no clear next step after validating Stripe via peer stories."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline is confident but speaks to growth outcomes rather than the infrastructure-switching risk that is top-of-mind for this persona."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The Region dropdown auto-opens or stays persistently open, blocking card content and preventing interaction with other filters \u2014 a compounding usability failure on the page's most important interactive element."
+    },
+    "severity": 3,
+    "first_impression": "Well-structured filter bar and strong headline, but the open dropdown dominating the viewport makes the page feel stuck and incomplete before the persona has seen a single story.",
+    "friction_points": [
+      "'1 region selected' is pre-applied on page load with no indication of which region, meaning a US SaaS founder may be viewing a filtered subset of stories without realizing it.",
+      "The Region dropdown remains persistently open and blocks the card grid, preventing the persona from reaching their core task \u2014 scanning stories from similar SaaS companies.",
+      "The Business Size filter button has been unresponsive across multiple attempts while the Region dropdown is open, confirming a blocking interaction trap that prevents the persona from segmenting stories by company scale."
+    ],
+    "recommendations": [
+      "Remove the pre-applied region filter on page load entirely and default to showing all stories \u2014 let users opt into geographic scoping.",
+      "Implement click-outside-to-dismiss on the Region dropdown so the persona can easily close it and view the card grid without a dedicated close action.",
+      "Ensure all filter buttons remain independently clickable regardless of another filter's open/closed state, eliminating the interaction trap."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 9,
+    "url": "https://stripe.com/customers/all",
+    "observation": "Screenshot clearly shows the Region dropdown open with '1 region selected' pre-applied, the four other filter dropdowns (Industry, Solution, Business Size, Content type) visible but blocked, and two customer story cards partially visible below.",
+    "action": "click",
+    "target": "h1",
+    "pass_fail": "in_progress",
+    "verdict": "The auto-open dropdown with a silently pre-applied region filter creates a broken, disorienting first experience that blocks the persona from their core peer-validation task.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only conversion CTA and it lives in the global nav \u2014 no contextual next-step CTA exists on the customer stories page itself."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'Businesses of all types accelerate their growth with Stripe' is confident but generic \u2014 it does not speak to the infrastructure-switch risk or SaaS-specific concerns of this persona."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The Region dropdown appears open by default on page load, blocking the card grid and trapping the user in a filter state before they have seen any content."
+    },
+    "severity": 3,
+    "first_impression": "The filter bar is well-designed at a glance, but the open dropdown dominating the viewport and the unexplained pre-selected region make the page feel broken on arrival.",
+    "friction_points": [
+      "'1 region selected' is silently pre-applied with no label identifying which region \u2014 a US-based SaaS founder cannot tell if they are seeing North American stories or a different market's results.",
+      "The Region dropdown is open on page load and covers the customer card grid, meaning the persona's first experience is a filter menu rather than the social proof content they navigated here to find.",
+      "All four other filter buttons (Industry, Solution, Business Size, Content type) are rendered but have been non-interactive across multiple attempts while the Region dropdown is open \u2014 confirming a persistent trap-state bug."
+    ],
+    "recommendations": [
+      "Label the pre-selected region explicitly as a dismissible chip (e.g. '\u00d7 United States') directly in the filter bar so the persona immediately understands the scope of results shown.",
+      "Never auto-open a dropdown on page load \u2014 render the filter bar in its collapsed state so customer story cards are the first element the persona sees.",
+      "Fix the mutual-exclusivity interaction bug: all filter buttons must remain independently clickable regardless of which dropdown is currently open."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 10,
+    "url": "https://stripe.com/",
+    "observation": "Clicking h1 has navigated away from /customers to the Stripe homepage, showing the main product hero with 'Get started' and 'Sign up with Google' CTAs, plus a logo bar of enterprise customers (Amazon, NVIDIA, Ford, Coinbase, Google, Shopify, Mindbody).",
+    "action": "navigate",
+    "target": "https://stripe.com/customers",
+    "pass_fail": "in_progress",
+    "verdict": "Accidental navigation away from /customers confirms a usability issue with clickable page elements, and the homepage hero's CTA set is misaligned with a mid-market buyer's evaluation mindset.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "'Get started' and 'Sign up with Google' are clear acquisition CTAs, but a mid-market decision-maker evaluating a platform switch needs 'Talk to sales' or 'See case studies' \u2014 not a self-serve signup prompt."
+    },
+    "copy_quality": {
+      "score": 5,
+      "note": "'From your first transaction to your billionth' is exceptional \u2014 it directly addresses the scalability concern of a growing SaaS company considering infrastructure longevity."
+    },
+    "flow_smoothness": {
+      "score": 1,
+      "note": "Clicking h1 on the customers page navigated away to the homepage entirely \u2014 a critical navigation breakage that interrupted the evaluation flow and would disorient any real user."
+    },
+    "severity": 4,
+    "first_impression": "The homepage hero is polished, credible, and well-copywritten, but the persona has been accidentally routed away from the customer stories page they were trying to evaluate.",
+    "friction_points": [
+      "Clicking within the page headline on /customers triggered a navigation to the homepage \u2014 a real user who accidentally clicks the heading loses their place in the customer stories evaluation flow with no back-breadcrumb visible.",
+      "The homepage hero presents 'Get started' and 'Sign up with Google' as primary CTAs, which are self-serve developer actions \u2014 a mid-market decision-maker evaluating a platform switch needs 'Contact sales' or 'See customer stories' at the same prominence.",
+      "The logo bar (Amazon, NVIDIA, Ford) shows enterprise-tier brands that are not peer comparables for a mid-market SaaS founder \u2014 the social proof tier mismatch may make Stripe feel out of reach rather than reassuring."
+    ],
+    "recommendations": [
+      "Ensure the page headline on /customers is not a clickable element (or link) to prevent accidental navigation \u2014 the logo should be the homepage link, not content headings.",
+      "Add 'Talk to sales' as a co-primary CTA alongside 'Get started' on the homepage hero to serve mid-market buyers who are not ready to self-serve sign up.",
+      "Include 2\u20133 mid-market SaaS logos (e.g. Notion, Loom, Linear) in the homepage logo bar alongside enterprise names to prevent the persona from self-excluding Stripe as 'too big for us'."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 11,
+    "url": "https://stripe.com/customers",
+    "observation": "Back on https://stripe.com/customers \u2014 the Overview tab is visible with hero headline 'The payments platform behind millions of businesses', descriptive copy, 'Contact sales' in the top-right nav, and a grid of customer video story cards (Brightwheel, Figma, Lovable, URBN, Pepsi, ElevenLabs) with 'Watch video' CTAs.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "The Stripe Customers page is visually strong and structurally sensible, but a silently pre-filtered story library, a blocking dropdown trap-state bug, and the absence of any contextual conversion CTA meaningfully undermine its effectiveness for a mid-market SaaS decision-maker conducting peer validation before a platform switch.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' is the only conversion CTA and it lives in the global nav \u2014 no contextual next-step CTA is anchored to the customer evidence on this page, leaving a motivated buyer without a clear path forward."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline and supporting copy are confident and inclusive, but they speak to scale and ambition rather than the infrastructure-switching risk and SaaS-specific reliability concerns top-of-mind for this persona."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The Overview \u2192 All customer stories tab structure is logical, but the filter trap-state bug (open Region dropdown blocking all other filters) on the 'All customer stories' tab creates a major flow breakdown mid-journey."
+    },
+    "severity": 3,
+    "first_impression": "Visually polished and brand-credible, but the page functions as a brochure rather than a conversion tool \u2014 the persona can consume social proof but has no clear, contextual next step to act on their intent.",
+    "friction_points": [
+      "The 'All customer stories' filter bar pre-applies '1 region selected' on page load with no indication of which region, silently narrowing the story library before the persona has made any choices.",
+      "The open Region dropdown on the filter page creates a persistent trap state where all other filter buttons (Business Size, Industry, Solution) are non-interactive \u2014 blocking the persona's ability to segment stories by company size or vertical.",
+      "No outcome metrics, use-case tags, or company-size indicators appear on any customer story card in either the Overview or All Stories view \u2014 the persona must click into each story individually to assess relevance, adding significant cognitive load."
+    ],
+    "recommendations": [
+      "Default the All Stories page to 'All regions' with no pre-applied filters and surface any active filters as dismissible chips so the persona can see and control the full scope of results.",
+      "Fix the dropdown interaction bug so all filter buttons remain independently clickable regardless of which dropdown is open, and implement click-outside-to-close behavior.",
+      "Add a one-line outcome stat and a use-case tag to each story card thumbnail (e.g. '2\u00d7 faster checkout \u00b7 Billing') so the persona can pre-qualify relevance at a glance without clicking into every story."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Stripe enterprise landing page with hero copy 'Build the next era of your enterprise', dashboard UI mockup, news ticker, and brand logos (H&M, Maersk, Marriott) visible above the fold.",
+    "action": "navigate",
+    "target": "https://stripe.com/enterprise",
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual design and credible brand proof points, but a single sales-gated CTA and SMB-looking UI mock create meaningful friction for an enterprise buyer in discovery mode.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "Only 'Contact sales' CTA is present \u2014 no self-serve exploration path or demo option for an enterprise buyer who may want to evaluate before talking to sales."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is punchy and aspirational; supporting copy names Amazon and BMW which builds credibility, though 'next era' is vague on specific enterprise pain points."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The news ticker competes with the hero message, creating visual noise that fragments attention at a critical first-impression moment."
+    },
+    "severity": 2,
+    "first_impression": "Polished and premium-feeling, but the single 'Contact sales' CTA creates friction for enterprise buyers in research mode who aren't ready to engage a salesperson.",
+    "friction_points": [
+      "Only CTA is 'Contact sales' \u2014 an enterprise buyer in early research phase has no self-serve path to explore pricing tiers, feature comparisons, or request a demo without committing to a sales conversation.",
+      "The scrolling news ticker above the hero distracts from the value proposition and forces the buyer to mentally filter competing messages at the most critical above-the-fold moment.",
+      "The dashboard UI mockup shows individual transaction amounts ($65.34, $89.94) that feel SMB-scale, not enterprise-scale, creating a credibility mismatch for a buyer managing billions in payment volume."
+    ],
+    "recommendations": [
+      "Add a secondary CTA such as 'Request a demo' or 'Explore enterprise features' to give research-phase buyers a lower-commitment entry point alongside 'Contact sales'.",
+      "Replace or reduce the news ticker prominence \u2014 consider moving it below the fold or displaying it as a static single card to eliminate above-the-fold attention fragmentation.",
+      "Update the dashboard mockup to show enterprise-scale metrics (e.g., $2.4M deposit, multi-currency flows) to visually validate the enterprise positioning claim."
+    ],
+    "confidence": "high",
+    "persona": "VP of Engineering or Head of Payments at a mid-to-large enterprise evaluating Stripe as a payments infrastructure replacement or consolidation platform"
+  },
+  {
+    "step": 2,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Hero section fully visible: headline 'Build the next era of your enterprise', Amazon/BMW social proof copy, single 'Contact sales' CTA, H&M/Maersk/Marriott logos below fold, news ticker running above hero, and a dashboard UI mockup showing $65-$277 transaction amounts.",
+    "action": "click",
+    "target": "a[href*='solutions']",
+    "pass_fail": "in_progress",
+    "verdict": "Above-the-fold execution is visually strong but fails to immediately address enterprise buyer priorities like compliance, scale, and SLA, creating unnecessary friction at the most critical evaluation moment.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Contact sales' is the only conversion path \u2014 no demo request, no ROI calculator, no feature comparison link for an enterprise buyer doing due diligence before engaging sales."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Amazon and BMW name-drops are credible anchors, but 'revolutionize' and 'next era' are generic aspiration words that don't address enterprise-specific pain points like PCI compliance, SLA guarantees, or global settlement."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Three competing focal points above the fold \u2014 news ticker, hero text, and interactive UI mockup \u2014 force the enterprise buyer to decide where to look rather than being guided toward a clear next action."
+    },
+    "severity": 2,
+    "first_impression": "Premium and visually confident, but the lack of any enterprise-specific differentiators (uptime SLA, compliance certs, dedicated support) above the fold leaves a technically-minded VP unsatisfied.",
+    "friction_points": [
+      "The dashboard mockup shows retail-scale transaction amounts ($65, $89, $277) that visually contradict the enterprise positioning, undermining credibility for a buyer processing millions of transactions daily.",
+      "There is no secondary navigation anchor or jump-link to enterprise-specific content (e.g., 'See compliance & security', 'View integrations') forcing the VP to scroll blindly to find technical validation.",
+      "The news ticker headline 'total payment volume reaches $1.4T' is buried in a scrolling marquee and never surfaced as a prominent trust signal where it would most impact an enterprise buyer's confidence."
+    ],
+    "recommendations": [
+      "Replace the dashboard mockup with enterprise-scale metrics \u2014 e.g., '$2.4B processed in a single day for [Logo]' \u2014 to visually match the enterprise buyer's operational reality.",
+      "Add a sticky anchor-link bar below the hero (e.g., 'Security & Compliance | Integrations | Global Coverage | Pricing') so the VP can jump directly to technically relevant sections without blind scrolling.",
+      "Pull the $1.4T volume stat out of the ticker and display it as a static hero sub-headline or trust badge to maximize its credibility impact at the moment of first impression."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Full hero section confirmed in screenshot: headline, Amazon/BMW sub-copy, single 'Contact sales' CTA, H&M/Maersk/Marriott logos, news ticker, and SMB-scale dashboard mockup all visible as previously assessed.",
+    "action": "click",
+    "target": "nav:Solutions",
+    "pass_fail": "in_progress",
+    "verdict": "Hero section is visually strong but systematically under-serves an enterprise buyer by omitting scale indicators, compliance signals, and alternative evaluation paths beyond 'Contact sales'.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Contact sales' is the sole CTA with no alternative path for a VP who wants to self-educate on enterprise capabilities before committing to a sales conversation."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Amazon and BMW references are strong but the body copy never mentions enterprise-specific concerns like uptime SLAs, dedicated support tiers, or compliance certifications that a VP would immediately scan for."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The news ticker, hero copy, and interactive mockup create three simultaneous attention demands above the fold with no clear visual hierarchy guiding the enterprise buyer toward a next action."
+    },
+    "severity": 2,
+    "first_impression": "Visually polished but the hero communicates aspiration over specifics, leaving a technically-focused VP without the concrete proof points needed to justify further evaluation.",
+    "friction_points": [
+      "The nav 'Solutions' dropdown is the only way to find enterprise-specific use cases, but there is no prominent 'Enterprise' label or shortcut in the hero for a buyer who already self-identifies as an enterprise prospect.",
+      "Dashboard mockup values ($65.34, $89.94, $277.81) are conspicuously SMB-scale and would immediately signal to a VP managing high-volume payments that this page was not purpose-built for their context.",
+      "No above-the-fold indicators of enterprise-grade infrastructure (e.g., 99.99% uptime, SOC 2, PCI DSS Level 1) forces compliance-conscious buyers to scroll or leave to find basic qualification criteria."
+    ],
+    "recommendations": [
+      "Add an 'Enterprise' quick-link or badge directly in the hero section that anchors to or highlights the enterprise-specific value proposition without requiring nav exploration.",
+      "Replace the dashboard mockup with one showing enterprise-scale volumes, multi-currency flows, or consolidated reporting views that match a large-scale payments operation.",
+      "Add a compact trust-badge row directly below the hero CTA showing SOC 2, PCI DSS Level 1, and uptime SLA to immediately address compliance buyer concerns without requiring a scroll."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://docs.stripe.com/payments/vault-and-forward",
+    "observation": "Navigation click landed on Stripe Docs 'Forward card details to third-party API endpoints' \u2014 a deep technical documentation page, not the enterprise marketing page being evaluated.",
+    "action": "navigate",
+    "target": "https://stripe.com/enterprise",
+    "pass_fail": "in_progress",
+    "verdict": "Critical navigation failure \u2014 an enterprise buyer clicking 'Solutions' lands in developer API documentation, representing a major break in the enterprise evaluation journey.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "Landing on a raw API docs page instead of an enterprise solutions page after a nav click is a complete CTA/navigation failure for a VP-level evaluator with no technical intent at this stage."
+    },
+    "copy_quality": {
+      "score": 2,
+      "note": "The docs page copy is technically precise but entirely wrong context \u2014 a VP evaluating enterprise fit is now reading about PCI vault forwarding APIs with no path back to the enterprise pitch."
+    },
+    "flow_smoothness": {
+      "score": 1,
+      "note": "Navigation misfired completely, dropping an enterprise buyer into developer documentation and breaking the evaluation flow with no contextual breadcrumb back to stripe.com/enterprise."
+    },
+    "severity": 3,
+    "first_impression": "A jarring context switch \u2014 a VP-level buyer expecting enterprise solution overview is instead looking at a technical API reference page, signaling poor nav information architecture.",
+    "friction_points": [
+      "The 'Solutions' nav item routed to Stripe Docs rather than an enterprise solutions overview, forcing a non-developer persona into an entirely wrong context with no clear escape route back.",
+      "The 'Request access' callout block on this docs page implies Vault/Forward API is gated behind manual contact with Stripe support, adding procurement friction for an enterprise buyer already evaluating feasibility.",
+      "There is no persistent 'Back to Enterprise' or contextual breadcrumb linking this technical capability page back to the enterprise marketing journey, stranding an evaluator mid-funnel."
+    ],
+    "recommendations": [
+      "Fix the 'Solutions' nav target so enterprise-intent clicks route to stripe.com/enterprise or a dedicated enterprise solutions overview, not the developer docs portal.",
+      "Replace the 'Request access' block with a clearer enterprise-tier access path (e.g., 'Available on Enterprise plan \u2014 Contact sales') to set accurate expectations for procurement-stage buyers.",
+      "Add a contextual banner or breadcrumb at the top of capability docs pages linking back to the relevant enterprise marketing page for buyers who arrive from the enterprise funnel."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Back on stripe.com/enterprise hero: headline 'Build the next era of your enterprise', single 'Contact sales' CTA, Amazon/BMW sub-copy, H&M/Maersk/Marriott logos, SMB-scale dashboard mockup, and 'Platform payments / Explore' section beginning below fold.",
+    "action": "click",
+    "target": "a[href*='pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "The page's value proposition is fragmented \u2014 enterprise hero messaging immediately gives way to product-category sections without a coherent narrative thread that guides a VP-level buyer through the full evaluation journey.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Contact sales' is the only CTA on the entire hero \u2014 a VP wanting to understand pricing tiers or run a self-serve evaluation has no alternative action available."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Amazon and BMW name-drops are credible but the sub-copy focuses on vague transformation narratives rather than concrete enterprise differentiators like global settlement, SLAs, or dedicated support."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The 'Platform payments / Explore' label below the fold introduces a new product category without context, creating a disjointed transition from the enterprise-level hero messaging."
+    },
+    "severity": 2,
+    "first_impression": "Confirmed: hero is premium and branded but the 'Platform payments' section appearing immediately below the enterprise hero creates a product-line context switch that could confuse a VP-level buyer.",
+    "friction_points": [
+      "The 'Platform payments' section appears directly beneath the enterprise hero with no transitional copy explaining how platform payments relate to enterprise needs, creating an abrupt context shift for a buyer focused on infrastructure consolidation.",
+      "No pricing signal anywhere on the page \u2014 not even a 'Custom enterprise pricing' label \u2014 forces a VP to initiate a sales conversation blind with no budget-qualification anchor.",
+      "The news ticker displays three separate content types (News, Stories, Report) in rapid succession, diluting the credibility signal of the '$1.4T payment volume' stat by burying it alongside unrelated content."
+    ],
+    "recommendations": [
+      "Add a transitional subheading before 'Platform payments' (e.g., 'Enterprise capabilities across every payment type') to frame the product sections as components of an enterprise solution rather than standalone SMB products.",
+      "Add a 'Custom enterprise pricing \u2014 contact us' callout or pricing-anchor link so a VP can understand commercial structure before committing to a sales conversation.",
+      "Separate the '$1.4T payment volume' news item into a standalone static trust metric displayed prominently in the hero rather than competing with unrelated stories in the ticker."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://stripe.com/pricing",
+    "observation": "Stripe pricing page showing 'Standard' (2.9% + 30\u00a2) and 'Custom' tiers side by side, with IC+ pricing, volume discounts, multi-product discounts, and country-specific rates listed as Custom tier features.",
+    "action": "navigate",
+    "target": "https://stripe.com/enterprise",
+    "pass_fail": "in_progress",
+    "verdict": "The pricing page critically underserves enterprise buyers by conflating enterprise accounts with any 'Custom' business and omitting the support and SLA differentiators that justify enterprise-tier pricing.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Contact sales' on the Custom tier is appropriate but the 'Get started' on Standard inadvertently signals that enterprise buyers should start with a SMB self-serve plan, creating tier confusion."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Businesses with large payments volume or unique business models' is vague \u2014 an enterprise VP wants to see a threshold (e.g., '>$1M/month') or explicit enterprise qualifier to know if Custom applies to them."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The pricing page was reached by clicking a pricing link from the enterprise page, but there is no enterprise-specific pricing context, dedicated enterprise tier name, or SLA/support differentiator visible \u2014 it reads as a generic pricing page."
+    },
+    "severity": 3,
+    "first_impression": "The pricing page treats enterprise as a footnote of the 'Custom' tier rather than a dedicated enterprise offering, which is a significant mismatch for a VP who arrived from stripe.com/enterprise.",
+    "friction_points": [
+      "There is no enterprise-specific tier or label \u2014 'Custom' conflates true enterprise accounts with any mid-market business with 'unique models', leaving a VP unable to self-qualify their account category.",
+      "The Custom tier lists IC+ pricing, volume discounts, multi-product discounts, and country-specific rates as bullet items with zero detail on what each means or typical ranges, forcing the VP into a sales call just to understand the pricing structure.",
+      "No indication of enterprise support tiers (dedicated TAM, SLA guarantees, priority incident response) on the pricing page, which are often the primary cost justification for enterprise contracts over standard pricing."
+    ],
+    "recommendations": [
+      "Add an explicit 'Enterprise' tier card or rename/split 'Custom' into 'Growth' and 'Enterprise' with distinct qualifiers (e.g., '>$5M annual volume') so enterprise buyers can immediately self-identify.",
+      "Add tooltip or expand-link explanations for each Custom feature (IC+ pricing, volume discounts) with indicative ranges so a VP can model rough costs before committing to a sales call.",
+      "Add a dedicated 'Enterprise support' row to the Custom/Enterprise tier highlighting TAM access, uptime SLA, and incident response SLAs as these are budget-justification items in enterprise procurement."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Back on stripe.com/enterprise hero \u2014 full above-the-fold confirmed in screenshot: news ticker with three item types, hero headline, 'Contact sales' CTA, SMB-scale dashboard mockup ($65/$89/$102/$277/$1042 amounts), and H&M/Maersk/Marriott logos at bottom.",
+    "action": "click",
+    "target": "a[href*='contact']",
+    "pass_fail": "in_progress",
+    "verdict": "The enterprise page's hero-to-content layout and SMB-scale UI artifacts consistently undermine the premium enterprise positioning across every viewport state evaluated.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "There are two 'Contact sales' CTAs visible (hero button and top-right nav button) but zero alternative actions \u2014 a VP in research mode with no intent to talk to sales yet has no other conversion path on this page."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The sub-headline naming Amazon and BMW is credible but 'revolutionize their business' is aspirational filler \u2014 a VP wants to know what specific infrastructure problems Stripe solves, not a transformation narrative."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'Platform payments / Explore' section appears mid-viewport alongside the hero, creating a premature product-category dive before the enterprise value proposition has been fully established."
+    },
+    "severity": 2,
+    "first_impression": "The full screenshot confirms all previously identified issues: SMB-scale dashboard mockup, dual 'Contact sales' CTAs with no alternative path, and a fragmented layout mixing hero and product sections in the same viewport.",
+    "friction_points": [
+      "The dashboard mockup shows 'Next deposit: $277.81 \u2014 SENDING TODAY' and 'Deposit #0132: $1,042.32 EN ROUTE' \u2014 these are micro-business deposit amounts that actively undermine enterprise credibility for a VP overseeing millions in daily settlement.",
+      "Two identical 'Contact sales' CTAs (hero + nav) with no differentiation in intent or destination creates redundancy without utility \u2014 a VP scanning for a 'Request demo' or 'See enterprise case studies' link finds none.",
+      "The 'Platform payments \u2014 Explore' section is visible in the same viewport as the enterprise hero, forcing a VP to mentally context-switch between an enterprise pitch and a product-category drill-down before they've absorbed the top-level value proposition."
+    ],
+    "recommendations": [
+      "Replace the dashboard mockup with enterprise-scale UI \u2014 e.g., a treasury management view showing $4.2M in settled funds across 12 currencies \u2014 to visually validate the enterprise claim.",
+      "Replace one 'Contact sales' CTA with 'Request a demo' or 'Download enterprise overview' to give research-phase buyers a lower-commitment next step that doesn't require sales readiness.",
+      "Separate the 'Platform payments' product section from the hero viewport with a clear visual break and section header (e.g., 'What's included in Stripe Enterprise') to frame it as a capabilities menu rather than a competing message."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://stripe.com/contact/sales",
+    "observation": "Clicking 'Contact sales' triggered a modal/page with 'Let's get you to the right place' \u2014 a two-field qualification form asking only for work email and Country/Region before routing the user.",
+    "action": "navigate",
+    "target": "https://stripe.com/enterprise",
+    "pass_fail": "in_progress",
+    "verdict": "The contact sales form is visually clean but functionally opaque \u2014 an enterprise VP has no visibility into what follows 'Continue', creating hesitation at the highest-intent moment in the entire funnel.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Continue' is clear but the headline 'Let's get you to the right place' is vague \u2014 a VP doesn't know if this leads to a sales calendar, a form, a phone call, or a product demo request."
+    },
+    "copy_quality": {
+      "score": 2,
+      "note": "'We just need a few quick details' undersells the ask \u2014 a VP about to enter a sales funnel wants to know exactly what happens next (e.g., 'A Stripe enterprise specialist will contact you within 1 business day')."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The form appears over a blurred background of the enterprise page with no indication of how many steps follow, leaving an enterprise buyer uncertain whether they're about to fill out a 2-field or 20-field qualification flow."
+    },
+    "severity": 2,
+    "first_impression": "Minimal and clean visually, but critically opaque about what happens after 'Continue' \u2014 a VP entering a vendor evaluation won't blindly proceed without knowing the commitment they're making.",
+    "friction_points": [
+      "No indication of what follows after 'Continue' \u2014 a VP cannot tell if the next step is a Calendly booking, a 10-field RFI form, or an immediate chat, creating hesitation at the moment of highest intent.",
+      "Requesting only 'Work email' and 'Country/Region' collects insufficient qualification data upfront, meaning the VP will likely face a longer form or multiple follow-up touchpoints \u2014 a known enterprise buyer frustration.",
+      "The modal provides no trust reinforcement at the point of data entry \u2014 no 'Your data is secure', no expected response time SLA, and no indication of who from Stripe will follow up (named team, not generic sales)."
+    ],
+    "recommendations": [
+      "Add a one-line process indicator below the headline (e.g., 'Step 1 of 2 \u2014 We'll match you with an enterprise specialist and schedule a call within 1 business day') to set clear expectations.",
+      "Add company name and estimated annual payment volume fields to this first step so Stripe can route the VP to the correct enterprise specialist without a qualification call, reducing time-to-value for both parties.",
+      "Add a compact trust line below the form fields (e.g., 'Your information is secure. An enterprise specialist typically responds within 24 hours.') to reduce VP hesitation at the point of data submission."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 9,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Full above-the-fold screenshot now confirmed: news ticker with 4 stories running, hero headline, 'Contact sales' CTA, dashboard mockup with $65/$89/$102/$277/$1042 amounts, 'Platform payments' and 'Global payments' category labels, and H&M/Maersk/Marriott/BMW/Amazon logos in footer strip.",
+    "action": "click",
+    "target": "a[href*='customers']",
+    "pass_fail": "in_progress",
+    "verdict": "The page's most compelling enterprise proof point (URBN $5B consolidation) is hidden in a scrolling ticker while the hero real estate is occupied by SMB-scale UI mockups \u2014 a fundamental misallocation of social proof for this buyer persona.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Single 'Contact sales' CTA with no secondary path means a VP who wants case studies, technical docs, or a demo must either click into a sales funnel or hunt through the nav \u2014 no middle-ground option exists."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The screenshot confirms sub-copy names Amazon and BMW but the 'revolutionize their business' phrasing is vague aspiration \u2014 a VP needs to read 'reduce payment failure rates', 'consolidate 7 payment providers into 1', or similar outcome-specific copy to feel the relevance."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'Platform payments' and 'Global payments' clickable labels are partially obscured behind the dashboard mockup, making it unclear they are interactive navigation anchors rather than decorative labels."
+    },
+    "severity": 2,
+    "first_impression": "The full screenshot validates all prior observations \u2014 this is a visually rich hero that prioritizes aesthetic impact over enterprise buyer information needs, with the dashboard mockup's SMB-scale figures ($277, $1,042) as the most damaging credibility mismatch.",
+    "friction_points": [
+      "The 'Platform payments' and 'Global payments' labels appear to float over the dashboard mockup with no clear affordance that they are clickable navigation anchors, causing a VP to miss that section-level exploration is available.",
+      "The news ticker runs 4 concurrent story types (product update, news, stories, report) with no enterprise filter, forcing a VP to mentally sort Stripe-wide content to find enterprise-relevant signals like the URBN $5B consolidation case.",
+      "The URBN $5 billion consolidation story visible in the ticker ('URBN consolidates $5 billion in online and in-store revenue onto Stripe') is precisely the enterprise social proof this buyer needs, but it is buried in a fast-scrolling ticker rather than featured as a hero proof point."
+    ],
+    "recommendations": [
+      "Style 'Platform payments' and 'Global payments' as distinct pill-shaped tab buttons with hover states so a VP can clearly identify them as interactive navigation anchors for exploring enterprise capability areas.",
+      "Add an enterprise-specific content filter or 'Enterprise stories' dedicated section to the page so a VP can immediately surface case studies like URBN without parsing a generic news feed.",
+      "Pull the URBN $5B consolidation case out of the ticker and feature it as a static callout block or hero sub-headline (e.g., 'URBN consolidated $5B in revenue onto Stripe \u2014 read how') to maximize its enterprise social proof impact."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 10,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Full screenshot now clearly shows the hero with dashboard mockup displaying '$429,777 Net volume' and '909 New subscribers' \u2014 notably larger scale than previously observed SMB amounts \u2014 plus 'Finance automation' label with 'Explore' CTA, H&M/Maersk/Marriott logos, and URBN $5B ticker item visible.",
+    "action": "click",
+    "target": "a[href*='explore']",
+    "pass_fail": "in_progress",
+    "verdict": "The page now shows more enterprise-appropriate dashboard scale, but continues to bury its strongest social proof in a ticker and uses vague CTAs that leave a VP uncertain about what each interaction will reveal.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The 'Explore' CTA beneath 'Finance automation' has no context about what exploring means \u2014 a VP doesn't know if it leads to a product demo, feature list, or case study, making it a low-confidence click."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "The dashboard now shows $429,777 net volume which is more credible than prior SMB amounts, but 'Finance automation' as a section label is ambiguous \u2014 a VP needs to know if this means revenue recognition, AP automation, or treasury management."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The 'Finance automation' card and dashboard mockup occupy the right half of the hero while the enterprise value proposition occupies the left, creating two competing information tracks with no clear reading order or hierarchy connecting them."
+    },
+    "severity": 2,
+    "first_impression": "The corrected screenshot reveals the dashboard shows more enterprise-appropriate scale ($429K net volume), partially addressing prior SMB credibility concern, but the URBN $5B consolidation story remains buried in the ticker rather than featured prominently.",
+    "friction_points": [
+      "The 'Finance automation' label floating over the dashboard mockup is ambiguous for a VP evaluating payments infrastructure \u2014 it's unclear whether this refers to Stripe's revenue recognition product, treasury, or AP/AR automation without clicking.",
+      "The URBN $5B consolidation proof point \u2014 the single most relevant enterprise social proof on the entire page \u2014 is still only visible in the auto-scrolling ticker, meaning a VP who doesn't pause on it will miss the most compelling validation for their evaluation.",
+      "The 'Explore' CTA beneath 'Finance automation' uses a down-arrow icon suggesting in-page scroll, but its actual destination is unclear \u2014 a VP cannot predict whether clicking leads to a product detail page, a case study, or a modal."
+    ],
+    "recommendations": [
+      "Replace 'Finance automation' with a specific capability label (e.g., 'Revenue recognition & treasury automation') and add a one-line description so a VP can immediately assess relevance without clicking.",
+      "Pin the URBN $5B case as a static featured callout block directly below the hero logos section with a 'Read case study' CTA \u2014 don't rely on ticker timing to surface the page's strongest enterprise proof point.",
+      "Change the 'Explore \u2193' CTA to a labeled button (e.g., 'See Finance Automation features') with a clear destination indicator so a VP knows exactly what interaction and destination to expect."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 11,
+    "url": "https://stripe.com/enterprise",
+    "observation": "Screenshot now clearly confirms the full above-the-fold: news ticker with URBN/$5B, Stripe Leader report, AI/Adaptive Acceptance, and $1.4T volume stories; hero headline; 'Contact sales' CTA; 'Global payments' card with 'Explore \u2193' button; SMB-scale transaction amounts ($65.34, $89.94, $102.12, $277.81, $1,042.32) in the dashboard overlay; H&M, Maersk, Marriott logos; and a partially visible BMW globe logo.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "fail",
+    "verdict": "stripe.com/enterprise is visually polished but fundamentally misaligned with enterprise buyer needs \u2014 SMB-scale UI artifacts undermine credibility, the strongest social proof is hidden in a ticker, and a single gated CTA excludes the majority of VP-level buyers who are in research mode rather than ready to engage sales.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The sole hero CTA is 'Contact sales' with no alternative path \u2014 a VP in research mode is forced into a sales conversation or must self-navigate, while the 'Explore \u2193' on 'Global payments' is a low-confidence ambiguous secondary action."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Amazon and BMW name-drops are credible but 'revolutionize their business' is generic aspiration \u2014 the page never articulates a concrete enterprise outcome like 'reduce payment failures by 12%' or 'consolidate 7 processors into 1 API'."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The page creates three simultaneous focal zones above the fold (news ticker, hero copy, product card) with no guided reading order, forcing a VP to self-direct their evaluation journey from the first second."
+    },
+    "severity": 3,
+    "first_impression": "Visually premium but operationally frustrating for an enterprise buyer \u2014 the page's most valuable proof points (URBN $5B consolidation, $1.4T volume) are buried in a ticker while hero space is dominated by SMB-scale UI artifacts.",
+    "friction_points": [
+      "The dashboard overlay showing $65.34, $89.94, $102.12, $277.81 transaction amounts directly contradicts the enterprise positioning \u2014 a VP overseeing millions in daily settlement sees UI that looks built for a coffee shop, not an enterprise treasury.",
+      "The URBN '$5 billion in revenue' consolidation case \u2014 the single most directly relevant enterprise social proof on the entire page \u2014 is only accessible by catching the right moment in the auto-scrolling ticker, making it effectively invisible for most visitors.",
+      "The 'Contact sales' mono-CTA strategy creates a binary choice: commit to a sales conversation or leave \u2014 there is no mid-funnel option (demo request, enterprise overview PDF, ROI calculator) for the majority of VP-level buyers who are in research mode, not procurement mode."
+    ],
+    "recommendations": [
+      "Replace the dashboard mockup transaction amounts with enterprise-scale figures (e.g., '$4.2M settled across 14 currencies today') or switch to a treasury/reporting view that visually matches enterprise operational reality.",
+      "Pin the URBN $5B consolidation case as a static hero proof block (not ticker) directly below the logo strip with a 'Read case study \u2192' CTA to ensure every enterprise visitor sees the most credible validation.",
+      "Add a 'Request a demo' or 'Download enterprise guide' secondary CTA alongside 'Contact sales' to capture research-phase enterprise buyers who aren't yet ready for a sales conversation but are qualified prospects."
+    ],
+    "confidence": "high"
+  }
+]

@@ -1,0 +1,1174 @@
+{
+  "model": "claude-opus-4-7",
+  "seed": 20260429,
+  "max_cost_usd": 5.0,
+  "total_cost_usd": 0.5838900000000001,
+  "skipped": [],
+  "aggregates": [
+    {
+      "site": "stripe",
+      "champion": "v1_baseline",
+      "challenger": "v2_advisor",
+      "n": 3,
+      "dimensions": {
+        "specificity": {
+          "winner": "v2_advisor",
+          "votes": [
+            "v2_advisor",
+            "v2_advisor",
+            "v2_advisor"
+          ],
+          "reasons": [
+            "B names concrete elements like the '1.64505177%' stat, the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and 'Sign up with Google' CTA, while A stays slightly more generic on second-tier elements.",
+            "B names concrete UI elements like the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and exact pricing figures ('2.9% + 30\u00a2'), while A stays slightly more abstract on layout details.",
+            "B names concrete UI elements like the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and exact pricing figures (2.9% + 30\u00a2), while A stays slightly more abstract about layout and tiers."
+          ]
+        },
+        "actionability": {
+          "winner": "v2_advisor",
+          "votes": [
+            "v2_advisor",
+            "v2_advisor",
+            "v2_advisor"
+          ],
+          "reasons": [
+            "B's recommendations include shippable specifics like 'starts at 2.9% + 30\u00a2' text, a 15-second delay on the chat widget, and adding growth-stage logos \u2014 each implementable in a sprint with clear parameters.",
+            "B's recommendations include specific implementable details (delay chat widget >15s, add '2.9% + 30\u00a2' link, add 2-3 growth-stage logos) that a PM could ship in one sprint more directly than A's tooltip/callout suggestions.",
+            "B's recommendations include specific, shippable details (exact pricing copy, delay timing of '>15 seconds', 'Join 1M+ businesses' counter) that a PM could implement directly in one sprint."
+          ]
+        },
+        "coverage": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline",
+            "v1_baseline",
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A actually navigates to the pricing page in step 2 and surfaces conversion-critical TCO/add-on/IC+ gaps, whereas B spends both steps on the hero and never reaches the pricing surface.",
+            "A covers both the hero AND the pricing page (step 2 examines tier structure, IC+ pricing, add-on TCO), hitting more conversion-critical surfaces, while B spends both steps on the hero/above-fold area.",
+            "A explicitly visits the pricing page and surfaces conversion-critical TCO and tier-selection friction (IC+, add-ons, volume thresholds), whereas B stays on the hero across both steps and never reaches pricing."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v2_advisor",
+          "votes": [
+            "v2_advisor",
+            "v2_advisor",
+            "v2_advisor"
+          ],
+          "reasons": [
+            "B sustains a sharper persona lens (seed/Series A CTO worried about enterprise-only logos, self-serve vs. sales motion, docs path) while A's mid-market founder framing is solid but less role-specific in its objections.",
+            "B consistently filters findings through the technical founder/CTO lens with role-specific stakes (seed/Series A calibration, self-serve vs enterprise sales motion, developer paths), while A's persona drifts toward generic 'evaluator' framing in places.",
+            "B consistently filters findings through the technical/early-stage founder lens (enterprise-only logos misaligned for seed/Series A, sales-chat signaling high-touch motion, dev-path signals), while A's persona framing fades into more generic mid-market evaluator concerns."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v2_advisor",
+        "votes": [
+          "tie",
+          "v2_advisor",
+          "v2_advisor"
+        ],
+        "reasons": [
+          "",
+          "B wins on specificity, actionability, and persona fidelity with sharper role-specific stakes and more concrete shippable fixes; A's coverage advantage from visiting pricing doesn't fully offset B's tighter persona-driven findings.",
+          "B wins on specificity, actionability, and persona fidelity with sharper, role-specific findings; A's coverage advantage from reaching pricing isn't enough to offset B's stronger persona-grounded, more concretely shippable recommendations."
+        ]
+      },
+      "total_cost_usd": 0.10411500000000001,
+      "records": [
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 0,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "B names concrete elements like the '1.64505177%' stat, the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and 'Sign up with Google' CTA, while A stays slightly more generic on second-tier elements."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "B's recommendations include shippable specifics like 'starts at 2.9% + 30\u00a2' text, a 15-second delay on the chat widget, and adding growth-stage logos \u2014 each implementable in a sprint with clear parameters."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A actually navigates to the pricing page in step 2 and surfaces conversion-critical TCO/add-on/IC+ gaps, whereas B spends both steps on the hero and never reaches the pricing surface."
+            },
+            "persona_fidelity": {
+              "winner": "v2_advisor",
+              "reason": "B sustains a sharper persona lens (seed/Series A CTO worried about enterprise-only logos, self-serve vs. sales motion, docs path) while A's mid-market founder framing is solid but less role-specific in its objections."
+            },
+            "overall": {
+              "winner": "v1_baseline",
+              "reason": "A's coverage advantage \u2014 actually reaching the pricing page and diagnosing TCO friction at the conversion-critical surface \u2014 outweighs B's marginally tighter specificity and persona work that all stays on the hero."
+            }
+          },
+          "overall": {
+            "winner": "tie",
+            "reason": ""
+          },
+          "input_tokens": 4356,
+          "output_tokens": 503,
+          "cost_usd": 0.034355000000000004
+        },
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 1,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "B names concrete UI elements like the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and exact pricing figures ('2.9% + 30\u00a2'), while A stays slightly more abstract on layout details."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "B's recommendations include specific implementable details (delay chat widget >15s, add '2.9% + 30\u00a2' link, add 2-3 growth-stage logos) that a PM could ship in one sprint more directly than A's tooltip/callout suggestions."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A covers both the hero AND the pricing page (step 2 examines tier structure, IC+ pricing, add-on TCO), hitting more conversion-critical surfaces, while B spends both steps on the hero/above-fold area."
+            },
+            "persona_fidelity": {
+              "winner": "v2_advisor",
+              "reason": "B consistently filters findings through the technical founder/CTO lens with role-specific stakes (seed/Series A calibration, self-serve vs enterprise sales motion, developer paths), while A's persona drifts toward generic 'evaluator' framing in places."
+            }
+          },
+          "overall": {
+            "winner": "v2_advisor",
+            "reason": "B wins on specificity, actionability, and persona fidelity with sharper role-specific stakes and more concrete shippable fixes; A's coverage advantage from visiting pricing doesn't fully offset B's tighter persona-driven findings."
+          },
+          "input_tokens": 4356,
+          "output_tokens": 528,
+          "cost_usd": 0.03498
+        },
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 2,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "B names concrete UI elements like the 'Chat with Stripe sales' widget, specific logos (Amazon, Google, Ford), and exact pricing figures (2.9% + 30\u00a2), while A stays slightly more abstract about layout and tiers."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "B's recommendations include specific, shippable details (exact pricing copy, delay timing of '>15 seconds', 'Join 1M+ businesses' counter) that a PM could implement directly in one sprint."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A explicitly visits the pricing page and surfaces conversion-critical TCO and tier-selection friction (IC+, add-ons, volume thresholds), whereas B stays on the hero across both steps and never reaches pricing."
+            },
+            "persona_fidelity": {
+              "winner": "v2_advisor",
+              "reason": "B consistently filters findings through the technical/early-stage founder lens (enterprise-only logos misaligned for seed/Series A, sales-chat signaling high-touch motion, dev-path signals), while A's persona framing fades into more generic mid-market evaluator concerns."
+            }
+          },
+          "overall": {
+            "winner": "v2_advisor",
+            "reason": "B wins on specificity, actionability, and persona fidelity with sharper, role-specific findings; A's coverage advantage from reaching pricing isn't enough to offset B's stronger persona-grounded, more concretely shippable recommendations."
+          },
+          "input_tokens": 4356,
+          "output_tokens": 520,
+          "cost_usd": 0.034780000000000005
+        }
+      ]
+    },
+    {
+      "site": "stripe",
+      "champion": "v1_baseline",
+      "challenger": "v3_8step",
+      "n": 3,
+      "dimensions": {
+        "specificity": {
+          "winner": "v3_8step",
+          "votes": [
+            "v3_8step",
+            "v3_8step",
+            "v3_8step"
+          ],
+          "reasons": [
+            "B cites concrete artifacts like the exact GDP counter value '1.64507268%', the chat widget overlapping the FAQs tab, and the Standard card's separate rate panel, while A's observations are slightly more generic.",
+            "B cites more concrete UI specifics like the exact GDP counter value, the chat widget overlapping the FAQ tab, and the transaction rate appearing in a separate panel, while A's observations are slightly more generic.",
+            "B cites concrete UI artifacts like the exact GDP counter value (1.64507268%), the chat widget overlapping the FAQs tab, and the Standard card's transaction rate appearing in a separate panel, while A's observations are slightly more generic."
+          ]
+        },
+        "actionability": {
+          "winner": "tie",
+          "votes": [
+            "tie",
+            "tie",
+            "tie"
+          ],
+          "reasons": [
+            "Marginal gap \u2014 both reports propose comparably scoped, single-sprint changes (secondary CTA, tooltip on IC+, volume qualifier) with nearly identical specificity.",
+            "Gap is negligible \u2014 both reports offer near-identical, sprint-shippable recommendations (secondary CTA, tooltip on IC+, volume threshold qualifier).",
+            "Both reports offer marginally equivalent single-sprint fixes (secondary CTA, tooltip on IC+, volume threshold callout) with near-identical implementability."
+          ]
+        },
+        "coverage": {
+          "winner": "v3_8step",
+          "votes": [
+            "v3_8step",
+            "v3_8step",
+            "v3_8step"
+          ],
+          "reasons": [
+            "B catches an additional conversion-critical defect (chat widget obscuring FAQ navigation) on top of the same pricing/hero surfaces A covers.",
+            "B catches an additional conversion-critical issue (chat widget obscuring FAQ navigation) on top of the same hero and pricing surfaces A covers.",
+            "B catches an additional conversion-critical issue \u2014 the chat widget overlapping the FAQs tab anchor \u2014 on top of the same pricing-tier and TCO gaps A surfaces."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline",
+            "tie",
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A more consistently grounds findings in the mid-market founder's TCO calculus (add-on pricing for Radar/Billing/Revenue Recognition, volume bands $500K\u2013$5M), while B's persona framing is slightly thinner past step 1.",
+            "Gap is marginal \u2014 both consistently filter findings through the mid-market SaaS founder lens with role-specific stakes like TCO, IC+ literacy, and self-qualification.",
+            "A grounds findings in concrete persona stakes (a founder processing $500K\u2013$5M annually, evaluating total stack cost including Radar/Billing/Revenue Recognition) more consistently than B's slightly more generic 'first-time evaluator' framing."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v3_8step",
+        "votes": [
+          "v3_8step",
+          "v3_8step",
+          "v3_8step"
+        ],
+        "reasons": [
+          "B's friction points are more concretely tied to specific UI artifacts and surface an extra conversion-relevant defect, narrowly beating A despite A's slightly richer persona reasoning.",
+          "B edges A on specificity and coverage with concrete UI overlap observations and exact counter values, while matching A on actionability and persona fidelity.",
+          "B edges ahead on specificity and coverage with sharper UI-level observations and an extra conversion-relevant friction point, while persona fidelity advantage for A is narrower than B's specificity edge."
+        ]
+      },
+      "total_cost_usd": 0.10047000000000002,
+      "records": [
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 0,
+          "a_variant": "v1_baseline",
+          "b_variant": "v3_8step",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "B cites concrete artifacts like the exact GDP counter value '1.64507268%', the chat widget overlapping the FAQs tab, and the Standard card's separate rate panel, while A's observations are slightly more generic."
+            },
+            "actionability": {
+              "winner": "tie",
+              "reason": "Marginal gap \u2014 both reports propose comparably scoped, single-sprint changes (secondary CTA, tooltip on IC+, volume qualifier) with nearly identical specificity."
+            },
+            "coverage": {
+              "winner": "v3_8step",
+              "reason": "B catches an additional conversion-critical defect (chat widget obscuring FAQ navigation) on top of the same pricing/hero surfaces A covers."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A more consistently grounds findings in the mid-market founder's TCO calculus (add-on pricing for Radar/Billing/Revenue Recognition, volume bands $500K\u2013$5M), while B's persona framing is slightly thinner past step 1."
+            },
+            "overall": {
+              "winner": "v3_8step",
+              "reason": "B edges ahead on specificity and coverage with concrete UI defects (widget overlap, exact counter value, card layout split), outweighing A's modestly stronger persona threading."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "B's friction points are more concretely tied to specific UI artifacts and surface an extra conversion-relevant defect, narrowly beating A despite A's slightly richer persona reasoning."
+          },
+          "input_tokens": 4223,
+          "output_tokens": 531,
+          "cost_usd": 0.034390000000000004
+        },
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 1,
+          "a_variant": "v1_baseline",
+          "b_variant": "v3_8step",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "B cites more concrete UI specifics like the exact GDP counter value, the chat widget overlapping the FAQ tab, and the transaction rate appearing in a separate panel, while A's observations are slightly more generic."
+            },
+            "actionability": {
+              "winner": "tie",
+              "reason": "Gap is negligible \u2014 both reports offer near-identical, sprint-shippable recommendations (secondary CTA, tooltip on IC+, volume threshold qualifier)."
+            },
+            "coverage": {
+              "winner": "v3_8step",
+              "reason": "B catches an additional conversion-critical issue (chat widget obscuring FAQ navigation) on top of the same hero and pricing surfaces A covers."
+            },
+            "persona_fidelity": {
+              "winner": "tie",
+              "reason": "Gap is marginal \u2014 both consistently filter findings through the mid-market SaaS founder lens with role-specific stakes like TCO, IC+ literacy, and self-qualification."
+            },
+            "overall": {
+              "winner": "v3_8step",
+              "reason": "B edges A on specificity and coverage with concrete UI overlap observations and exact counter values, while matching A on actionability and persona fidelity."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "B edges A on specificity and coverage with concrete UI overlap observations and exact counter values, while matching A on actionability and persona fidelity."
+          },
+          "input_tokens": 4223,
+          "output_tokens": 479,
+          "cost_usd": 0.03309
+        },
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 2,
+          "a_variant": "v1_baseline",
+          "b_variant": "v3_8step",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "B cites concrete UI artifacts like the exact GDP counter value (1.64507268%), the chat widget overlapping the FAQs tab, and the Standard card's transaction rate appearing in a separate panel, while A's observations are slightly more generic."
+            },
+            "actionability": {
+              "winner": "tie",
+              "reason": "Both reports offer marginally equivalent single-sprint fixes (secondary CTA, tooltip on IC+, volume threshold callout) with near-identical implementability."
+            },
+            "coverage": {
+              "winner": "v3_8step",
+              "reason": "B catches an additional conversion-critical issue \u2014 the chat widget overlapping the FAQs tab anchor \u2014 on top of the same pricing-tier and TCO gaps A surfaces."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A grounds findings in concrete persona stakes (a founder processing $500K\u2013$5M annually, evaluating total stack cost including Radar/Billing/Revenue Recognition) more consistently than B's slightly more generic 'first-time evaluator' framing."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "B edges ahead on specificity and coverage with sharper UI-level observations and an extra conversion-relevant friction point, while persona fidelity advantage for A is narrower than B's specificity edge."
+          },
+          "input_tokens": 4223,
+          "output_tokens": 475,
+          "cost_usd": 0.032990000000000005
+        }
+      ]
+    },
+    {
+      "site": "stripe",
+      "champion": "v1_baseline",
+      "challenger": "v4_8step_advisor",
+      "n": 1,
+      "dimensions": {
+        "specificity": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "A names concrete competitors (Adyen, Braintree), specific copy phrases, and quantified anchors like '0.8%\u20131.5%' and '$1M-$10M ARR', whereas B stays slightly more generic on differentiators and TCO."
+          ]
+        },
+        "actionability": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "A's recommendations include a product-switcher tab row and a specific differentiator line \u2014 concrete one-sprint changes \u2014 while B's add-on pricing expandable and tooltip suggestions are solid but slightly less precise."
+          ]
+        },
+        "coverage": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "Both cover hero and pricing, but A explicitly flags the cross-product cost picture (Billing, Radar, Tax, Connect) and the self-serve-to-sales cliff, hitting more conversion-critical surfaces."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "A consistently grounds findings in mid-market CTO stakes (vendor comparison vs Adyen/Braintree, $1M-$10M ARR, spreadsheet comparison), while B references the persona but findings often read as generic evaluator concerns."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v4_8step_advisor",
+        "votes": [
+          "v4_8step_advisor"
+        ],
+        "reasons": [
+          "A delivers more persona-anchored, competitor-aware, and quantitatively specific friction and recommendations across both steps, while B is solid but more generic."
+        ]
+      },
+      "total_cost_usd": 0.03383,
+      "records": [
+        {
+          "site": "stripe",
+          "champion": "v1_baseline",
+          "challenger": "v4_8step_advisor",
+          "pass_idx": 0,
+          "a_variant": "v4_8step_advisor",
+          "b_variant": "v1_baseline",
+          "dimensions": {
+            "specificity": {
+              "winner": "v4_8step_advisor",
+              "reason": "A names concrete competitors (Adyen, Braintree), specific copy phrases, and quantified anchors like '0.8%\u20131.5%' and '$1M-$10M ARR', whereas B stays slightly more generic on differentiators and TCO."
+            },
+            "actionability": {
+              "winner": "v4_8step_advisor",
+              "reason": "A's recommendations include a product-switcher tab row and a specific differentiator line \u2014 concrete one-sprint changes \u2014 while B's add-on pricing expandable and tooltip suggestions are solid but slightly less precise."
+            },
+            "coverage": {
+              "winner": "v4_8step_advisor",
+              "reason": "Both cover hero and pricing, but A explicitly flags the cross-product cost picture (Billing, Radar, Tax, Connect) and the self-serve-to-sales cliff, hitting more conversion-critical surfaces."
+            },
+            "persona_fidelity": {
+              "winner": "v4_8step_advisor",
+              "reason": "A consistently grounds findings in mid-market CTO stakes (vendor comparison vs Adyen/Braintree, $1M-$10M ARR, spreadsheet comparison), while B references the persona but findings often read as generic evaluator concerns."
+            }
+          },
+          "overall": {
+            "winner": "v4_8step_advisor",
+            "reason": "A delivers more persona-anchored, competitor-aware, and quantitatively specific friction and recommendations across both steps, while B is solid but more generic."
+          },
+          "input_tokens": 4336,
+          "output_tokens": 486,
+          "cost_usd": 0.03383
+        }
+      ]
+    },
+    {
+      "site": "linear",
+      "champion": "v1_baseline",
+      "challenger": "v2_advisor",
+      "n": 1,
+      "dimensions": {
+        "specificity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report A names concrete elements like '$10/$16', 'All Free features +' shorthand, and seat-count math for 80 engineers, while B stays at the hero level with less granular UI references."
+          ]
+        },
+        "actionability": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A proposes shippable specifics like a seat slider/cost calculator and a secondary monthly-price line, whereas B's recommendations (add CTA, move announcement, add logos) are solid but less differentiated and narrower in scope."
+          ]
+        },
+        "coverage": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A covers both hero and pricing page \u2014 hitting the conversion-critical pricing surface with seat math and CTA gaps \u2014 while B spends both steps re-analyzing the hero."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A ties findings to role-specific stakes (TCO math for 80 engineers, mid-market budget-stage concerns), while B mentions 'eng manager' but the observations would apply to most visitors."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v1_baseline",
+        "votes": [
+          "v1_baseline"
+        ],
+        "reasons": [
+          "Report A wins on all four dimensions, especially coverage by progressing to pricing where it surfaces concrete conversion blockers tied to the buyer persona."
+        ]
+      },
+      "total_cost_usd": 0.032200000000000006,
+      "records": [
+        {
+          "site": "linear",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 0,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v1_baseline",
+              "reason": "Report A names concrete elements like '$10/$16', 'All Free features +' shorthand, and seat-count math for 80 engineers, while B stays at the hero level with less granular UI references."
+            },
+            "actionability": {
+              "winner": "v1_baseline",
+              "reason": "A proposes shippable specifics like a seat slider/cost calculator and a secondary monthly-price line, whereas B's recommendations (add CTA, move announcement, add logos) are solid but less differentiated and narrower in scope."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A covers both hero and pricing page \u2014 hitting the conversion-critical pricing surface with seat math and CTA gaps \u2014 while B spends both steps re-analyzing the hero."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A ties findings to role-specific stakes (TCO math for 80 engineers, mid-market budget-stage concerns), while B mentions 'eng manager' but the observations would apply to most visitors."
+            }
+          },
+          "overall": {
+            "winner": "v1_baseline",
+            "reason": "Report A wins on all four dimensions, especially coverage by progressing to pricing where it surfaces concrete conversion blockers tied to the buyer persona."
+          },
+          "input_tokens": 4255,
+          "output_tokens": 437,
+          "cost_usd": 0.032200000000000006
+        }
+      ]
+    },
+    {
+      "site": "linear",
+      "champion": "v1_baseline",
+      "challenger": "v3_8step",
+      "n": 3,
+      "dimensions": {
+        "specificity": {
+          "winner": "v3_8step",
+          "votes": [
+            "v3_8step",
+            "v3_8step",
+            "v3_8step"
+          ],
+          "reasons": [
+            "A names specific elements like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact copy fragments, while B's friction points are slightly more generic about CTA absence and toggle behavior.",
+            "B names specific features like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact monthly math ('$13.33/mo billed yearly'), while A's specifics are slightly more generic around CTA placement and seat math.",
+            "Report A names specific elements like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact copy, while B's friction points are slightly more generic about CTA placement."
+          ]
+        },
+        "actionability": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline",
+            "v1_baseline",
+            "v3_8step"
+          ],
+          "reasons": [
+            "B's recommendations include concrete mechanisms like a seat slider/cost calculator and specific CTA text per tier, which are shippable single-sprint changes with clearer scope than A's tooltip/footnote suggestions.",
+            "A's recommendations (seat slider/cost calculator, sticky CTAs per card, monthly price secondary line) are more concrete single-sprint shippable changes than B's tooltip/footnote suggestions.",
+            "A's recommendations are tightly scoped single-sprint changes (tooltip on beta features, monthly price in parentheses), while B proposes a seat-count calculator/slider which is a larger build."
+          ]
+        },
+        "coverage": {
+          "winner": "tie",
+          "votes": [
+            "tie",
+            "tie",
+            "tie"
+          ],
+          "reasons": [
+            "Both reports cover the same two surfaces (hero and pricing) with comparable hits on conversion-critical friction; the gap is negligible.",
+            "Both reports cover the same two surfaces (hero and pricing) and identify the same conversion-critical gaps (missing CTAs, monthly pricing, hero clarity), making the coverage gap negligible.",
+            "Both reports cover the same two surfaces (hero and pricing) with comparable conversion-critical focus \u2014 the gap is negligible."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v3_8step",
+          "votes": [
+            "v3_8step",
+            "v3_8step",
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A consistently frames findings through CFO sign-off, internal evaluation, and budget proposal stakes specific to an engineering team lead, while B's persona framing is slightly thinner and drifts toward generic 'evaluating manager' language.",
+            "B consistently frames findings through the team-lead-building-a-business-case lens (CFO sign-off, internal pitch, beta SLA concerns), while A invokes the persona but several findings (e.g., 80-engineer math) feel more generic mid-market.",
+            "B more consistently invokes persona-specific stakes ('80 engineers', 'TCO', 'mid-market buyer comparing tools'), while A mentions the team lead but findings sometimes drift toward generic buyer framing."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v3_8step",
+        "votes": [
+          "v3_8step",
+          "v3_8step",
+          "v3_8step"
+        ],
+        "reasons": [
+          "A edges out on specificity and persona fidelity with concrete copy references and role-specific stakes (CFO sign-off, beta feature internal pitch), while B's actionability advantage is not enough to offset.",
+          "B's findings are more tightly bound to the persona's evaluation context and surface product-specific details (beta features, named capabilities), giving a PM richer signal even if A's recommendations are marginally more shippable.",
+          "A wins on specificity and actionability with concrete copy references and shippable fixes, slightly outweighing B's stronger persona framing."
+        ]
+      },
+      "total_cost_usd": 0.09891000000000001,
+      "records": [
+        {
+          "site": "linear",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 0,
+          "a_variant": "v3_8step",
+          "b_variant": "v1_baseline",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "A names specific elements like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact copy fragments, while B's friction points are slightly more generic about CTA absence and toggle behavior."
+            },
+            "actionability": {
+              "winner": "v1_baseline",
+              "reason": "B's recommendations include concrete mechanisms like a seat slider/cost calculator and specific CTA text per tier, which are shippable single-sprint changes with clearer scope than A's tooltip/footnote suggestions."
+            },
+            "coverage": {
+              "winner": "tie",
+              "reason": "Both reports cover the same two surfaces (hero and pricing) with comparable hits on conversion-critical friction; the gap is negligible."
+            },
+            "persona_fidelity": {
+              "winner": "v3_8step",
+              "reason": "A consistently frames findings through CFO sign-off, internal evaluation, and budget proposal stakes specific to an engineering team lead, while B's persona framing is slightly thinner and drifts toward generic 'evaluating manager' language."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "A edges out on specificity and persona fidelity with concrete copy references and role-specific stakes (CFO sign-off, beta feature internal pitch), while B's actionability advantage is not enough to offset."
+          },
+          "input_tokens": 4294,
+          "output_tokens": 464,
+          "cost_usd": 0.03307
+        },
+        {
+          "site": "linear",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 1,
+          "a_variant": "v1_baseline",
+          "b_variant": "v3_8step",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "B names specific features like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact monthly math ('$13.33/mo billed yearly'), while A's specifics are slightly more generic around CTA placement and seat math."
+            },
+            "actionability": {
+              "winner": "v1_baseline",
+              "reason": "A's recommendations (seat slider/cost calculator, sticky CTAs per card, monthly price secondary line) are more concrete single-sprint shippable changes than B's tooltip/footnote suggestions."
+            },
+            "coverage": {
+              "winner": "tie",
+              "reason": "Both reports cover the same two surfaces (hero and pricing) and identify the same conversion-critical gaps (missing CTAs, monthly pricing, hero clarity), making the coverage gap negligible."
+            },
+            "persona_fidelity": {
+              "winner": "v3_8step",
+              "reason": "B consistently frames findings through the team-lead-building-a-business-case lens (CFO sign-off, internal pitch, beta SLA concerns), while A invokes the persona but several findings (e.g., 80-engineer math) feel more generic mid-market."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "B's findings are more tightly bound to the persona's evaluation context and surface product-specific details (beta features, named capabilities), giving a PM richer signal even if A's recommendations are marginally more shippable."
+          },
+          "input_tokens": 4294,
+          "output_tokens": 498,
+          "cost_usd": 0.033920000000000006
+        },
+        {
+          "site": "linear",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 2,
+          "a_variant": "v3_8step",
+          "b_variant": "v1_baseline",
+          "dimensions": {
+            "specificity": {
+              "winner": "v3_8step",
+              "reason": "Report A names specific elements like 'Triage Intelligence' and 'Linear Agent automations (beta)' and quotes exact copy, while B's friction points are slightly more generic about CTA placement."
+            },
+            "actionability": {
+              "winner": "v3_8step",
+              "reason": "A's recommendations are tightly scoped single-sprint changes (tooltip on beta features, monthly price in parentheses), while B proposes a seat-count calculator/slider which is a larger build."
+            },
+            "coverage": {
+              "winner": "tie",
+              "reason": "Both reports cover the same two surfaces (hero and pricing) with comparable conversion-critical focus \u2014 the gap is negligible."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "B more consistently invokes persona-specific stakes ('80 engineers', 'TCO', 'mid-market buyer comparing tools'), while A mentions the team lead but findings sometimes drift toward generic buyer framing."
+            }
+          },
+          "overall": {
+            "winner": "v3_8step",
+            "reason": "A wins on specificity and actionability with concrete copy references and shippable fixes, slightly outweighing B's stronger persona framing."
+          },
+          "input_tokens": 4294,
+          "output_tokens": 418,
+          "cost_usd": 0.031920000000000004
+        }
+      ]
+    },
+    {
+      "site": "linear",
+      "champion": "v1_baseline",
+      "challenger": "v4_8step_advisor",
+      "n": 1,
+      "dimensions": {
+        "specificity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report A names concrete numbers ($10/$16, 80 engineers, '$16 \u00d7 80 \u00d7 12') and specific UI elements on pricing cards, while B stays at the hero level only."
+          ]
+        },
+        "actionability": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A's recommendations include shippable specifics like a seat-count calculator, monthly price secondary line, and per-card CTAs, whereas B repeats hero-level fixes across both steps."
+          ]
+        },
+        "coverage": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A covers both hero and pricing page (a conversion-critical surface with concrete friction), while B spends both steps on the hero and never reaches pricing."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A invokes persona-specific stakes like TCO math for 80 engineers and mid-market budget comparisons; B mentions the EM persona but findings would apply to any visitor."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v1_baseline",
+        "votes": [
+          "v1_baseline"
+        ],
+        "reasons": [
+          "A delivers broader conversion-funnel coverage with more concrete, persona-grounded findings on the pricing page, while B essentially re-evaluates the hero twice."
+        ]
+      },
+      "total_cost_usd": 0.03169,
+      "records": [
+        {
+          "site": "linear",
+          "champion": "v1_baseline",
+          "challenger": "v4_8step_advisor",
+          "pass_idx": 0,
+          "a_variant": "v1_baseline",
+          "b_variant": "v4_8step_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v1_baseline",
+              "reason": "Report A names concrete numbers ($10/$16, 80 engineers, '$16 \u00d7 80 \u00d7 12') and specific UI elements on pricing cards, while B stays at the hero level only."
+            },
+            "actionability": {
+              "winner": "v1_baseline",
+              "reason": "A's recommendations include shippable specifics like a seat-count calculator, monthly price secondary line, and per-card CTAs, whereas B repeats hero-level fixes across both steps."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A covers both hero and pricing page (a conversion-critical surface with concrete friction), while B spends both steps on the hero and never reaches pricing."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A invokes persona-specific stakes like TCO math for 80 engineers and mid-market budget comparisons; B mentions the EM persona but findings would apply to any visitor."
+            }
+          },
+          "overall": {
+            "winner": "v1_baseline",
+            "reason": "A delivers broader conversion-funnel coverage with more concrete, persona-grounded findings on the pricing page, while B essentially re-evaluates the hero twice."
+          },
+          "input_tokens": 4288,
+          "output_tokens": 410,
+          "cost_usd": 0.03169
+        }
+      ]
+    },
+    {
+      "site": "glossier",
+      "champion": "v1_baseline",
+      "challenger": "v2_advisor",
+      "n": 3,
+      "dimensions": {
+        "specificity": {
+          "winner": "v2_advisor",
+          "votes": [
+            "v2_advisor",
+            "v2_advisor",
+            "v2_advisor"
+          ],
+          "reasons": [
+            "B names exact copy strings from both sale messages and identifies the specific 'Glossier You Soie' item lacking a descriptor, while A speaks more generally about missing ingredient tags and badge ambiguity.",
+            "Report B names exact copy phrases ('Glossier You Soie', 'Get 30% off select favorites \u2014 savings in cart!') and specific UI mechanisms (code/login/minimum spend uncertainty), while A's specifics are slightly more generic around tile content.",
+            "B names specific elements like 'Glossier You Soie' lacking descriptors and distinguishes the banner vs orange tile sale wording verbatim, while A's friction points are slightly more generic about ingredient tags and review counts."
+          ]
+        },
+        "actionability": {
+          "winner": "v2_advisor",
+          "votes": [
+            "v2_advisor",
+            "v2_advisor",
+            "v2_advisor"
+          ],
+          "reasons": [
+            "B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed', 'Silky face serum') that a PM could ship verbatim, whereas A's tag suggestions are slightly more templated.",
+            "Report B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed') making them directly shippable, whereas A's tooltip/rating suggestions are slightly less prescriptive.",
+            "B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed') tied to specific mechanisms, whereas A's are solid but slightly more generic (e.g., 'tooltip or linked list specifying which SKUs qualify')."
+          ]
+        },
+        "coverage": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline",
+            "tie",
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A explicitly addresses competitor-comparison surfaces (ingredient callouts, 'why Glossier', ratings on tiles) tied to the comparison-shopping persona's conversion concerns, hitting more PM-priority trust signals than B's sale-mechanic focus.",
+            "Both reports cover the same two surfaces (homepage hero and category/mega-menu) with comparable conversion-critical focus on CTAs, social proof, and sale clarity \u2014 the gap is negligible.",
+            "A explicitly addresses competitor comparison (Drunk Elephant), ingredient/skin-concern filters, and ratings on PDP tiles \u2014 higher-priority conversion surfaces for a comparison shopper \u2014 while B focuses more narrowly on sale-message clarity."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline",
+            "v1_baseline",
+            "v1_baseline"
+          ],
+          "reasons": [
+            "A's persona (comparison shopper vs Drunk Elephant/Rare Beauty) drives findings about ingredient callouts and competitor differentiation that are role-specific, while B's first-time-buyer lens produces findings (sale clarity, descriptors) that would apply to any visitor.",
+            "Report A consistently invokes the comparison-shopper persona (Drunk Elephant/Rare Beauty) with role-specific stakes like ingredient comparison and competitor switching, while B's 'first-time buyer' framing is applied but less differentiated from a generic newcomer.",
+            "A's persona (comparison shopper weighing Drunk Elephant/Rare Beauty) drives findings about ingredient callouts and 'why Glossier' differentiation; B's first-time-buyer persona is consistent but its findings (sale ambiguity, missing descriptors) would apply to almost any visitor."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v1_baseline",
+        "votes": [
+          "v1_baseline",
+          "v2_advisor",
+          "v1_baseline"
+        ],
+        "reasons": [
+          "A's persona-driven findings about competitor comparison and trust signals deliver more PM-relevant conversion insight, even though B edges out on copy-level specificity and ready-to-ship recommendation wording.",
+          "Report B edges ahead on specificity and actionability with more concrete copy fixes and mechanism-level diagnoses, outweighing A's stronger persona-comparison framing.",
+          "A's sharper persona fidelity and broader conversion-relevant coverage (competitor comparison, trust signals, ingredient context) outweigh B's marginally tighter copy specificity on the sale-messaging issues."
+        ]
+      },
+      "total_cost_usd": 0.10422000000000001,
+      "records": [
+        {
+          "site": "glossier",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 0,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "B names exact copy strings from both sale messages and identifies the specific 'Glossier You Soie' item lacking a descriptor, while A speaks more generally about missing ingredient tags and badge ambiguity."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed', 'Silky face serum') that a PM could ship verbatim, whereas A's tag suggestions are slightly more templated."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A explicitly addresses competitor-comparison surfaces (ingredient callouts, 'why Glossier', ratings on tiles) tied to the comparison-shopping persona's conversion concerns, hitting more PM-priority trust signals than B's sale-mechanic focus."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A's persona (comparison shopper vs Drunk Elephant/Rare Beauty) drives findings about ingredient callouts and competitor differentiation that are role-specific, while B's first-time-buyer lens produces findings (sale clarity, descriptors) that would apply to any visitor."
+            }
+          },
+          "overall": {
+            "winner": "v1_baseline",
+            "reason": "A's persona-driven findings about competitor comparison and trust signals deliver more PM-relevant conversion insight, even though B edges out on copy-level specificity and ready-to-ship recommendation wording."
+          },
+          "input_tokens": 4318,
+          "output_tokens": 523,
+          "cost_usd": 0.034665
+        },
+        {
+          "site": "glossier",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 1,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "Report B names exact copy phrases ('Glossier You Soie', 'Get 30% off select favorites \u2014 savings in cart!') and specific UI mechanisms (code/login/minimum spend uncertainty), while A's specifics are slightly more generic around tile content."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "Report B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed') making them directly shippable, whereas A's tooltip/rating suggestions are slightly less prescriptive."
+            },
+            "coverage": {
+              "winner": "tie",
+              "reason": "Both reports cover the same two surfaces (homepage hero and category/mega-menu) with comparable conversion-critical focus on CTAs, social proof, and sale clarity \u2014 the gap is negligible."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "Report A consistently invokes the comparison-shopper persona (Drunk Elephant/Rare Beauty) with role-specific stakes like ingredient comparison and competitor switching, while B's 'first-time buyer' framing is applied but less differentiated from a generic newcomer."
+            }
+          },
+          "overall": {
+            "winner": "v2_advisor",
+            "reason": "Report B edges ahead on specificity and actionability with more concrete copy fixes and mechanism-level diagnoses, outweighing A's stronger persona-comparison framing."
+          },
+          "input_tokens": 4318,
+          "output_tokens": 501,
+          "cost_usd": 0.034115000000000006
+        },
+        {
+          "site": "glossier",
+          "champion": "v1_baseline",
+          "challenger": "v2_advisor",
+          "pass_idx": 2,
+          "a_variant": "v1_baseline",
+          "b_variant": "v2_advisor",
+          "dimensions": {
+            "specificity": {
+              "winner": "v2_advisor",
+              "reason": "B names specific elements like 'Glossier You Soie' lacking descriptors and distinguishes the banner vs orange tile sale wording verbatim, while A's friction points are slightly more generic about ingredient tags and review counts."
+            },
+            "actionability": {
+              "winner": "v2_advisor",
+              "reason": "B's recommendations include exact replacement copy ('discount applied automatically at checkout, no code needed') tied to specific mechanisms, whereas A's are solid but slightly more generic (e.g., 'tooltip or linked list specifying which SKUs qualify')."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "A explicitly addresses competitor comparison (Drunk Elephant), ingredient/skin-concern filters, and ratings on PDP tiles \u2014 higher-priority conversion surfaces for a comparison shopper \u2014 while B focuses more narrowly on sale-message clarity."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "A's persona (comparison shopper weighing Drunk Elephant/Rare Beauty) drives findings about ingredient callouts and 'why Glossier' differentiation; B's first-time-buyer persona is consistent but its findings (sale ambiguity, missing descriptors) would apply to almost any visitor."
+            }
+          },
+          "overall": {
+            "winner": "v1_baseline",
+            "reason": "A's sharper persona fidelity and broader conversion-relevant coverage (competitor comparison, trust signals, ingredient context) outweigh B's marginally tighter copy specificity on the sale-messaging issues."
+          },
+          "input_tokens": 4318,
+          "output_tokens": 554,
+          "cost_usd": 0.03544
+        }
+      ]
+    },
+    {
+      "site": "glossier",
+      "champion": "v1_baseline",
+      "challenger": "v3_8step",
+      "n": 1,
+      "dimensions": {
+        "specificity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report B names concrete UI elements like '30% off in cart' badge, specific product names (Futuredew), and competitor brands (Drunk Elephant), while Report A spends two of three steps stuck on a generic Cloudflare gate with little Glossier-specific detail."
+          ]
+        },
+        "actionability": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report B's recommendations (add ingredient tags, tooltip on discount badge, star ratings on tiles) are single-sprint shippable design changes, while Report A's later recommendations depend on Cloudflare configuration changes outside typical PM scope."
+          ]
+        },
+        "coverage": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report B reaches the conversion-critical product grid and surfaces PDP/cart friction, while Report A burns two of three steps on an inaccessible bot-gate, never reaching pricing, PDP, or cart surfaces."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "Report B consistently filters findings through a comparison-shopping skincare persona (Drunk Elephant comparison, ingredient callouts, review-reading habits), while Report A's persona framing fades into generic 'shopper hits CAPTCHA' observations in steps 2-3."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v1_baseline",
+        "votes": [
+          "v1_baseline"
+        ],
+        "reasons": [
+          "Report B delivers specific, actionable, persona-grounded findings on conversion-critical surfaces, while Report A is largely consumed by a Cloudflare blocker that prevents real UX evaluation."
+        ]
+      },
+      "total_cost_usd": 0.03927,
+      "records": [
+        {
+          "site": "glossier",
+          "champion": "v1_baseline",
+          "challenger": "v3_8step",
+          "pass_idx": 0,
+          "a_variant": "v3_8step",
+          "b_variant": "v1_baseline",
+          "dimensions": {
+            "specificity": {
+              "winner": "v1_baseline",
+              "reason": "Report B names concrete UI elements like '30% off in cart' badge, specific product names (Futuredew), and competitor brands (Drunk Elephant), while Report A spends two of three steps stuck on a generic Cloudflare gate with little Glossier-specific detail."
+            },
+            "actionability": {
+              "winner": "v1_baseline",
+              "reason": "Report B's recommendations (add ingredient tags, tooltip on discount badge, star ratings on tiles) are single-sprint shippable design changes, while Report A's later recommendations depend on Cloudflare configuration changes outside typical PM scope."
+            },
+            "coverage": {
+              "winner": "v1_baseline",
+              "reason": "Report B reaches the conversion-critical product grid and surfaces PDP/cart friction, while Report A burns two of three steps on an inaccessible bot-gate, never reaching pricing, PDP, or cart surfaces."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "Report B consistently filters findings through a comparison-shopping skincare persona (Drunk Elephant comparison, ingredient callouts, review-reading habits), while Report A's persona framing fades into generic 'shopper hits CAPTCHA' observations in steps 2-3."
+            },
+            "overall": {
+              "winner": "v1_baseline",
+              "reason": "Report B delivers specific, actionable, persona-grounded findings on conversion-critical surfaces, while Report A is largely consumed by a Cloudflare blocker that prevents real UX evaluation."
+            }
+          },
+          "overall": {
+            "winner": "v1_baseline",
+            "reason": "Report B delivers specific, actionable, persona-grounded findings on conversion-critical surfaces, while Report A is largely consumed by a Cloudflare blocker that prevents real UX evaluation."
+          },
+          "input_tokens": 4769,
+          "output_tokens": 617,
+          "cost_usd": 0.03927
+        }
+      ]
+    },
+    {
+      "site": "glossier",
+      "champion": "v1_baseline",
+      "challenger": "v4_8step_advisor",
+      "n": 1,
+      "dimensions": {
+        "specificity": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "Report A names specific copy phrases ('You smell good...'), specific product sub-copy ('Skincare-makeup hybrid'), and specific UI elements like the lifestyle hero image on the bestsellers page, while B stays at a slightly more general level."
+          ]
+        },
+        "actionability": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "A's recommendations include precise rewrites ('Add to bag \u2014 30% discount applied automatically') and concrete layout fixes (reduce hero height, pin Bestsellers first), each shippable in one sprint; B's are solid but slightly more generic (tooltips, rating strips)."
+          ]
+        },
+        "coverage": {
+          "winner": "v4_8step_advisor",
+          "votes": [
+            "v4_8step_advisor"
+          ],
+          "reasons": [
+            "Report A covers three surfaces (homepage, mega-menu, bestsellers landing) and uncovers a category-mismatch conversion-killer on the bestsellers page, whereas B only covers two steps and never reaches a conversion-critical surface."
+          ]
+        },
+        "persona_fidelity": {
+          "winner": "v1_baseline",
+          "votes": [
+            "v1_baseline"
+          ],
+          "reasons": [
+            "B consistently filters findings through the 'comparing to Drunk Elephant/Rare Beauty' lens (ingredient callouts, review counts, 'why Glossier' justification), giving role-specific stakes; A invokes the discovery-mode newcomer but findings often read as generic first-visitor observations."
+          ]
+        }
+      },
+      "overall": {
+        "winner": "v4_8step_advisor",
+        "votes": [
+          "v4_8step_advisor"
+        ],
+        "reasons": [
+          "A wins on specificity, actionability, and coverage (including a third step that surfaces a real conversion-flow break), outweighing B's stronger persona threading."
+        ]
+      },
+      "total_cost_usd": 0.039185000000000005,
+      "records": [
+        {
+          "site": "glossier",
+          "champion": "v1_baseline",
+          "challenger": "v4_8step_advisor",
+          "pass_idx": 0,
+          "a_variant": "v4_8step_advisor",
+          "b_variant": "v1_baseline",
+          "dimensions": {
+            "specificity": {
+              "winner": "v4_8step_advisor",
+              "reason": "Report A names specific copy phrases ('You smell good...'), specific product sub-copy ('Skincare-makeup hybrid'), and specific UI elements like the lifestyle hero image on the bestsellers page, while B stays at a slightly more general level."
+            },
+            "actionability": {
+              "winner": "v4_8step_advisor",
+              "reason": "A's recommendations include precise rewrites ('Add to bag \u2014 30% discount applied automatically') and concrete layout fixes (reduce hero height, pin Bestsellers first), each shippable in one sprint; B's are solid but slightly more generic (tooltips, rating strips)."
+            },
+            "coverage": {
+              "winner": "v4_8step_advisor",
+              "reason": "Report A covers three surfaces (homepage, mega-menu, bestsellers landing) and uncovers a category-mismatch conversion-killer on the bestsellers page, whereas B only covers two steps and never reaches a conversion-critical surface."
+            },
+            "persona_fidelity": {
+              "winner": "v1_baseline",
+              "reason": "B consistently filters findings through the 'comparing to Drunk Elephant/Rare Beauty' lens (ingredient callouts, review counts, 'why Glossier' justification), giving role-specific stakes; A invokes the discovery-mode newcomer but findings often read as generic first-visitor observations."
+            },
+            "overall": {
+              "winner": "v4_8step_advisor",
+              "reason": "A wins on specificity, actionability, and coverage (including a third step that surfaces a real conversion-flow break), outweighing B's stronger persona threading."
+            }
+          },
+          "overall": {
+            "winner": "v4_8step_advisor",
+            "reason": "A wins on specificity, actionability, and coverage (including a third step that surfaces a real conversion-flow break), outweighing B's stronger persona threading."
+          },
+          "input_tokens": 4797,
+          "output_tokens": 608,
+          "cost_usd": 0.039185000000000005
+        }
+      ]
+    }
+  ]
+}

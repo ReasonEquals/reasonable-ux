@@ -1,0 +1,1162 @@
+[
+  {
+    "step": 1,
+    "url": "https://linear.app/",
+    "observation": "Linear's homepage above the fold shows a bold headline 'The product development system for teams and agents' with minimal copy, a top-right 'Sign up' CTA, and a product screenshot \u2014 but no hero-level CTA button beneath the headline.",
+    "action": "navigate",
+    "target": "https://linear.app/",
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual design and sharp copy, but the hero section under-serves conversion with no direct CTA and no social proof for a skeptical evaluator.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No prominent CTA button in the hero area \u2014 'Sign up' is isolated in the top-right nav, forcing the buyer to hunt for a next action."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is bold and memorable, but 'agents' is briefly ambiguous until the subhead clarifies 'Designed for the AI era.'"
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Clean layout with a polished product screenshot, but the absence of a hero CTA stalls the intended conversion momentum."
+    },
+    "severity": 2,
+    "first_impression": "Visually strong and premium-feeling, but the hero section leaves a buyer unsure where to click to start a trial.",
+    "friction_points": [
+      "No hero CTA button \u2014 the only conversion link ('Sign up') is tucked in the top-right nav, not reinforced in the content area where the buyer's eye lands first.",
+      "Zero social proof above the fold \u2014 no customer logos, headcount, or team names, which matters to an eng manager comparing against established tools with known pedigrees.",
+      "The 'linear.app/next \u2192' announcement link competes visually with the primary conversion goal by drawing attention to a blog post rather than trial sign-up."
+    ],
+    "recommendations": [
+      "Add a high-contrast 'Start for free' or 'Try Linear free' button directly in the hero section beneath the subheadline.",
+      "Insert a single row of recognizable customer logos (e.g., Figma, Vercel, Notion) immediately below the hero to establish credibility before the user scrolls.",
+      "Move the 'linear.app/next' announcement to a less prominent position (e.g., a top banner or blog section) so it doesn't divert attention from the conversion CTA."
+    ],
+    "confidence": "high",
+    "persona": "Engineering manager at a growth-stage SaaS startup evaluating Linear as a replacement for Jira or Shortcut"
+  },
+  {
+    "step": 2,
+    "url": "https://linear.app/",
+    "observation": "Linear's full above-the-fold homepage is visible: large headline, two-line subhead, a live product UI screenshot, and nav with Product, Resources, Customers, Pricing, Now, Contact \u2014 but no hero CTA button anywhere in the content area.",
+    "action": "click",
+    "target": "nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual design and tight copy, but the hero section is passive and leaves conversion momentum on the table for a high-intent evaluator.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Sign up lives only in the top-right corner \u2014 no hero CTA reinforces conversion where the buyer's attention is focused on the headline and product screenshot."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'Purpose-built for planning and building products' is crisp, but 'Issue tracking is dead' on the right competes with the primary value prop and could confuse a first-time visitor."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The product UI screenshot is immediately useful for orientation, but the two competing right-side messages ('Issue tracking is dead' and 'linear.app/next') fragment attention."
+    },
+    "severity": 2,
+    "first_impression": "Polished and premium, but the hero section feels passive \u2014 it shows the product without asking the buyer to do anything.",
+    "friction_points": [
+      "No hero-area CTA button means an eng manager ready to start a trial must scan back up to the nav to find 'Sign up', adding unnecessary friction at peak intent.",
+      "'Issue tracking is dead' announcement link in the top-right of the hero competes visually with the value proposition and pulls attention toward a blog post rather than a trial.",
+      "No pricing signal or 'free tier' mention above the fold \u2014 a budget-conscious EM evaluating against Jira has no immediate reassurance about cost before scrolling or clicking Pricing."
+    ],
+    "recommendations": [
+      "Add a high-contrast 'Start for free' button directly beneath the two-line subhead in the hero content area.",
+      "Move the 'Issue tracking is dead / linear.app/next' announcement to a dismissible top banner or a dedicated blog section lower on the page.",
+      "Add a brief 'Free for small teams' or 'No credit card required' line near the hero or nav Sign-up button to pre-empt cost anxiety."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://linear.app/pricing",
+    "observation": "Pricing page shows four tiers \u2014 Free ($0), Basic ($10/user/month), Business ($16/user/month), Enterprise (Custom) \u2014 with yearly billing toggles active by default and feature lists visible, but no per-plan CTA buttons are visible above the fold.",
+    "action": "click",
+    "target": "nav:Customers",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing structure is transparent and well-laid-out, but missing above-fold CTAs and no monthly price comparison create unnecessary friction at the highest-intent moment.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No 'Get started' or 'Choose plan' buttons are visible on the pricing cards above the fold \u2014 an EM ready to commit has nowhere to click."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'All Free features +' and 'All Basic features +' are efficient shorthand but don't highlight the single most compelling upgrade reason for each tier."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Yearly billing is pre-toggled by default without a visible monthly price for comparison, which may feel like a quiet pressure tactic to a cost-conscious EM."
+    },
+    "severity": 2,
+    "first_impression": "Clear tier structure at a glance, but the absence of per-card CTAs and monthly pricing makes comparison and commitment harder than it should be.",
+    "friction_points": [
+      "No per-plan CTA buttons are visible above the fold \u2014 an EM who has decided on a tier can't take action without scrolling, risking drop-off.",
+      "Yearly billing is pre-selected with no monthly price shown, so an EM cannot quickly calculate month-to-month cost for budget approval without manual arithmetic.",
+      "The distinction between Basic ($10) and Business ($16) hinges on 'Unlimited teams' and 'Private teams and guests' \u2014 features that aren't self-explanatory without a tooltip or link for a buyer unfamiliar with Linear's team model."
+    ],
+    "recommendations": [
+      "Add a clearly labelled 'Get started' or 'Start free trial' CTA button at the bottom of each pricing card, visible without scrolling.",
+      "Show both monthly and yearly prices simultaneously (or display the monthly price in a strikethrough style) so an EM can calculate cost either way without switching toggles.",
+      "Add a small '?' tooltip or 'What's a team?' link next to 'teams' in the feature list to clarify Linear's team concept for buyers migrating from Jira's project model."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://linear.app/customers",
+    "observation": "Customers page shows high-profile logos \u2014 Coinbase, OpenAI, Cursor \u2014 with industry filter tabs (SaaS, AI, Fintech, etc.) and case study cards, but no metrics or outcome data are visible above the fold.",
+    "action": "click",
+    "target": "a[href*='openai']",
+    "pass_fail": "in_progress",
+    "verdict": "Strong brand credibility via logo choices, but the page misses the conversion moment by showing no outcome metrics and offering no next-step CTA after a buyer is persuaded.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "'Read story \u2192' and 'Watch video \u2192' are clear enough but low-urgency \u2014 no CTA nudges the evaluator back toward signing up after consuming social proof."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Case study titles like 'Why OpenAI chose Linear and scaled to 3,000 users' lead with a concrete outcome, which is persuasive for an evaluating EM."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Industry filter tabs are useful for an EM wanting to see SaaS peers, but 'Featured' is the default \u2014 forcing an extra click to filter to the most relevant segment."
+    },
+    "severity": 2,
+    "first_impression": "Impressive logo lineup that immediately signals enterprise credibility, but the page reads like a media archive rather than a conversion tool.",
+    "friction_points": [
+      "No quantified outcomes (e.g., '40% faster sprint velocity' or 'cut planning time by half') are visible above the fold \u2014 an EM needs hard numbers to justify switching from Jira internally.",
+      "The 'SaaS' filter tab is not active by default, so a SaaS startup EM sees Coinbase (crypto) and Cursor (dev tool) first rather than directly comparable SaaS peers.",
+      "No 'Start free trial' or 'See how it works' CTA is present on the page \u2014 an EM convinced by a case study has no immediate next step offered."
+    ],
+    "recommendations": [
+      "Add a single pull-quote metric to each case study card (e.g., '3,000 users onboarded in 6 months') so outcome data is scannable without clicking through.",
+      "Default the filter to 'SaaS' or auto-detect the most visited segment so growth-stage SaaS buyers see the most relevant peers first.",
+      "Pin a subtle 'Try Linear free' CTA button or sticky footer bar on the Customers page so momentum from reading a case study converts directly into a sign-up."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://linear.app/customers/openai",
+    "observation": "OpenAI case study page shows a strong headline \u2014 'Why OpenAI chose Linear and scaled to 3,000 users' \u2014 with a full-bleed branded hero image, but no article body, pull quotes, or CTA are visible above the fold.",
+    "action": "click",
+    "target": "a[href='/signup']",
+    "pass_fail": "in_progress",
+    "verdict": "Headline is highly persuasive but the page wastes above-fold space on decoration and provides no conversion path at peak buying intent.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No CTA is present on this page above the fold \u2014 a persuaded EM has no immediate path to sign up after reading the compelling headline."
+    },
+    "copy_quality": {
+      "score": 5,
+      "note": "'Chose Linear and scaled to 3,000 users' is a concrete, outcome-led headline that speaks directly to an EM's scale concerns."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The entire above-fold area is consumed by a decorative branded image with zero content \u2014 an EM must scroll before getting any value from the case study."
+    },
+    "severity": 2,
+    "first_impression": "The headline is excellent and immediately credible, but the hero image is decorative dead-weight that delays access to the actual story.",
+    "friction_points": [
+      "The hero image takes up the full viewport with no text content \u2014 an EM arriving here must scroll before reading a single word of the case study, wasting high-attention real estate.",
+      "No conversion CTA (e.g., 'Try Linear free') is visible at the top of the page, missing the moment when an EM is most persuaded by the OpenAI brand association.",
+      "The breadcrumb 'Customers / OpenAI' offers no signal about story length or format, so an EM can't quickly decide whether to read now or bookmark for later."
+    ],
+    "recommendations": [
+      "Collapse the hero image height by 50% and display the first pull quote or key stat (e.g., '3,000 users, one tool') alongside it to deliver immediate value above the fold.",
+      "Add a sticky 'Start free trial' CTA button in the top-right of the case study page (or a floating bar) so persuaded readers can act without leaving the article.",
+      "Add a '5-min read' or 'Video available' label to the breadcrumb or subtitle so an EM can time-box their engagement decision immediately."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://linear.app/signup",
+    "observation": "Sign-up screen shows 'Create your workspace' with three auth options \u2014 Continue with Google (highlighted in blue), Continue with email, and Continue with SAML SSO \u2014 plus legal links and a Log in option.",
+    "action": "navigate",
+    "target": "https://linear.app/",
+    "pass_fail": "in_progress",
+    "verdict": "Visually clean and well-prioritised sign-up flow, but jargon copy and missing reassurance signals introduce needless hesitation for a first-time buyer at the highest-stakes step.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "Three options are clearly labelled and visually ranked by priority (Google first, highlighted), though 'workspace' may be unfamiliar jargon to a first-time Linear user."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Create your workspace' assumes the user knows what a Linear 'workspace' is \u2014 a Jira migrator would expect 'Create your account' or 'Set up your team.'"
+    },
+    "flow_smoothness": {
+      "score": 4,
+      "note": "Clean, minimal form with no distracting fields, but the page offers zero context reassurance (e.g., 'No credit card required') at the commitment moment."
+    },
+    "severity": 2,
+    "first_impression": "Refreshingly simple sign-up flow, but the page feels stripped of any reassurance copy that would reduce hesitation for a first-time buyer.",
+    "friction_points": [
+      "'Create your workspace' is Linear-specific jargon \u2014 an EM migrating from Jira doesn't yet know what a 'workspace' maps to in Linear's data model, creating a moment of doubt at the critical signup step.",
+      "No 'No credit card required' or 'Free plan included' reassurance copy is present \u2014 an EM evaluating budget impact may hesitate before clicking, unsure if signup triggers a paid commitment.",
+      "SAML SSO is listed as a peer option alongside Google and email, but SSO is typically an Enterprise-only feature \u2014 its prominent placement may confuse a startup EM who doesn't have SSO configured."
+    ],
+    "recommendations": [
+      "Change 'Create your workspace' to 'Create your account' or 'Set up your team on Linear' to reduce jargon friction for Jira/Shortcut migrants.",
+      "Add a one-line reassurance below the buttons \u2014 'Free plan included \u00b7 No credit card required' \u2014 to eliminate cost hesitation at the exact moment of commitment.",
+      "Move SAML SSO below a thin 'Enterprise options' divider or collapse it behind a disclosure link so it doesn't add cognitive noise for startup-tier users."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://linear.app/",
+    "observation": "Back on the Linear homepage with a clear screenshot of a product UI \u2014 showing issue detail, inbox, reviews, and sprint data \u2014 sitting beneath the hero headline and subhead.",
+    "action": "click",
+    "target": "nav:Product",
+    "pass_fail": "in_progress",
+    "verdict": "Authentic product screenshot is a strong differentiator but the hero's missing CTA and competing announcement link remain the page's most fixable conversion gap.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Sign up remains only in the nav top-right; the hero content area still has zero CTA button, requiring an EM to consciously hunt for the next action."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "'The product development system for teams and agents' is bold and differentiated, but 'agents' still requires the subhead to resolve \u2014 the headline doesn't stand alone."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The product UI screenshot is highly authentic and immediately recognisable to a developer-oriented EM, but the 'Issue tracking is dead' link on the far right pulls attention away from the main value prop."
+    },
+    "severity": 2,
+    "first_impression": "The real product UI screenshot is the homepage's strongest asset \u2014 it instantly shows the tool in a realistic context rather than a polished mock.",
+    "friction_points": [
+      "No hero CTA button exists beneath the headline \u2014 an EM who lands here from a Google search or peer referral has no immediate action to take other than scrolling.",
+      "The 'Issue tracking is dead linear.app/next \u2192' message on the right side of the hero competes with the core value prop, sending an EM toward a blog post rather than a trial.",
+      "The product screenshot shows 'ENG-2703' and developer-centric issue detail but no project roadmap or sprint planning view \u2014 a migrating EM who primarily uses Jira's roadmap won't immediately see their own use case reflected."
+    ],
+    "recommendations": [
+      "Add a 'Start for free \u2014 no credit card required' button in the hero content block, directly beneath the two-line subhead.",
+      "Relocate the 'Issue tracking is dead' announcement to a dismissible top banner or a 'What's new' section lower on the page so it doesn't compete in the hero.",
+      "Add a rotating or tabbed product screenshot that cycles through issue view, roadmap, and sprint planning to cover the breadth of use cases an EM is mentally checking against Jira."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://linear.app/",
+    "observation": "Back on the Linear homepage showing the full hero with headline, two-line subhead, product UI screenshot of 'Faster app launch' issue detail, and the 'Issue tracking is dead  linear.app/next \u2192' message on the far right \u2014 nav shows Product, Resources, Customers, Pricing, Now, Contact as text links plus Log in and Sign up buttons.",
+    "action": "click",
+    "target": "a[href*='pricing']",
+    "pass_fail": "in_progress",
+    "verdict": "Visually strong homepage with an authentic product screenshot, but the hero section consistently fails to convert high-intent EMs due to missing CTA and a competing editorial link.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only conversion CTA is 'Sign up' isolated in the top-right nav \u2014 no button, no email field, and no CTA exists in the hero content area where EM attention is focused."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline and two-line subhead are tight and differentiated, but 'agents' in the headline still requires the subhead to clarify meaning for first-time visitors."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The product screenshot is immediately credible, but the competing 'Issue tracking is dead' link on the right creates a visual fork that splits an EM's attention at the worst moment."
+    },
+    "severity": 2,
+    "first_impression": "Premium dark aesthetic with an authentic product screenshot creates instant credibility, but the hero asks nothing of the visitor and offers no conversion moment.",
+    "friction_points": [
+      "No hero CTA button \u2014 an EM arriving from a peer recommendation or Google ad is primed to act but finds no 'Start free' or 'Try it' button in the primary content area.",
+      "'Issue tracking is dead' on the right side of the hero is an editorial statement that competes with the product headline and sends curious EMs to a blog post rather than a trial.",
+      "The product screenshot defaults to an individual issue detail view (ENG-2703), which reflects a developer's daily workflow but not an EM's planning or roadmap perspective \u2014 making the product feel narrower than it is."
+    ],
+    "recommendations": [
+      "Insert a high-contrast 'Start for free' button directly beneath the subhead in the hero content block, matching the 'Sign up' button's style.",
+      "Replace the 'Issue tracking is dead' inline link with a dismissible announcement banner at the very top of the page so it doesn't fragment the hero message.",
+      "Add a second or rotating screenshot showing a sprint/roadmap or project overview view to speak directly to an EM's planning use case alongside the developer issue view."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 9,
+    "url": "https://linear.app/pricing",
+    "observation": "Pricing page shows four tiers \u2014 Free ($0), Basic ($10/user/month billed yearly), Business ($16/user/month billed yearly), Enterprise (Custom/Annual only) \u2014 with feature lists visible but no per-card CTA buttons in this above-fold view.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Linear's site is visually polished with strong copy and credible social proof, but a consistent pattern of missing hero CTAs, no reassurance copy at signup, and absent per-card pricing buttons leaves conversion momentum unrealised at every high-intent moment in the EM's evaluation journey.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No 'Get started' or 'Choose plan' buttons are visible on any pricing card \u2014 an EM ready to commit has no action to take from this highest-intent page."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'All Free features +' is scannable shorthand but tells an EM nothing about which tier upgrade is worth the jump without scrolling through every feature row."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "Yearly billing is toggled on by default with no monthly price displayed, forcing an EM doing budget math to mentally convert or toggle off to find the true monthly cost."
+    },
+    "severity": 2,
+    "first_impression": "Clean four-column pricing grid is immediately readable, but the absence of any CTA button makes the page feel informational rather than transactional.",
+    "friction_points": [
+      "No per-plan CTA buttons are visible anywhere on the pricing cards above the fold \u2014 an EM who has decided on a tier has no way to proceed without hunting elsewhere.",
+      "Yearly billing is pre-toggled and only yearly prices are shown \u2014 an EM presenting a monthly budget estimate to a CFO cannot see the true monthly cost without switching the toggle or doing manual division.",
+      "The distinction between Basic (5 teams, $10) and Business (Unlimited teams, $16) is the key decision point for a growth-stage EM, but 'teams' is not defined \u2014 a Jira user doesn't know if 'team' maps to a Jira project, board, or something else."
+    ],
+    "recommendations": [
+      "Add a prominent 'Start free' or 'Get started' CTA button at the bottom of each pricing card, visible without scrolling.",
+      "Display both yearly and monthly prices simultaneously on each card (e.g., '$13.33/mo billed yearly or $16/mo billed monthly') to eliminate mental arithmetic at the budget-approval stage.",
+      "Add a 'What is a team?' tooltip or inline link next to every mention of 'teams' on the pricing page to resolve the mapping confusion for buyers coming from Jira or Shortcut."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://linear.app/pricing",
+    "observation": "Linear's pricing page shows four tiers (Free, Basic $10, Business $16, Enterprise Custom) with feature bullets visible above the fold, but no CTA buttons are visible yet and prices reflect yearly billing by default.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Strong visual hierarchy but critical friction in missing CTAs and ambiguous copy that would slow an engineering manager's evaluation before they even scroll.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No 'Get started' or 'Try free' CTA buttons are visible above the fold \u2014 the buyer has pricing context but no clear next action."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Tier names and prices are clean, but '250 issues' on Free is ambiguous (total cap? per project? ever?) and could stall a technical evaluator."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The yearly/monthly toggle exists for Basic and Business but is missing on Free and Enterprise, creating an inconsistent scanning pattern."
+    },
+    "severity": 3,
+    "first_impression": "Clean, minimal layout with clear tier hierarchy, but the absence of CTAs above the fold and ambiguous Free-tier limits are immediate blockers for a buyer ready to act.",
+    "friction_points": [
+      "No CTA buttons visible above the fold \u2014 a buyer who has already decided can't take action without scrolling past the fold.",
+      "The '250 issues' limit on the Free plan has no clarifying context (per workspace? per month? ever?), forcing technical buyers to search for docs.",
+      "The $10\u2192$16 jump (60% increase) from Basic to Business is hard to justify at a glance; 'Triage Intelligence' and 'Private teams' may not resonate without a brief explanation."
+    ],
+    "recommendations": [
+      "Add sticky or inline 'Get started' / 'Start free trial' CTA buttons beneath each tier's price so they're visible without scrolling.",
+      "Add a tooltip or parenthetical to '250 issues' clarifying the scope (e.g., '250 total active issues across all teams').",
+      "Add one-line value statements under each Business-only feature (e.g., 'Triage Intelligence \u2014 auto-prioritize incoming bugs') to justify the price step-up."
+    ],
+    "confidence": "high",
+    "persona": "Engineering manager at a 20\u2013100 person SaaS company evaluating issue-tracking tools to replace Jira or GitHub Issues"
+  },
+  {
+    "step": 2,
+    "url": "https://linear.app/pricing",
+    "observation": "Full above-the-fold pricing view is now visible: four tiers with feature lists, yearly billing toggles on Basic and Business, but still no CTA buttons visible and no monthly price alternative shown.",
+    "action": "click",
+    "target": "input[type='checkbox'], .toggle, [role='switch']",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing tiers are legible but missing CTAs and billing-toggle transparency are major friction points for a buyer evaluating on behalf of a team.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Still no 'Get started' or 'Try free' CTA buttons visible on any tier \u2014 an engineering manager ready to pilot the tool has no action to take from this view."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Feature lists are clean and scannable, but 'Linear Agent (beta)' appearing on the Free tier with no explanation creates uncertainty about what 'beta' means for a production team."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The billing toggle exists only on Basic and Business \u2014 Free shows nothing and Enterprise says 'Annual billing only,' creating an inconsistent toggle pattern across the four columns."
+    },
+    "severity": 3,
+    "first_impression": "Tiers and prices are immediately clear, but the complete absence of CTAs above the fold is a significant barrier for a buyer who is ready to start a trial.",
+    "friction_points": [
+      "No CTA buttons are visible on any tier \u2014 an engineering manager ready to sign up or start a trial must scroll to find any action, risking drop-off.",
+      "The yearly billing toggle has no monthly price revealed or displayed anywhere nearby, so the EM can't quickly calculate total annual cost for their team headcount.",
+      "'250 issues' on Free still has no qualifying context \u2014 a team migrating from Jira needs to know if this cap applies to open issues, total issues, or is a hard archive limit."
+    ],
+    "recommendations": [
+      "Place a tier-specific CTA button (e.g., 'Start free', 'Try Basic free') directly beneath each price, above the feature list, so it's visible without scrolling.",
+      "Show monthly equivalent price inline when toggle is on yearly (e.g., '$10/mo, billed $120/yr') so EMs can size budget for their whole team immediately.",
+      "Add a tooltip or short parenthetical next to '250 issues' specifying the exact scope (e.g., 'active open issues per workspace')."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://linear.app/pricing",
+    "observation": "Full pricing page is visible with four tiers (Free $0, Basic $10, Business $16, Enterprise Custom), 'Billed yearly' toggles on Basic and Business columns only, and feature lists \u2014 but still no CTA buttons visible in this viewport.",
+    "action": "click",
+    "target": ".billed-yearly, label.toggle, div.toggle",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing structure is legible but missing CTAs and inconsistent toggle UX are meaningful blockers for an engineering manager ready to evaluate or purchase.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No 'Get started', 'Start trial', or 'Sign up' CTA buttons appear on any tier \u2014 an EM ready to pilot the tool has nowhere to click from this view."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Linear Agent automations (beta)' on Business and 'Linear Agent (beta)' on Free are two different things with no explanation, which will confuse a buyer comparing tiers."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The 'Billed yearly' toggles appear only on Basic and Business \u2014 Free and Enterprise have no toggle equivalent, creating an inconsistent visual scanning flow across columns."
+    },
+    "severity": 3,
+    "first_impression": "Clean, dark-themed layout with clear tier names and prices, but the complete absence of CTA buttons remains a critical gap for a buyer ready to act.",
+    "friction_points": [
+      "No CTA buttons are visible anywhere on the four pricing tiers \u2014 an EM who has decided on a plan cannot initiate a trial or purchase without scrolling further down.",
+      "The 'Billed yearly' toggle is present on Basic and Business but absent on Free and Enterprise, making it unclear whether yearly/monthly pricing options exist for those tiers.",
+      "The distinction between 'Linear Agent (beta)' on Free and 'Linear Agent automations (beta)' on Business is not explained \u2014 an EM evaluating AI capabilities cannot determine what their team actually gets at each tier."
+    ],
+    "recommendations": [
+      "Add a prominent CTA button (e.g., 'Start free trial' or 'Get started') directly below each plan price, visible without scrolling.",
+      "Either add billing-period context to Free ('Always free') and Enterprise ('Annual only') inline with the toggle row, or apply a disabled-state toggle to make the pattern consistent.",
+      "Rename and add a one-line description to each Agent feature distinguishing the Free vs Business capability (e.g., 'Linear Agent \u2014 manual prompts' vs 'Linear Agent automations \u2014 rule-based auto-actions')."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://linear.app/pricing",
+    "observation": "Scrolled view now reveals all four 'Get started' / 'Contact sales' CTA buttons, 'Billed yearly' toggles on Basic and Business columns, full feature lists, and 'Trusted by more than 25,000 companies' social proof beginning to appear at the bottom.",
+    "action": "click",
+    "target": "button.toggle, .toggle input, div[role='switch']",
+    "pass_fail": "in_progress",
+    "verdict": "CTAs are now accessible but jargon-heavy feature copy and missing monthly pricing transparency remain meaningful friction points for an engineering manager making a team-level buying decision.",
+    "cta_clarity": {
+      "score": 4,
+      "note": "CTA buttons ('Get started' and 'Contact sales') are now clearly visible and well-placed below each tier's feature list, though Free and Basic share the same undifferentiated 'Get started' label."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Triage Intelligence' and 'Linear Asks' on Business are unexplained feature names \u2014 an EM unfamiliar with Linear's terminology can't assess their value without clicking away."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The 'Billed yearly' toggle is still only on Basic and Business \u2014 Free says 'Free for everyone' and Enterprise says 'Annual billing only,' making the billing-period row visually mismatched across columns."
+    },
+    "severity": 2,
+    "first_impression": "CTAs are now visible and the layout is clean, but jargon-heavy feature names and a missing monthly-price option on the toggle will slow an engineering manager's decision.",
+    "friction_points": [
+      "Toggling 'Billed yearly' off on Basic or Business shows no monthly price \u2014 an EM sizing budget for a 30-person team needs the monthly rate to calculate annual spend against a procurement ceiling.",
+      "'Triage Intelligence', 'Linear Asks', and 'Linear Insights' are undefined product terms on the Business tier \u2014 a buyer comparing to Jira can't map these to equivalent capabilities without leaving the page.",
+      "Business tier has two CTAs ('Get started' + 'Contact sales') while other tiers have one \u2014 an EM will pause wondering whether they need sales involvement to access Business, introducing unnecessary uncertainty."
+    ],
+    "recommendations": [
+      "When the yearly toggle is switched off, display the monthly per-seat price clearly (e.g., '$12/mo billed monthly') so EMs can size costs without leaving the page.",
+      "Add one-line tooltips or inline parentheticals for proprietary feature names (e.g., 'Triage Intelligence \u2014 AI-powered issue prioritization') to reduce dependency on external docs.",
+      "Clarify the dual-CTA on Business with a brief note (e.g., 'Get started \u2014 no sales call needed; Contact sales \u2014 for custom contracts or procurement') to remove ambiguity about the path to purchase."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://linear.app/pricing",
+    "observation": "Full tier view is now confirmed in the screenshot: all four tiers show CTA buttons ('Get started' on Free/Basic/Business, 'Contact sales' on Business and Enterprise), 'Billed yearly' toggles on Basic and Business only, and 'Trusted by more than 25,000 companies' text is just appearing at the bottom.",
+    "action": "click",
+    "target": "a[href='#']",
+    "pass_fail": "in_progress",
+    "verdict": "Tier structure and CTAs are functional, but undifferentiated CTA labels and unexplained proprietary feature names are meaningful friction for an EM making a team-level buying decision.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "CTA buttons are present and visible under each tier, but Free and Basic both say 'Get started' with no differentiation, making it hard to know what each action leads to."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Triage Intelligence', 'Linear Insights', and 'Linear Asks' are unexplained proprietary terms on the Business tier that an EM comparing to Jira cannot evaluate without leaving the page."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Business tier has two CTAs ('Get started' + 'Contact sales') while Free and Basic have one each \u2014 an EM will hesitate wondering whether sales involvement is required for a self-serve Business plan."
+    },
+    "severity": 2,
+    "first_impression": "Clean and well-structured tier layout with visible CTAs, but unexplained feature terminology and the dual-CTA ambiguity on Business will slow a technical buyer's decision.",
+    "friction_points": [
+      "Free and Basic both use the identical 'Get started' CTA with no hint of where each leads \u2014 an EM can't tell if Free starts a trial versus Basic requiring a credit card.",
+      "'Linear Asks', 'Linear Insights', and 'Triage Intelligence' are brand-specific names with no description \u2014 an EM replacing Jira can't map these to capabilities they care about without navigating away.",
+      "Business tier's dual CTA ('Get started' + 'Contact sales') creates ambiguity about whether self-serve signup is actually available or if a sales call is required for this tier."
+    ],
+    "recommendations": [
+      "Differentiate the Free CTA (e.g., 'Start for free \u2014 no card needed') from the Basic CTA (e.g., 'Start Basic trial') to set clear expectations for each signup path.",
+      "Add parenthetical one-liners under proprietary feature names (e.g., 'Linear Asks \u2014 answer team questions via Slack') so an EM can assess value without leaving the pricing page.",
+      "Add a short note beneath the Business dual-CTAs clarifying the two paths (e.g., 'Start now \u2014 no sales call needed' vs. 'Contact sales \u2014 for procurement or volume pricing')."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://linear.app/pricing",
+    "observation": "Full pricing page is now visible in the screenshot: four tiers with feature lists, CTA buttons ('Get started' on Free/Basic/Business, 'Contact sales' on Business/Enterprise), 'Billed yearly' toggles on Basic and Business, and 'Trusted by more than 25,000 companies' appearing just below the fold.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Linear's pricing page passes with a functional, well-structured layout and visible CTAs, but UX quality is held back by undifferentiated CTA labels, jargon-heavy Business-tier copy, and the absence of monthly pricing visibility \u2014 all of which create meaningful friction for an engineering manager evaluating the tool for a 20\u2013100 person team.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "CTA buttons are visible and well-placed below each tier's feature list, but Free, Basic, and Business all share the identical 'Get started' label with no indication of what each path entails (trial, card required, instant access)."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Tier structure is clean and scannable, but Business-tier feature names like 'Triage Intelligence', 'Linear Asks', and 'Linear Insights' are opaque brand terms an EM from Jira cannot evaluate without leaving the page."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The tier-to-feature-to-CTA layout is logical, but the yearly-billing default with no visible monthly pricing alternative makes it impossible to calculate team costs for procurement without hunting for a toggle that may not function."
+    },
+    "severity": 2,
+    "first_impression": "Clean, dark-themed layout with clear tier hierarchy and visible CTAs, but unexplained feature names and the absence of monthly pricing visibility will slow an engineering manager's team-level buying decision.",
+    "friction_points": [
+      "All three paid-path tiers share the identical 'Get started' CTA \u2014 an EM can't tell whether Free means instant access, Basic requires a credit card, or Business starts a trial, creating decision hesitation.",
+      "Business-tier features ('Triage Intelligence', 'Linear Asks', 'Linear Insights') are unexplained proprietary names \u2014 an EM comparing to Jira cannot assess their value without navigating away from the pricing page.",
+      "Pricing defaults to yearly billing with no clearly accessible monthly rate \u2014 an EM sizing budget for 30 seats against a quarterly procurement ceiling cannot calculate total cost from the information visible on screen."
+    ],
+    "recommendations": [
+      "Differentiate CTAs with micro-copy beneath each button (e.g., 'No credit card needed' on Free, 'Includes 14-day trial' on Basic) so each sign-up path sets clear expectations.",
+      "Add one-line parenthetical descriptions under each proprietary feature name (e.g., 'Triage Intelligence \u2014 AI-powered issue auto-prioritization') to let buyers evaluate capabilities without leaving the page.",
+      "Display the monthly-billing equivalent price inline below each yearly price (e.g., '$12/seat/mo if billed monthly') so EMs can size total annual cost for their team at a glance."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://linear.app/customers",
+    "observation": "The Customers page shows a clean dark-mode layout with a 'Customers' heading, category filters, and three featured story cards (Coinbase, OpenAI, Cursor) with generic 'Read story \u2192' CTAs and no aggregate social proof or value proposition above the fold.",
+    "action": "navigate",
+    "target": "https://linear.app/customers",
+    "pass_fail": "in_progress",
+    "verdict": "Visually clean but conversion-weak above the fold \u2014 the page lacks the persuasive copy and proof density a skeptical engineering buyer needs to keep reading.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Generic 'Read story \u2192' labels give the persona no signal about what insight or outcome they'll find inside."
+    },
+    "copy_quality": {
+      "score": 2,
+      "note": "The page heading is just 'Customers' \u2014 there's no value statement, no aggregate count, and no framing that anchors why these stories matter to an evaluating buyer."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Card grid is clean and scannable, but category filters show no story counts, giving no guidance on which filter to start with."
+    },
+    "severity": 2,
+    "first_impression": "Polished visual design, but the page reads as a logo gallery rather than a persuasion tool \u2014 there's almost no copy to validate the product for a skeptical engineering leader.",
+    "friction_points": [
+      "No headline or subtext quantifies trust (e.g., 'Trusted by 10,000+ teams') \u2014 the persona must click multiple stories just to build basic confidence.",
+      "Category filter tabs (SaaS, AI, Fintech\u2026) show no story counts, so the persona filtering for 'SaaS' can't tell if the category has one story or twenty.",
+      "'Read story \u2192' CTAs are identical across all cards with no outcome teaser, forcing the persona to click blind to find a relevant use case."
+    ],
+    "recommendations": [
+      "Add a trust anchor line below the 'Customers' heading \u2014 e.g., 'X,000 engineering teams ship faster with Linear' \u2014 to give immediate aggregate proof.",
+      "Append story counts to each filter tab label (e.g., 'SaaS (12)') so the persona can quickly assess category depth before clicking.",
+      "Replace 'Read story \u2192' with outcome-specific micro-copy that previews the key result (e.g., 'See how they cut sprint cycle time by 40% \u2192')."
+    ],
+    "confidence": "high",
+    "persona": "Engineering manager or VP Eng at a growth-stage SaaS company evaluating Linear against Jira or Shortcut for team-wide adoption"
+  },
+  {
+    "step": 2,
+    "url": "https://linear.app/customers",
+    "observation": "Above-the-fold shows three featured customer cards (Coinbase, OpenAI, Cursor) with a category filter bar, but no aggregate trust statement, no metrics in card previews, and mixed CTA labels ('Read story' vs 'Watch video') with no visual differentiation.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Strong logo selection and one standout metrics-driven title (OpenAI), but the page underperforms as a conversion tool due to missing aggregate proof, inconsistent CTAs, and blind category filters.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Read story \u2192' and 'Watch video \u2192' are bare labels \u2014 no outcome hint tells the VP Eng what they'll learn before clicking."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Card titles like 'Why OpenAI chose Linear and scaled to 3,000 users' are outcome-oriented, but Coinbase and Cursor titles lack any quantified result."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Grid layout is clean and scannable, but the filter bar has no visual affordance for the active state beyond bold text, which is easy to miss."
+    },
+    "severity": 2,
+    "first_impression": "High-profile logos (OpenAI, Coinbase) signal credibility immediately, but the page feels more like an editorial index than a conversion-focused social proof hub.",
+    "friction_points": [
+      "No page-level trust anchor (e.g., 'Trusted by 10,000+ engineering teams') means the VP Eng must click into individual stories to build confidence rather than getting it at a glance.",
+      "Cursor card uses 'Watch video \u2192' while others use 'Read story \u2192' with zero visual distinction \u2014 an evaluating buyer scanning quickly may miss the format difference and feel misled after clicking.",
+      "Category filters have no story counts, so filtering by 'SaaS' or 'Enterprise' gives no signal about depth \u2014 the persona can't tell if there's one story or fifteen before committing to a filter."
+    ],
+    "recommendations": [
+      "Add a bold trust-anchor subheading directly under 'Customers' \u2014 e.g., 'Join 10,000+ engineering teams who ship with Linear' \u2014 to anchor confidence before the first scroll.",
+      "Visually badge format type on each card thumbnail (e.g., a small 'VIDEO' pill overlay) so buyers know what they're clicking into before they do.",
+      "Append counts to each filter tab (e.g., 'SaaS (14)', 'Enterprise (6)') so the persona can self-select the most relevant cluster without trial-and-error clicking."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://linear.app/customers",
+    "observation": "The full above-the-fold is now confirmed: 'Customers' heading with seven category filters (Featured, SaaS, AI, Fintech, Consumer, Hardware, Health, Enterprise), three featured cards visible with Coinbase ('Read story'), OpenAI ('Read story'), and Cursor ('Watch video') \u2014 no metrics, no trust anchor, no page subheading.",
+    "action": "click",
+    "target": "a[href*='/customers/openai']",
+    "pass_fail": "in_progress",
+    "verdict": "Logo credibility is strong but the page lacks the outcome-oriented copy and aggregate proof density needed to convert a skeptical engineering leader into a story reader.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Read story \u2192' and 'Watch video \u2192' share identical visual weight with no outcome preview \u2014 a VP Eng scanning for ROI signals gets nothing before clicking."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "OpenAI card title ('scaled to 3,000 users') is the only quantified result above the fold; Coinbase and Cursor titles are descriptive but metric-free, weakening the persuasion stack."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Layout is clean and filters are accessible, but 'Featured' is the only active-state filter with no visual highlight beyond bold text, making the current selection ambiguous at a glance."
+    },
+    "severity": 2,
+    "first_impression": "Recognizable brand logos create instant credibility, but the page reads as an editorial archive rather than a targeted proof engine for an evaluating buyer.",
+    "friction_points": [
+      "Coinbase's card title ('bet on agent-first development') frames a strategy narrative, not a Linear outcome \u2014 a VP Eng evaluating for productivity gains gets no clear 'what's in it for me' signal.",
+      "No page-level summary stat (e.g., 'Used by 500+ engineering teams') forces the persona to open multiple stories before reaching a confidence threshold to proceed.",
+      "The 'Watch video' CTA on the Cursor card has no duration label, so the persona can't budget their evaluation time before clicking \u2014 a 2-minute clip vs. a 20-minute interview are very different commitments."
+    ],
+    "recommendations": [
+      "Rewrite the Coinbase card subtitle to lead with a Linear-specific outcome (e.g., 'How Coinbase cut sprint overhead with Linear') so the buyer immediately sees relevance.",
+      "Add a bold aggregate trust line beneath the 'Customers' H1 \u2014 e.g., 'Trusted by 500+ engineering orgs worldwide' \u2014 to build confidence before any card is clicked.",
+      "Append video duration to the Cursor CTA label (e.g., 'Watch video (4 min) \u2192') so the persona can make an informed time-investment decision upfront."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://linear.app/customers/openai",
+    "observation": "The OpenAI case study page opens with a strong, metrics-driven headline ('Why OpenAI chose Linear and scaled to 3,000 users') and a large brand hero image, but the story body content is still below the fold requiring a scroll.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Best headline on the site but the oversized hero and absent above-the-fold CTA squander the conversion momentum the strong title creates.",
+    "cta_clarity": {
+      "score": 3,
+      "note": "No CTA is visible above the fold on this story page \u2014 a VP Eng who's convinced by the headline has no immediate 'Start trial' or 'See pricing' escape hatch."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline is the strongest copy on the entire /customers section \u2014 a concrete scale metric ('3,000 users') speaks directly to what a growth-stage engineering leader needs to hear."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Breadcrumb navigation (Customers / OpenAI) is present and helpful, but the hero image occupies nearly the full viewport, pushing actual story content deep below the fold."
+    },
+    "severity": 2,
+    "first_impression": "Headline immediately validates scale and decision-making context, but the oversized hero image delays access to the substance a VP Eng actually came here to read.",
+    "friction_points": [
+      "The hero image fills ~80% of the viewport, meaning the persona must scroll before seeing a single sentence of story content, a quote, or a metric \u2014 increasing bounce risk for time-pressed evaluators.",
+      "No conversion CTA (e.g., 'Start free trial' or 'Compare plans') is anchored above the fold on this page, so a buyer persuaded by the headline has no immediate next step.",
+      "The breadcrumb says 'Customers / OpenAI' but gives no signal about company size, industry, or use case \u2014 a VP Eng can't quickly assess if OpenAI's context is comparable to their own org."
+    ],
+    "recommendations": [
+      "Reduce the hero image height to ~40% of viewport so the first paragraph or a pull-quote stat is visible without scrolling.",
+      "Pin a sticky or inline CTA bar ('Try Linear free \u2192') that appears once the user lands on the story page, capitalizing on headline-driven intent.",
+      "Add a 2\u20133 word context badge beneath the breadcrumb (e.g., 'AI \u00b7 3,000+ users \u00b7 Enterprise') so the persona can instantly gauge story relevance to their own situation."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://linear.app/customers/openai",
+    "observation": "The OpenAI case study page is now fully visible in the screenshot: strong metrics-driven headline above a large brand gradient hero image, with breadcrumb navigation and global nav including 'Sign up' CTA \u2014 but zero story body content is visible yet.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "The headline is the strongest asset on the page but the UX buries it under a decorative image and provides no conversion pathway for an evaluator who is ready to act.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only CTA visible is 'Sign up' in the global nav \u2014 there is no contextual CTA tied to the story itself, missing a prime conversion moment when a buyer is engaged by the headline."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline 'Why OpenAI chose Linear and scaled to 3,000 users' is punchy, decision-framing, and metric-specific \u2014 exactly what a VP Eng evaluating adoption risk wants to see."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The hero image (~60% viewport height) delays the actual story content significantly, interrupting the reading flow for a time-pressed engineering evaluator."
+    },
+    "severity": 2,
+    "first_impression": "Headline lands hard and credibly, but the oversized decorative hero image immediately stalls momentum before a single word of substance is delivered.",
+    "friction_points": [
+      "The full viewport is consumed by headline + hero image with no story content visible \u2014 a busy VP Eng may bounce before the value of the case study is established.",
+      "No inline CTA (e.g., 'Start free trial' or 'See Linear pricing') capitalizes on the conversion intent generated by the OpenAI brand association and the '3,000 users' scale signal.",
+      "The breadcrumb 'Customers / OpenAI' provides no industry or team-size context, so the persona can't instantly gauge whether OpenAI's engineering org is a meaningful proxy for their own."
+    ],
+    "recommendations": [
+      "Reduce the hero image to a thumbnail or sidebar element so the first pull-quote or story paragraph is visible without any scrolling.",
+      "Add a contextual inline CTA block immediately after the headline (e.g., 'Used by teams like OpenAI \u2014 Try Linear free \u2192') to capture intent at peak engagement.",
+      "Add a metadata strip beneath the breadcrumb showing company size, industry, and Linear use case (e.g., 'AI \u00b7 Enterprise \u00b7 3,000 users \u00b7 Issue tracking + roadmaps') to help the persona self-qualify relevance."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://linear.app/customers/openai",
+    "observation": "The OpenAI case study page is confirmed in the screenshot: large bold headline 'Why OpenAI chose Linear and scaled to 3,000 users', breadcrumb 'Customers / OpenAI', global nav with 'Sign up' CTA, and an oversized gradient hero image with the OpenAI logo filling the lower ~55% of the viewport \u2014 zero story content visible.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Exceptional headline undermined by a viewport-consuming decorative image and a complete absence of story-level conversion pathways for an evaluating engineering leader.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only actionable CTA visible is 'Sign up' in the global nav \u2014 there is nothing contextually tied to the story to capture a buyer converted by the OpenAI brand signal."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Headline is excellent \u2014 decision-framing ('chose'), authority ('OpenAI'), and a concrete scale metric ('3,000 users') in one line \u2014 but it's the only copy visible on screen."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The hero image dominates the viewport and forces the VP Eng to scroll before reading a single word of the story, breaking reading momentum at the worst possible moment."
+    },
+    "severity": 2,
+    "first_impression": "The headline is the most persuasive copy on the entire /customers section, but the decorative hero image immediately stalls the reading journey before any substance is delivered.",
+    "friction_points": [
+      "Over half the viewport is a decorative gradient image with the OpenAI logo \u2014 a time-pressed VP Eng sees no story content without scrolling, increasing bounce risk at peak intent.",
+      "No story-level CTA exists above or near the fold (e.g., 'Try Linear with your team \u2192'), missing the highest-intent moment in the entire customer journey.",
+      "The breadcrumb 'Customers / OpenAI' gives no team-size or use-case metadata, leaving the persona unsure whether OpenAI's 3,000-user scale is relevant to their own 50-person engineering org."
+    ],
+    "recommendations": [
+      "Shrink the hero image to a compact banner or logo badge so the first story paragraph or pull-quote is visible without scrolling.",
+      "Insert an inline contextual CTA directly below the headline (e.g., 'See how Linear scales with your team \u2014 Start free \u2192') to capture conversion intent at the strongest persuasion point on the page.",
+      "Add a metadata strip beneath the breadcrumb with tags like 'Industry: AI \u00b7 Team size: Enterprise \u00b7 Use case: Issue tracking & roadmapping' so the persona can instantly self-qualify the relevance of this story."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://linear.app/customers/openai",
+    "observation": "Screenshot confirms the OpenAI case study page: strong headline 'Why OpenAI chose Linear and scaled to 3,000 users' above a large decorative gradient hero image with the OpenAI logo \u2014 no story body, no quote, no metric, and no story-level CTA visible anywhere on screen.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "The headline is the best copy on the site but the page layout actively suppresses its conversion power with a viewport-dominating decorative image and zero contextual CTAs.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only CTA in frame is 'Sign up' in the global nav \u2014 there is no story-contextual action for a VP Eng who is actively persuaded by the OpenAI headline and ready to move forward."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline is legitimately excellent \u2014 a named social proof anchor ('OpenAI'), a decision verb ('chose'), and a concrete scale metric ('3,000 users') all in one line \u2014 but it is the only copy on the entire visible screen."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The decorative hero image occupies more than half the viewport and delivers zero informational value, creating a hard visual stop that interrupts the reading journey before it begins."
+    },
+    "severity": 2,
+    "first_impression": "The headline is the strongest persuasion asset on the /customers section, but the oversized decorative image immediately arrests momentum and delays all substantive content.",
+    "friction_points": [
+      "The hero image fills ~55% of the viewport with a decorative gradient and logo \u2014 a time-scarce VP Eng scanning for ROI evidence hits a visual wall before reading a single story sentence.",
+      "No story-level CTA is present above the fold; a buyer primed by 'OpenAI chose Linear' has nowhere to convert that intent until they dig through the global nav.",
+      "The breadcrumb reads only 'Customers / OpenAI' with no team-size, industry, or use-case metadata, so the persona cannot immediately assess whether a 3,000-user enterprise AI lab is a useful reference for their 40-person SaaS engineering team."
+    ],
+    "recommendations": [
+      "Constrain the hero image to a max-height of 240px or replace it with a compact logo lockup so the first paragraph or pull-quote is visible without scrolling.",
+      "Place an inline CTA block immediately below the headline \u2014 e.g., 'Trusted by teams like OpenAI \u2014 Start your free trial \u2192' \u2014 to capture intent at the highest-confidence moment on the page.",
+      "Add a metadata strip beneath the breadcrumb (e.g., 'Industry: AI \u00b7 Scale: 3,000 users \u00b7 Use case: Issue tracking') so the persona can self-qualify relevance in under three seconds."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 8,
+    "url": "https://linear.app/customers/openai",
+    "observation": "The OpenAI case study page is confirmed in the screenshot: headline 'Why OpenAI chose Linear and scaled to 3,000 users' is fully readable, breadcrumb 'Customers / OpenAI' is present, global nav shows 'Sign up' CTA, and the decorative yellow-blue gradient hero image with the OpenAI logo occupies the entire bottom half of the viewport with zero story content visible.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "The headline is the strongest copy asset in the entire /customers section, but a viewport-dominating decorative image and absent story-level CTAs actively suppress its conversion potential for an evaluating engineering leader.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Only the global nav 'Sign up' button is available \u2014 there is no story-contextual CTA to capture a VP Eng who is already persuaded by seeing 'OpenAI chose Linear' in the headline."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline is genuinely excellent \u2014 it names the customer, frames a decision ('chose'), and anchors a concrete scale outcome ('3,000 users') \u2014 but it is the only copy visible on the entire screen."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The decorative hero image occupies ~50% of the viewport and provides zero informational value, creating a hard visual stall between the compelling headline and any actual story substance."
+    },
+    "severity": 2,
+    "first_impression": "The headline lands with authority and credibility, but the page immediately stalls behind a large decorative image that delays every piece of substantive content a buying evaluator came here to read.",
+    "friction_points": [
+      "The hero image fills half the viewport with a decorative gradient \u2014 a VP Eng with limited evaluation time sees no story content, quote, or metric without scrolling, raising bounce risk at peak intent.",
+      "There is no story-level CTA above the fold; a buyer converted by the OpenAI brand signal and '3,000 users' stat has no immediate next step beyond the generic global nav 'Sign up'.",
+      "The breadcrumb 'Customers / OpenAI' carries no team-size, industry, or use-case metadata, making it impossible for the persona to quickly judge whether a hyperscale AI lab is a relevant reference for their own 50\u2013200 person SaaS engineering team."
+    ],
+    "recommendations": [
+      "Cap the hero image height at ~200px or replace it with a logo lockup beside the headline so the first paragraph or pull-quote stat is immediately visible without any scroll.",
+      "Add an inline CTA block directly beneath the headline \u2014 e.g., 'Trusted by teams like OpenAI \u2014 Start your free trial \u2192' \u2014 to convert intent at the highest-confidence moment on the page.",
+      "Insert a metadata tag strip beneath the breadcrumb (e.g., 'Industry: AI \u00b7 Scale: 3,000 users \u00b7 Use case: Issue tracking & roadmaps') so the persona can self-qualify the story's relevance in under 3 seconds."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 9,
+    "url": "https://linear.app/customers/openai",
+    "observation": "The OpenAI case study page viewport is confirmed: strong headline above a large yellow-blue decorative gradient hero image with the OpenAI logo, breadcrumb navigation present, global nav 'Sign up' CTA visible \u2014 zero story body content accessible without scrolling, which this toolset cannot execute.",
+    "action": "navigate",
+    "target": "https://linear.app/customers",
+    "pass_fail": "in_progress",
+    "verdict": "The case study headline is the site's strongest conversion asset, but the page layout suppresses it with an oversized decorative image and offers no story-level CTA to capture the intent it generates.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "Only the global 'Sign up' nav CTA is in frame \u2014 there is no story-contextual conversion path for a VP Eng already persuaded by the OpenAI headline."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The headline is the best copy on the site \u2014 named social proof, a decision verb, and a concrete scale metric in one line \u2014 but it is the only copy visible on the entire screen."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The decorative hero image occupies ~50% of the viewport with zero informational value, hard-stalling reading momentum directly after the highest-persuasion sentence on the page."
+    },
+    "severity": 2,
+    "first_impression": "Headline is immediately credible and compelling, but the page layout actively buries its own best asset behind a viewport-dominating decorative image.",
+    "friction_points": [
+      "The oversized hero image forces a scroll before any story content, quote, or supporting metric is reachable \u2014 a time-pressed VP Eng evaluating multiple tools may bounce at this wall.",
+      "No inline story-level CTA exists above the fold; a buyer primed by 'OpenAI chose Linear' has no immediate conversion path except the generic global nav 'Sign up' button.",
+      "Breadcrumb 'Customers / OpenAI' gives no team-size or use-case context, so the persona cannot instantly assess whether OpenAI's hyperscale footprint is a meaningful proxy for their own 50\u2013200 person engineering org."
+    ],
+    "recommendations": [
+      "Cap the hero image at 200px height or replace with a compact logo lockup so the first pull-quote or paragraph is visible without any scrolling.",
+      "Insert a contextual inline CTA block directly beneath the headline (e.g., 'Trusted by teams like OpenAI \u2014 Try Linear free \u2192') to convert intent at peak engagement.",
+      "Add a metadata tag strip beneath the breadcrumb (e.g., 'Industry: AI \u00b7 Scale: 3,000 users \u00b7 Use case: Issue tracking') so the persona can self-qualify story relevance in under 3 seconds."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 10,
+    "url": "https://linear.app/customers",
+    "observation": "Back on the /customers index: 'Customers' H1 with 8 category filter tabs (Featured active/bold), three featured cards fully visible \u2014 Coinbase ('Read story \u2192'), OpenAI ('Read story \u2192'), Cursor ('Watch video \u2192') \u2014 plus partial bottom row of three more cards, and no page-level value statement anywhere.",
+    "action": "click",
+    "target": "nav:Pricing",
+    "pass_fail": "in_progress",
+    "verdict": "Strong logo credibility but the page underserves a time-pressed engineering evaluator with no aggregate proof, blind category filters, and outcome-free CTAs across most cards.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Read story \u2192' and 'Watch video \u2192' are visually identical in weight with no outcome teaser \u2014 a VP Eng scanning for ROI evidence gets zero signal about what clicking will reveal."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "OpenAI's card title is metric-driven and excellent; Coinbase's 'bet on agent-first development' and Cursor's 'builds with Linear' are editorial and outcome-free, weakening the persuasion stack for an evaluating buyer."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Grid layout is clean and scannable, but 'Featured' active filter is only distinguished by bold weight \u2014 easy to miss \u2014 and no story counts appear on any tab to guide filter decisions."
+    },
+    "severity": 2,
+    "first_impression": "Six recognizable brand logos create immediate credibility, but the page reads as an editorial archive rather than a targeted proof engine built to convert a skeptical engineering leader.",
+    "friction_points": [
+      "No page-level trust anchor (e.g., '500+ engineering teams use Linear') means the VP Eng must open multiple individual stories to build confidence rather than getting aggregate proof at a glance.",
+      "Category filter tabs show no story counts \u2014 a persona filtering for 'SaaS' or 'Enterprise' has no idea if they'll find 1 story or 15, making the filter feel risky and uninformative.",
+      "The 'Watch video \u2192' CTA on the Cursor card has no duration label, so a time-pressed engineering evaluator cannot make an informed time-investment decision before clicking."
+    ],
+    "recommendations": [
+      "Add a bold aggregate trust line beneath the 'Customers' H1 (e.g., 'Trusted by 500+ engineering teams worldwide') to give immediate top-of-page confidence without requiring any clicks.",
+      "Append story counts to each filter tab label (e.g., 'SaaS (14)', 'Enterprise (6)') so the persona can self-select the deepest, most relevant category without trial-and-error.",
+      "Append video duration to the Cursor CTA (e.g., 'Watch video (4 min) \u2192') so the persona can budget their evaluation time before committing to the click."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 11,
+    "url": "https://linear.app/pricing",
+    "observation": "The Pricing page shows four tiers (Free $0, Basic $10/user/mo, Business $16/user/mo, Enterprise Custom) in a clean dark-mode grid with yearly billing toggles active by default, feature checklists, but no CTA buttons visible above the fold and no 'most popular' badge guiding tier selection.",
+    "action": "navigate",
+    "target": "https://linear.app/customers",
+    "pass_fail": "in_progress",
+    "verdict": "Pricing tiers are legible but the page has a critical CTA gap above the fold, unexplained feature jargon, and a default billing toggle that may erode trust for a growth-stage buyer not ready for annual commitment.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "No 'Get started' or 'Start trial' CTA buttons are visible above the fold on any pricing tier \u2014 a VP Eng ready to commit after reviewing customer stories hits a dead end with no obvious next action."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "Tier names and prices are clear, but feature labels like 'Triage Intelligence' and 'Linear Agent (beta)' are unexplained jargon that a first-time evaluator comparing to Jira won't immediately understand."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Yearly billing is toggled on by default which could confuse a VP Eng expecting monthly pricing \u2014 no monthly option is visible, and no savings percentage is shown to justify the annual commitment."
+    },
+    "severity": 3,
+    "first_impression": "Pricing tiers are clean and immediately scannable, but the absence of any CTA button above the fold is a major conversion gap for a buyer who has just been persuaded by a customer story.",
+    "friction_points": [
+      "No tier recommendation or 'Most popular' badge is present \u2014 a VP Eng evaluating for a 30\u2013100 person SaaS engineering team has no guidance on whether Business or Enterprise is the right fit.",
+      "Feature labels like 'Triage Intelligence' and 'Linear Agent (beta)' appear with no tooltip or explanation, requiring the persona to leave the page to research what these features actually mean vs. Jira equivalents.",
+      "Yearly billing is defaulted on with no visible monthly price alternative or explicit annual savings percentage, creating hesitation for a growth-stage company not ready to commit to a 12-month contract sight-unseen."
+    ],
+    "recommendations": [
+      "Add a 'Best for growing engineering teams' badge or subtle highlight border to the Business tier to guide the most common buyer persona directly to the right plan.",
+      "Add inline '?' tooltip icons next to jargon features like 'Triage Intelligence' and 'Linear Agent (beta)' with a one-line plain-English description so the persona doesn't need to leave the page to evaluate.",
+      "Show both monthly and yearly prices simultaneously (e.g., '$19/mo or $16/mo billed yearly \u2014 save 16%') so the buyer immediately understands the trade-off without having to toggle back and forth."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 12,
+    "url": "https://linear.app/customers",
+    "observation": "Back on the /customers index: 'Customers' H1 with 8 category filter tabs (Featured active and bold), three featured story cards fully confirmed in screenshot \u2014 Coinbase ('Read story \u2192'), OpenAI ('Read story \u2192'), Cursor ('Watch video \u2192') \u2014 all with brand imagery, descriptive titles, and a partial fourth row visible at the bottom edge.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Linear's /customers section earns a marginal pass on visual polish and logo credibility but consistently underdelivers on conversion \u2014 missing aggregate proof, outcome-free CTAs, blind category filters, and case study pages that bury their best content all add up to a journey that informs but rarely converts a skeptical engineering buyer.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "'Read story \u2192' is repeated identically across cards with no outcome preview, and 'Watch video \u2192' on Cursor carries no duration label \u2014 a time-pressed VP Eng cannot make an informed click decision from the index."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "OpenAI's card title is the standout ('scaled to 3,000 users' \u2014 specific, outcome-led); Coinbase's 'bet on agent-first development' and Cursor's 'builds with Linear' are editorial narratives that deliver no measurable benefit signal to an evaluating buyer."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "The grid layout is clean and scannable, but category filter tabs lack story counts, the active 'Featured' state is only bold text with no visual highlight, and individual case study pages bury body content behind oversized hero images \u2014 all compounding friction across the full journey."
+    },
+    "severity": 2,
+    "first_impression": "High-profile logos (OpenAI, Coinbase, Cursor) create instant credibility, but the page is designed as an editorial archive rather than a conversion-focused proof engine \u2014 it lacks the aggregate trust signals, outcome-led CTAs, and guided filtering a skeptical engineering leader needs to move forward confidently.",
+    "friction_points": [
+      "No page-level trust anchor (e.g., 'Trusted by 500+ engineering teams') forces the VP Eng to click into individual stories to build confidence instead of getting aggregate proof at a single glance.",
+      "Category filter tabs display no story counts, so a persona filtering for 'SaaS' or 'Enterprise' has no idea whether they'll find 1 story or 15 \u2014 the filter feels risky and uninformative.",
+      "Individual case study pages (e.g., OpenAI) bury all story content behind a viewport-consuming decorative hero image with no story-level CTA, squandering the conversion intent generated by the strong headline."
+    ],
+    "recommendations": [
+      "Add a bold aggregate trust line directly beneath the 'Customers' H1 (e.g., 'Trusted by 500+ engineering teams worldwide') to anchor top-of-page confidence without requiring any clicks.",
+      "Append story counts to each filter tab (e.g., 'SaaS (14)', 'Enterprise (6)') so the persona can self-select the most relevant and richest category at a glance.",
+      "On case study pages, cap the hero image at ~200px height and add a contextual inline CTA beneath the headline (e.g., 'Try Linear with your team \u2192') to convert intent at the page's peak persuasion moment."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 1,
+    "url": "https://linear.app/method",
+    "observation": "Above-the-fold shows a dark, minimalist hero with abstract headline 'Practices for building,' a tagline about quality software philosophy, and no contextual CTA beyond the nav's generic 'Sign up' button.",
+    "action": "navigate",
+    "target": "https://linear.app/method",
+    "pass_fail": "in_progress",
+    "verdict": "Strong aesthetic but weak conversion scaffolding \u2014 the page needs a contextual CTA and clearer content signposting to serve an evaluating persona effectively.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only CTA is a generic nav-level 'Sign up' \u2014 no in-page prompt tied to the manifesto content."
+    },
+    "copy_quality": {
+      "score": 3,
+      "note": "'Practices for building' is evocative but reads as a fragment; the tagline is aspirational without previewing specific content."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Page loads cleanly but the above-fold gives no cue to scroll \u2014 no visual arrow, progress indicator, or teased section title."
+    },
+    "severity": 2,
+    "first_impression": "Striking visual design, but the abstract headline and absence of a contextual CTA leave a task-oriented evaluator unsure of what they'll gain by reading on.",
+    "friction_points": [
+      "No contextual CTA ties the manifesto to actually trying Linear \u2014 an evaluator ready to act has nowhere obvious to go.",
+      "The headline 'Practices for building' is a sentence fragment that doesn't signal what the page contains (principles? a framework? case studies?).",
+      "No scroll affordance or section preview nudges the evaluator below the fold, risking early exit."
+    ],
+    "recommendations": [
+      "Add a secondary CTA button below the tagline (e.g., 'Start building with Linear') so the philosophical pitch has an immediate conversion path.",
+      "Extend the headline or add a subtitle that names the specific practices (e.g., '7 principles for high-output engineering teams') to set clear expectations.",
+      "Add a subtle scroll indicator or a teaser of the first section heading to signal there is valuable content below."
+    ],
+    "confidence": "high",
+    "persona": "Engineering or product manager at a mid-market SaaS company evaluating Linear's philosophy before trialing the product"
+  },
+  {
+    "step": 2,
+    "url": "https://linear.app/method",
+    "observation": "Above-the-fold confirms the full headline is 'Practices for building' with subtitle 'There is a lost art of building true quality software. To bring back the right focus, here are the foundational ideas Linear is built on.' \u2014 no CTA, no scroll cue, no section preview.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Strong editorial voice and visual identity, but the complete absence of in-page CTAs and scroll affordances makes this a dead end for an evaluator primed to convert.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "Zero CTAs exist on the page itself \u2014 the only action available is the nav-level 'Sign up' which is disconnected from the manifesto context."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The subtitle is clean, emotionally resonant, and clearly frames this as a philosophy document \u2014 but 'Practices for building' still reads as an incomplete thought without a direct object."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "No visual affordance (arrow, fade, teased heading) signals that valuable content exists below the fold, risking early drop-off."
+    },
+    "severity": 3,
+    "first_impression": "Beautifully designed but functionally inert \u2014 an evaluator ready to act has no path forward from this screen.",
+    "friction_points": [
+      "An engineering manager who resonates with the philosophy has no immediate next step \u2014 no 'Try Linear,' 'Read the principles,' or even a scroll prompt to continue the journey.",
+      "The headline 'Practices for building' is missing its direct object ('products'? 'software'? 'teams'?) \u2014 a persona skimming quickly may not stop to parse the subtitle for clarification.",
+      "The low-contrast gray subtitle text on pure black may fail accessibility contrast thresholds, adding friction for users in bright environments or with visual impairments."
+    ],
+    "recommendations": [
+      "Embed a contextual CTA button below the subtitle (e.g., 'Start using Linear' or 'Explore the product') to bridge philosophy to action.",
+      "Complete the headline to 'Practices for building great software' so it lands instantly without requiring the subtitle as a crutch.",
+      "Increase subtitle text brightness to meet WCAG AA contrast ratio (4.5:1 minimum) against the black background."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 3,
+    "url": "https://linear.app/method",
+    "observation": "Full above-the-fold screenshot confirmed: 'THE LINEAR METHOD' label, massive 'Practices for building' headline, low-contrast gray subtitle on black, nav with Product/Resources/Customers/Pricing/Now/Contact, and a 'Sign up' button \u2014 no in-page CTA, no scroll cue, empty bottom half of viewport.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "The hero is visually polished but functionally uninviting \u2014 missing scroll cues and content previews will cause task-focused evaluators to hesitate or leave.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "The only actionable element is the nav-level 'Sign up' \u2014 nothing on the page itself directs the evaluator to read on or try the product."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Subtitle copy is crisp and emotionally resonant, but 'Practices for building' still lacks a direct object, weakening immediate comprehension."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The lower half of the viewport is completely empty with no scroll affordance, creating a dead-end feel that could trigger premature exit."
+    },
+    "severity": 3,
+    "first_impression": "Gorgeous typographic design that commands attention, but the empty lower viewport and zero in-page CTAs signal a content dead-end to an action-oriented evaluator.",
+    "friction_points": [
+      "The empty lower viewport with no scroll cue leaves an engineering manager uncertain whether there is substantive content below \u2014 high bounce risk at this point.",
+      "No table of contents or section preview tells the evaluator how many principles exist or how long the read is, making it hard to commit time to reading.",
+      "The nav item 'Now' is unexplained jargon in this context \u2014 a new evaluator scanning the nav to orient themselves will be confused about what it links to."
+    ],
+    "recommendations": [
+      "Add a subtle animated scroll indicator (chevron or fade-in section title) at the bottom of the hero to signal content below and reduce bounce.",
+      "Insert a '7 principles \u00b7 8 min read' meta line below the subtitle so the evaluator can gauge time investment before committing.",
+      "Rename or add a tooltip to the 'Now' nav item (e.g., 'What's New' or 'Changelog') to eliminate ambiguity for first-time visitors."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 4,
+    "url": "https://linear.app/method",
+    "observation": "Screenshot confirmed: full hero visible \u2014 'THE LINEAR METHOD' eyebrow, giant 'Practices for building' headline, 3-line gray subtitle on black, standard nav with Sign up \u2014 bottom third of viewport is completely empty with no scroll affordance.",
+    "action": "scroll",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "The hero is typographically striking but fails basic scroll-invitation design, creating unnecessary drop-off risk for exactly the evaluator persona this page is meant to convert.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "No in-page CTA exists anywhere in the visible viewport \u2014 Sign up in the nav is the only action, completely disconnected from the manifesto framing."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Subtitle is well-crafted and emotionally resonant, but the headline reads as a fragment without a direct object ('building what?')."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The bottom third of the viewport is a black void with zero scroll signal \u2014 a busy engineering manager has no cue that content continues below."
+    },
+    "severity": 3,
+    "first_impression": "Premium editorial aesthetic with a confident voice, but the empty viewport bottom and absent in-page CTA make it feel like a brochure with no door handle.",
+    "friction_points": [
+      "The lower ~30% of the viewport is empty black space with no visual cue to scroll \u2014 an evaluator skimming on a time budget may assume this is the entire page and leave.",
+      "No count or preview of the principles (e.g., '6 practices below') means the evaluator cannot judge whether the time investment is worth it before scrolling.",
+      "The subtitle text renders in low-contrast gray (#666ish on #000) that likely fails WCAG AA \u2014 straining readability for a manager reading on a bright monitor or in a meeting room."
+    ],
+    "recommendations": [
+      "Add a downward-pointing animated chevron or fading section title at the bottom of the hero to explicitly signal scrollable content.",
+      "Insert a '6 practices \u00b7 10 min read' meta-line beneath the subtitle to help time-conscious evaluators commit to reading on.",
+      "Lighten the subtitle text to at least #999 or use white at reduced opacity to meet minimum contrast standards on pure black."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 5,
+    "url": "https://linear.app/method",
+    "observation": "Hero confirmed via screenshot: 'THE LINEAR METHOD' eyebrow, massive serif 'Practices for building' headline, 3-line gray subtitle on pure black, standard nav \u2014 bottom ~25% of viewport is empty black with zero scroll affordance.",
+    "action": "navigate",
+    "target": "https://linear.app/method#content",
+    "pass_fail": "in_progress",
+    "verdict": "The hero has strong editorial voice but critically lacks any conversion path or scroll encouragement, creating unnecessary exit risk for the exact evaluator persona this page targets.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "No in-page CTA exists \u2014 the only action available is the nav-level 'Sign up', which is entirely disconnected from the manifesto's value proposition."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Subtitle copy ('There is a lost art of building true quality software') is punchy and emotionally resonant, but 'Practices for building' as a standalone headline is an incomplete sentence."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "The lower quarter of the viewport is empty black with no visual cue, scroll indicator, or teased section \u2014 creating a perceived dead-end for first-time visitors."
+    },
+    "severity": 3,
+    "first_impression": "Typographically bold and brand-confident, but the empty viewport bottom and missing in-page CTA make this feel like a wall rather than an invitation.",
+    "friction_points": [
+      "An engineering manager who resonates with the 'lost art' framing has nowhere to go \u2014 no 'Start reading,' no 'Try Linear,' no scroll prompt \u2014 converting philosophy-to-action is broken.",
+      "The headline 'Practices for building' has no direct object, forcing the user to read the subtitle to understand what this page is about \u2014 extra cognitive load on first contact.",
+      "There is no indication of how many practices exist or how long the page is, so a time-pressed PM cannot decide whether to invest time without blindly scrolling."
+    ],
+    "recommendations": [
+      "Add a contextual in-page CTA button below the subtitle (e.g., 'See how Linear applies these' linking to /pricing or /product) to bridge philosophy and product action.",
+      "Extend the headline to 'Practices for building great software' to make it immediately self-contained and scannable.",
+      "Add a '7 practices \u00b7 ~8 min read' progress meta-line below the subtitle so evaluators can budget their time before committing to read."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 6,
+    "url": "https://linear.app/method#content",
+    "observation": "Screenshot confirmed: identical hero view \u2014 'THE LINEAR METHOD' eyebrow label, two-line serif 'Practices for building' headline, 3-line low-contrast gray subtitle, standard nav (Product/Resources/Customers/Pricing/Now/Contact/Sign up), and ~25% empty black space below the subtitle fold.",
+    "action": "click",
+    "target": "body",
+    "pass_fail": "in_progress",
+    "verdict": "Strong brand voice and visual design undermined by a scroll dead-end, no in-page conversion path, and a self-referential headline that requires the subtitle to decode.",
+    "cta_clarity": {
+      "score": 1,
+      "note": "No CTA exists anywhere on the page body \u2014 the only action is 'Sign up' in the nav, which is contextually disconnected from a philosophy/manifesto read."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "Subtitle copy ('There is a lost art of building true quality software') is polished and emotionally compelling, but the headline is still a sentence fragment."
+    },
+    "flow_smoothness": {
+      "score": 2,
+      "note": "Confirmed empty black lower-viewport with no scroll cue, chevron, fading content, or section preview \u2014 nothing invites the evaluator to continue."
+    },
+    "severity": 3,
+    "first_impression": "Typographically authoritative and brand-distinctive, but the void below the subtitle and the total absence of an in-page CTA make it feel like a dead end.",
+    "friction_points": [
+      "The bottom ~25% of the visible viewport is empty black \u2014 a time-pressed engineering manager sees no signal that principles or content exist below the fold.",
+      "No in-page CTA anywhere on the visible page means a manager who is convinced by the philosophy has no next step to take toward trialing the product.",
+      "The headline 'Practices for building' is an orphaned fragment \u2014 without reading the subtitle, the evaluator cannot tell if this page is a blog post, docs section, or marketing manifesto."
+    ],
+    "recommendations": [
+      "Add a downward-pointing scroll indicator or animated fade revealing the first principle title at the bottom of the hero viewport.",
+      "Place a contextual CTA button (e.g., 'Try Linear \u2014 it's free') directly below the subtitle paragraph to capture intent while the philosophy message is fresh.",
+      "Complete the headline to 'Practices for building great software teams' so it communicates value independently of the subtitle."
+    ],
+    "confidence": "high"
+  },
+  {
+    "step": 7,
+    "url": "https://linear.app/method#content",
+    "observation": "Full above-the-fold screenshot confirmed: 'THE LINEAR METHOD' eyebrow, large serif 'Practices for building' headline across two lines, 3-line gray subtitle on pure black, full nav (Product/Resources/Customers/Pricing/Now/Contact/Log in/Sign up), and an empty lower-third viewport with no scroll affordance.",
+    "action": "done",
+    "target": null,
+    "pass_fail": "pass",
+    "verdict": "Strong brand voice and editorial design above the fold; the missing in-page CTA is the primary friction point for this evaluator persona, and below-fold content could not be verified \u2014 which itself validates the scroll-affordance finding.",
+    "cta_clarity": {
+      "score": 2,
+      "note": "The only available action is the nav-level 'Sign up' \u2014 no contextual in-page CTA ties the philosophy content to a product trial or next step."
+    },
+    "copy_quality": {
+      "score": 4,
+      "note": "The subtitle ('There is a lost art of building true quality software') is polished, emotionally resonant, and brand-distinctive \u2014 the only weakness is the headline's missing direct object."
+    },
+    "flow_smoothness": {
+      "score": 3,
+      "note": "Page design is clean and loads confidently, but the empty lower-viewport and absence of a scroll cue or teased section title reduce momentum for first-time evaluators."
+    },
+    "severity": 2,
+    "first_impression": "Visually authoritative and editorially confident, but the page body offers no action to take and no signal of what lies below \u2014 a manifesto without a door handle.",
+    "friction_points": [
+      "An engineering manager convinced by the philosophy framing has no in-page CTA to act on \u2014 the only option is a generic nav 'Sign up' that ignores the manifesto context entirely.",
+      "The headline 'Practices for building' is a sentence fragment; without reading the subtitle, the evaluator cannot tell if this is docs, a blog post, or a marketing manifesto.",
+      "The empty black lower-third of the viewport provides zero visual incentive to scroll \u2014 no chevron, no fading section title, no teased practice name \u2014 risking premature exit by time-pressured PMs."
+    ],
+    "recommendations": [
+      "Add a contextual CTA below the subtitle (e.g., 'See how Linear puts these into practice \u2192' linking to /pricing or a product tour) to bridge philosophy to product action.",
+      "Complete the headline to 'Practices for building great software' so it communicates standalone value without requiring the subtitle as a decoder.",
+      "Add a subtle animated scroll indicator or a partially visible first principle heading at the viewport bottom to signal and invite continued reading."
+    ],
+    "confidence": "medium"
+  }
+]

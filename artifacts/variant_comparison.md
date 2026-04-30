@@ -31,3 +31,7 @@ Four configurations of the multi-page suite, run across stripe / linear / glossi
 *Data available from batch-70 forward; batch-68 baseline rows show N/A because `advisor_called_count` cannot be reconstructed from stored Langfuse traces.*
 
 No runs in the current matrix carry advisor-fire data yet. Re-run v2_advisor / v4_8step_advisor variants after batch 70 lands to populate.
+
+## See also
+
+Quantitative metrics alone do not differentiate the variants — self-scores cluster within 0.09 composite points. See [`variant_judge.md`](variant_judge.md) for the qualitative LLM-judge findings (champion-vs-others pairwise comparison on Opus, against the pre-registered rubric at [`variant_judge_rubric.md`](variant_judge_rubric.md)).

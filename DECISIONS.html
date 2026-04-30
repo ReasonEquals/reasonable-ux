@@ -780,6 +780,95 @@
     <h3>Parallel page execution</h3>
   </article>
 </section>
+<section>
+  <h2><span class="num">9.</span>Pre-registered evaluations</h2>
+  <div class="section-intro">
+    <p>When the agent's self-scoring is too compressed to differentiate variants, an external LLM-judge pass is the next instrument. Pre-registering the rubric, hypothesis, and pairing design <em>before</em> running the judge is the discipline that separates calibration from p-hacking — once the rubric is locked, any change after the full run starts is a new dated entry, never a silent edit to this section.</p>
+  </div>
+  <article class="decision">
+    <h3>Pre-registration: Batch 71 — LLM-judge variant comparison</h3>
+    <p class="field">
+      <span class="field-label">Date pre-registered</span>
+      <span class="field-content">2026-04-29 (before any judge call).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Context</span>
+      <span class="field-content">The 4×3 variant matrix (<code>v1_baseline</code>, <code>v2_advisor</code>, <code>v3_8step</code>, <code>v4_8step_advisor</code> × stripe / linear / glossier) shipped in Batch 68 produced composite scores clustering 2.79–2.88 across all 4 variants. The agent's self-scoring is too compressed to differentiate which variant produces better UX evaluations. An external Opus judge reads pairs of variant reports against a rubric and returns per-dimension verdicts.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Pre-registered hypothesis (loosely held)</span>
+      <span class="field-content">Advisor-on variants (v2, v4) produce more specific friction points and more actionable recommendations than baselines (v1, v3), but the cost premium overprices the gap relative to v1_baseline.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Rubric</span>
+      <span class="field-content">4 dimensions — Specificity, Actionability, Coverage (normalized to opportunity, not raw step count), Persona fidelity. Full rubric with high/low anchors at <code class="code-ref">artifacts/variant_judge_rubric.md</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Pairing design</span>
+      <span class="field-content">Champion <code>v1_baseline</code> vs each of <code>v2_advisor</code> / <code>v3_8step</code> / <code>v4_8step_advisor</code> × 3 sites = 9 pairs. Champion-vs-others (not step-matched), because the portfolio question is "does the variant matrix justify cost?" not "does advisor help at fixed step count?". A step-matched supplement may follow as a sub-finding if budget permits.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Methodology</span>
+      <span class="field-content">- N=1 default; pairs flagged "close call" (any tie in a dimension OR overall winner contradicts dimension majority) are re-run at N=3 within remaining cost budget. - A/B labels randomized per call to remove position bias. - "tie" verdicts must explicitly name a "negligible" or "marginal" gap — no silent ties. - Inputs come from a frozen text-only corpus (<code>evals/variant_corpus/</code>) so the run is reproducible after the agent prompt changes. - Hard cost cap $5.00 across all calls; pre-call budget check; partial results written if cap reached.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Calibration gate</span>
+      <span class="field-content">Before the full 9-pair run, Ryan hand-labels 3-4 pilot pairs at <code class="code-ref">artifacts/variant_judge_human_labels.md</code> against the same rubric. If agreement with the judge is <50% on any dimension, that anchor is sharpened in the rubric (and a new dated entry is logged here describing the change), then the pilot is re-run. If agreement ≥70% on all dimensions, the rubric is locked and the remaining 8 pairs run without further changes.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">No-mid-run-edits rule</span>
+      <span class="field-content">Once the full N=1 sweep starts, the rubric is frozen. Any post-hoc observation about a dimension being poorly designed is logged as a separate dated entry below — never a retroactive edit to the rubric or to this pre-registration.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Tradeoffs accepted</span>
+      <span class="field-content">- N=1 default has ~variance — accepted in exchange for the $5 cap. Adaptive N=3 on close calls is the credibility-buying instrument; pairs skipped under the cap are explicitly logged in <code>variant_judge.json</code>. - 4-dimension rubric (rather than 3 or 5) — Specificity and Actionability are correlated by construction (same Claude call generates both), but collapsing them pre-data would destroy the very signal the hypothesis tests; if post-hoc judge scores show r > 0.85, future batches may collapse. - Champion = <code>v1_baseline</code> rather than <code>v3_8step</code> (the cheapest) — chosen because the portfolio narrative is "does the matrix justify cost vs the simplest baseline" rather than "is the cost premium worth it vs the cheapest variant."</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outputs</span>
+      <span class="field-content"><code class="code-ref">artifacts/variant_judge.json</code> (raw verdicts + reasons), <code class="code-ref">artifacts/variant_judge.md</code> (table + narrative). Cross-linked from <code class="code-ref">artifacts/variant_comparison.md</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Outcome</span>
+      <span class="field-content">Pending judge run. Findings will be appended to this entry as a dated sub-section, including any rubric clarifications surfaced by the calibration gate. #### 2026-04-29 calibration-pilot outcome Pilot pair: <code>stripe / v1_baseline</code> vs <code>v2_advisor</code>. Cost: $0.034 of $1.00 cap. Hand-labels: 1 pair × 2 dimensions (specificity, actionability) — not a UX-expert kappa exercise but an "is the rubric I wrote teachable when applied to a pair?" calibration. <strong>Agreement: 2 / 2.</strong> Both Ryan and Opus picked <code>v2_advisor</code> on specificity and on actionability. Judge reasoning cited specific named elements (the literal <code>1.64505177%</code> GDP stat, "Sign up with Google" CTA, "Chat with Stripe sales" widget) for specificity and concretely-scoped recommendations ("View pricing — starts at 2.9% + 30¢" text link, 15-second delay on chat widget) for actionability — i.e., the judge is applying the rubric anchors, not vibing. The judge picked <code>v1_baseline</code> on Coverage with the reason "A explicitly visits the pricing page in step 2 and surfaces TCO, IC+, and add-on friction — directly conversion-critical — while B spends both steps on the hero." That mirrors the Coverage anchor we sharpened post-review ("normalized to opportunity, not raw step count") and is the kind of judgment-not-budget signal the dimension was designed to catch.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Rubric LOCKED. Proceeding to full 9-pair N=1 sweep with adaptive N=3 on close calls.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Post-pilot observation flagged for a future batch (NOT a rubric change)</span>
+      <span class="field-content">Ryan noted that <code>v1_baseline</code>'s findings read as more "human / normal-person-readable" while <code>v2_advisor</code> skewed technical-bro for a persona that probably isn't actually a CTO. Hypothesis for a later batch: advisor mode may drift findings toward technical/bro framing; "readability" or "tone calibration to persona" may deserve its own dimension or its own ablation. <strong>Not added to the current rubric</strong> — that would be a mid-run edit. Logged here as a hypothesis to test in a separate pre-registered evaluation. #### 2026-04-29 full-sweep findings Full 9-pair sweep ran immediately after the pilot. Cost: $0.58 of $5.00 cap, 17 calls (9 N=1 baseline + 8 N=3 follow-ups across 4 close-call pairs). Outputs: <code class="code-ref">artifacts/variant_judge.json</code>, <code class="code-ref">artifacts/variant_judge.md</code>.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Per-challenger overall verdicts (3 sites each)</span>
+      <span class="field-content">- <code>v2_advisor</code>: 1W / 2L vs <code>v1_baseline</code> - <code>v3_8step</code>: 2W / 1L - <code>v4_8step_advisor</code>: 2W / 1L</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Per-site pattern (all 3 challengers vs `v1_baseline`)</span>
+      <span class="field-content">- <code>stripe</code>: all 3 challengers win — advisor-friendly vertical - <code>linear</code>: <code>v1_baseline</code> sweeps all 3 — hostile to advisor entirely - <code>glossier</code>: <code>v1_baseline</code> beats v2 and v3; loses to v4 <strong>Pre-registered hypothesis: partially confirmed, with a twist.</strong> The hypothesis split into two claims: 1. <em>Advisor variants produce more specific + actionable findings than baselines.</em> — <strong>Confirmed at the dimension level.</strong> v2_advisor and v4_8step_advisor each post 2W/1L on Specificity AND on Actionability. The advisor is doing what it was designed to do. 2. <em>The cost premium overprices the gap.</em> — <strong>Confirmed, and stronger than expected.</strong> v2_advisor costs ~38% more than v1_baseline ($1.83 vs $1.32 mean) but loses on overall verdict 1W/2L. The advisor's per-dimension wins on Specificity and Actionability are wiped out by <strong>consistent losses on Coverage</strong> (v2: 0W/3L; v4: 1W/2L). Sharper findings come at the cost of breadth.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Unexpected finding (NOT pre-registered)</span>
+      <span class="field-content"><code>v3_8step</code> — no advisor, 8 steps, cheapest variant ($0.70 mean) — is the most cost-efficient overall. It wins 2W/1L on overall verdict despite losing on Actionability (0W/2L/1T) and Persona fidelity (1W/2L). More steps without advisor outperforms the same steps with advisor, primarily because v3 also wins more often on Coverage (1W/1L/1T vs v4's 2W/1L). This contradicts the implicit assumption that the advisor's reasoning lift is worth more than the marginal step budget — at least at the rubric Opus is applying.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Caveats and known instrument limitations</span>
+      <span class="field-content">- N=1 baseline + N=3 only on close calls. Variance not measured for non-close pairs (5 of 9). Future batch: blanket N=3 on the 3 site-level "champion sweep" pairs (linear/v2, linear/v4, glossier/v3) to confirm those landslides. - Single judge model (claude-opus-4-7). Cross-judge agreement (e.g., Sonnet 4.6 as second judge) was not measured. The judge agrees with itself across N=3 close-call sweeps in 7 of 8 cases (only <code>glossier/v2_advisor</code> flipped from <code>v2_advisor</code> on pass 1 to <code>v1_baseline</code> on pass 3 — that pair's verdict is the lowest-confidence in the matrix). - Input cap of 5000 chars per side means the judge sees ~3 steps per variant (out of 18–42). This favors variants whose first 3 steps surface conversion-critical issues. The Coverage anchor was sharpened to "normalized to opportunity, not raw step count" specifically to mitigate this — but mitigation isn't elimination. - Sites are 3 (stripe, linear, glossier), purposefully chosen for vertical diversity. The vertical-level swing (stripe is advisor-friendly, linear is hostile) is one of the more interesting findings but the n=3 sites is too small to generalize.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">No further rubric changes. The advisor's mispricing claim is strong enough that the next batch will be the cross-task Haiku ablation (per <code>CLAUDE.md</code> § Known backlog) rather than another judge-rubric iteration. #### 2026-04-29 unexpected finding: advisor invocation may be broken or rare After the judge sweep, six fresh advisor runs (3× <code>v2_advisor</code> + 3× <code>v4_8step_advisor</code>, $4.97 total) were re-run to populate <code>advisor_called_count</code> per <code>cost_log.csv</code> schema added in Batch 70. <strong>All 6 rows came back with <code>advisor_called_count=0</code> AND <code>advisor_eligible_steps=0</code>.</strong> The latter field is set to <code>len(report) if advisor else 0</code> at suite-completion time, so a zero means the <code>advisor=True</code> flag did not reach <code>agent_core.run()</code> — <em>or</em> the visibility instrumentation does not capture multi-page suite runs even when the flag is honored. Two non-exclusive hypotheses: 1. <strong>Tracking bug in Batch 70's visibility wiring.</strong> The <code>--advisor</code> flag is lost or unread between <code>run.py</code>'s multi-page path and <code>agent_core.run()</code>. Symptom: <code>advisor_eligible_steps=0</code> despite the CLI invocation including <code>--advisor</code>. 2. <strong>Advisor genuinely fires rarely.</strong> Per-step cost across the 6 advisor runs averages $0.052/step vs <code>v1_baseline</code> Batch-68 average $0.039/step — a 33% premium. That is consistent with "advisor tool definition in the context adds ~33% to prompt size while the model rarely actually invokes the tool." If true, the judge sweep's "advisor mispricing" conclusion is <em>understated</em> — much of the cost premium is just longer prompts, not actual Opus reasoning. These are not mutually exclusive. Distinguishing them requires reading the trace (does the advisor tool appear in the request body? does Sonnet ever emit a tool-use block? does the post-run aggregation lose the count?) — that is a separate diagnostic batch.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Decision</span>
+      <span class="field-content">Defer diagnosis to the next batch (added to <code>CLAUDE.md</code> § Known backlog as "Advisor invocation tracking diagnosis"). The judge sweep's conclusions stand on their own — they were run against the Batch-68 corpus, not against these 6 new suites — and the unexpected finding strengthens rather than weakens the cost-mispricing claim. The 6 new suite IDs are <em>not</em> added to <code>SUITE_VARIANTS</code> in <code>compare_variants.py</code> because their <code>advisor_call_rate</code> data is unreliable until the diagnosis lands.</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Total batch 71 spend</span>
+      <span class="field-content">$5.59 ($0.034 pilot + $0.584 sweep + $4.97 pre-flight, vs $13 estimated cap of $5 judge + $8 pre-flight).</span>
+    </p>
+  </article>
+</section>
 
 <footer class="doc-foot">
   <p>Source: <code>DECISIONS.md</code> · Rendered with <code>render_decisions.py</code> · <a href="DECISIONS.pdf">PDF version</a></p>
