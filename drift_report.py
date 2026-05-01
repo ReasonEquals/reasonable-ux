@@ -7,10 +7,13 @@ Baseline strategy: first chronological run per (url, run_type). Appropriate for
 sparse data (few same-URL repeats). Upgrade to rolling median when 5+ same-type
 runs accumulate.
 
-Thresholds: per-type, uncalibrated placeholders. Multi-page runs have inherently
-higher token variance (more pages, stagger jitter) so use a looser threshold.
-When both rows carry step_count > 0, drift is measured on tokens/step rather
-than raw total — a run that spent more steps costs more tokens, which is expected.
+Thresholds: calibrated against cost_log.csv (2026-05-01, 24 runs). Normal multi-page
+variance: ±33%; single-page: <20%. Advisor variant runs intentionally exceed the multi
+threshold (+90–110% per-step vs baseline) — drift warnings during variant experiments
+are expected. Multi-page has inherently higher token variance (more pages, stagger
+jitter) so uses a looser threshold. When both rows carry step_count > 0, drift is
+measured on tokens/step rather than raw total — a run that spent more steps costs more
+tokens, which is expected.
 """
 
 import csv
