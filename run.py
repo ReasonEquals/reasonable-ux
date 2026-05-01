@@ -237,7 +237,8 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
     suite_session_id = f"suite_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     page_results = []
-    total_tokens_all = {"input": 0, "output": 0, "total": 0, "step_count": 0}
+    total_tokens_all = {"input": 0, "output": 0, "total": 0, "step_count": 0,
+                        "advisor_called_count": 0, "advisor_eligible_steps": 0}
 
     import tempfile
     auth_state_path = None
@@ -374,6 +375,8 @@ async def run_pages(base_url, goal, steps, token_budget, email, password, pages,
                 total_tokens_all["output"]    += tokens["output"]
                 total_tokens_all["total"]     += tokens["total"]
                 total_tokens_all["step_count"] += tokens.get("step_count", 0)
+                total_tokens_all["advisor_called_count"] += tokens.get("advisor_called_count", 0)
+                total_tokens_all["advisor_eligible_steps"] += tokens.get("advisor_eligible_steps", 0)
             if run_folder:
                 rp = run_folder / "report.json"
                 if rp.exists():

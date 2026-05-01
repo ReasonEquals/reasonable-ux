@@ -97,13 +97,32 @@ def _parse_page_dt(folder_name: str) -> datetime | None:
         return None
 
 
+def _suite_end_times() -> dict[str, datetime]:
+    """Compute each suite's window end as min(suite_start + 30min, next_same_site_suite_start).
+
+    Prevents cross-contamination when consecutive same-site suites are <30min apart
+    (e.g. v3→v4 stripe ran 29m09s apart, so a flat 30-min window leaks v4 pages into v3).
+    """
+    by_site: dict[str, list[tuple[datetime, str]]] = {}
+    for suite_id, (_, site) in SUITE_VARIANTS.items():
+        by_site.setdefault(site, []).append((_parse_suite_dt(suite_id), suite_id))
+    ends: dict[str, datetime] = {}
+    for items in by_site.values():
+        items.sort()
+        for i, (start, sid) in enumerate(items):
+            cap = start + SUITE_PAGE_WINDOW
+            next_start = items[i + 1][0] if i + 1 < len(items) else None
+            ends[sid] = min(cap, next_start) if next_start else cap
+    return ends
+
+
 def find_page_dirs(suite_id: str, site: str, runs_dir: Path = RUNS_DIR) -> list[Path]:
     """Return per-page run dirs whose timestamps fall in the suite's window."""
     domain_dir = runs_dir / SITE_DOMAINS[site]
     if not domain_dir.exists():
         return []
     suite_dt = _parse_suite_dt(suite_id)
-    window_end = suite_dt + SUITE_PAGE_WINDOW
+    window_end = _suite_end_times().get(suite_id, suite_dt + SUITE_PAGE_WINDOW)
     matches = []
     for child in sorted(domain_dir.iterdir()):
         if not child.is_dir() or not child.name.endswith("_single_page"):

@@ -501,3 +501,11 @@ These are not mutually exclusive. Distinguishing them requires reading the trace
 **Decision:** Defer diagnosis to the next batch (added to `CLAUDE.md` § Known backlog as "Advisor invocation tracking diagnosis"). The judge sweep's conclusions stand on their own — they were run against the Batch-68 corpus, not against these 6 new suites — and the unexpected finding strengthens rather than weakens the cost-mispricing claim. The 6 new suite IDs are *not* added to `SUITE_VARIANTS` in `compare_variants.py` because their `advisor_call_rate` data is unreliable until the diagnosis lands.
 
 **Total batch 71 spend:** $5.59 ($0.034 pilot + $0.584 sweep + $4.97 pre-flight, vs $13 estimated cap of $5 judge + $8 pre-flight).
+
+#### 2026-04-30 Batch 72b diagnosis: aggregation bug, not flag propagation
+
+Root cause is confirmed: **the `--advisor` flag propagates correctly** through `run_pages()` → `_run_one_page()` closure → `agent_core.run(advisor=True)`. The bug was one layer above: `total_tokens_all` in `run_pages()` was initialized without `advisor_called_count` / `advisor_eligible_steps` fields, and the per-page accumulation loop never added them. When `_log_cost()` was called with the aggregated dict, both fields resolved to `None` → `0`.
+
+The six batch-71 pre-flight suites **did** run with advisor enabled per page, but the per-suite counts are unrecoverable from existing artifacts. The suite IDs remain out of `SUITE_VARIANTS` until a clean re-run is done under the fix. Re-run budget: ~$5–8 (Ryan's call).
+
+**Fix landed in Batch 72b:** two-line patch to `run_pages()` init + accumulation loop. Verified via 2-page smoke test (`--pages / /pricing --advisor --steps 4`): `advisor_eligible_steps` = 8, `advisor_called_count` ≥ 0.
