@@ -10,9 +10,9 @@ Four configurations of the multi-page suite, run across stripe / linear / glossi
 | v2_advisor | stripe | 42 | 511,060 | $1.94 | 12,168 | 2.93 | 3.19 | 2.79 | 2.97 | N/A |
 | v2_advisor | linear | 34 | 431,846 | $1.59 | 12,701 | 2.09 | 3.53 | 2.71 | 2.77 | N/A |
 | v2_advisor | glossier | 40 | 529,546 | $1.94 | 13,239 | 2.98 | 3.15 | 2.58 | 2.90 | N/A |
-| v3_8step | stripe | 23 | 167,509 | $0.76 | 7,283 | 2.97 | 3.84 | 2.76 | 3.19 | N/A |
-| v3_8step | linear | 27 | 184,932 | $0.82 | 6,849 | 1.81 | 3.83 | 2.62 | 2.75 | N/A |
-| v3_8step | glossier | 18 | 110,267 | $0.52 | 6,126 | 2.79 | 2.53 | 2.29 | 2.54 | N/A |
+| v3_8step | stripe | 23 | 167,509 | $0.76 | 7,283 | 3.09 | 3.96 | 2.74 | 3.26 | N/A |
+| v3_8step | linear | 27 | 184,932 | $0.82 | 6,849 | 1.78 | 3.81 | 2.63 | 2.74 | N/A |
+| v3_8step | glossier | 18 | 110,267 | $0.52 | 6,126 | 2.11 | 2.00 | 1.89 | 2.00 | N/A |
 | v4_8step_advisor | stripe | 29 | 296,197 | $1.15 | 10,214 | 2.62 | 3.34 | 2.69 | 2.89 | N/A |
 | v4_8step_advisor | linear | 30 | 333,855 | $1.29 | 11,128 | 1.83 | 3.70 | 2.73 | 2.76 | N/A |
 | v4_8step_advisor | glossier | 30 | 308,242 | $1.19 | 10,275 | 2.87 | 2.80 | 2.67 | 2.78 | N/A |
@@ -23,7 +23,7 @@ Four configurations of the multi-page suite, run across stripe / linear / glossi
 |---|---:|---:|---:|
 | v1_baseline | $1.32 | 9,430 | 2.79 |
 | v2_advisor | $1.83 | 12,703 | 2.88 |
-| v3_8step | $0.70 | 6,753 | 2.83 |
+| v3_8step | $0.70 | 6,753 | 2.67 |
 | v4_8step_advisor | $1.21 | 10,539 | 2.81 |
 
 ## Advisor invocation rate
@@ -31,7 +31,3 @@ Four configurations of the multi-page suite, run across stripe / linear / glossi
 *Data available from batch-70 forward; batch-68 baseline rows show N/A because `advisor_called_count` cannot be reconstructed from stored Langfuse traces.*
 
 No runs in the current matrix carry advisor-fire data yet. Re-run v2_advisor / v4_8step_advisor variants after batch 70 lands to populate.
-
-## See also
-
-Quantitative metrics alone do not differentiate the variants — self-scores cluster within 0.09 composite points. See [`variant_judge.md`](variant_judge.md) for the qualitative LLM-judge findings (champion-vs-others pairwise comparison on Opus, against the pre-registered rubric at [`variant_judge_rubric.md`](variant_judge_rubric.md)).

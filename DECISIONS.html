@@ -869,7 +869,11 @@
     </p>
     <p class="field">
       <span class="field-label">Total batch 71 spend</span>
-      <span class="field-content">$5.59 ($0.034 pilot + $0.584 sweep + $4.97 pre-flight, vs $13 estimated cap of $5 judge + $8 pre-flight).</span>
+      <span class="field-content">$5.59 ($0.034 pilot + $0.584 sweep + $4.97 pre-flight, vs $13 estimated cap of $5 judge + $8 pre-flight). #### 2026-04-30 Batch 72b diagnosis: aggregation bug, not flag propagation Root cause is confirmed: <strong>the <code>--advisor</code> flag propagates correctly</strong> through <code>run_pages()</code> → <code>_run_one_page()</code> closure → <code>agent_core.run(advisor=True)</code>. The bug was one layer above: <code>total_tokens_all</code> in <code>run_pages()</code> was initialized without <code>advisor_called_count</code> / <code>advisor_eligible_steps</code> fields, and the per-page accumulation loop never added them. When <code>_log_cost()</code> was called with the aggregated dict, both fields resolved to <code>None</code> → <code>0</code>. The six batch-71 pre-flight suites <strong>did</strong> run with advisor enabled per page, but the per-suite counts are unrecoverable from existing artifacts. The suite IDs remain out of <code>SUITE_VARIANTS</code> until a clean re-run is done under the fix. Re-run budget: ~$5–8 (Ryan's call).</span>
+    </p>
+    <p class="field">
+      <span class="field-label">Fix landed in Batch 72b</span>
+      <span class="field-content">two-line patch to <code>run_pages()</code> init + accumulation loop. Verified via 2-page smoke test (<code>--pages / /pricing --advisor --steps 4</code>): <code>advisor_eligible_steps</code> = 8, <code>advisor_called_count</code> ≥ 0.</span>
     </p>
   </article>
 </section>

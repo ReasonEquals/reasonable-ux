@@ -50,11 +50,13 @@ def test_flat_top_level_layout_is_indexed(tmp_path):
 
 
 def test_suite_with_pdf_is_indexed_without_suite_report_html(tmp_path):
+    """Suite folder has PDF + cost_summary.json; page dirs live in domain subfolder (current layout)."""
     runs = tmp_path / "runs"
     suite = runs / "suite_20260428_212327"
     suite.mkdir(parents=True)
     (suite / "stripe_com_2026-04-28_213442_multi_full_editorial.pdf").write_bytes(b"%PDF-")
-    _write_report(suite / "homepage" / "report.json")
+    # Page dir timestamped within 30min of suite start (suite=21:23:27 → page=21:24:00 ✓)
+    _write_report(runs / "stripe_com" / "2026-04-28_212400_single_page" / "report.json")
 
     build_index_main(runs)
 
@@ -64,3 +66,24 @@ def test_suite_with_pdf_is_indexed_without_suite_report_html(tmp_path):
     assert suite_idx[0]["total"] == 1
     assert suite_idx[0]["passed"] == 1
     assert suite_idx[0]["html_path"].endswith("_multi_full_editorial.pdf")
+
+
+def test_suite_token_sum_from_page_dirs(tmp_path):
+    """Suite total_tokens is summed from per-page cost_summary.json, not the suite-level file."""
+    runs = tmp_path / "runs"
+    suite = runs / "suite_20260430_120000"
+    suite.mkdir(parents=True)
+    # Suite-level cost_summary.json — should be overridden by per-page sum
+    (suite / "cost_summary.json").write_text(json.dumps({"total_tokens": 999}))
+    # Two page dirs within the 30-min window (suite=12:00:00 → pages at 12:00:05 and 12:00:10)
+    for ts, tokens in [("2026-04-30_120005", 1000), ("2026-04-30_120010", 2000)]:
+        page_dir = runs / "fake_domain" / f"{ts}_single_page"
+        _write_report(page_dir / "report.json")
+        (page_dir / "cost_summary.json").write_text(json.dumps({"total_tokens": tokens}))
+
+    build_index_main(runs)
+
+    suite_idx = json.loads((runs / "suite_index.json").read_text())
+    assert len(suite_idx) == 1
+    assert suite_idx[0]["total_tokens"] == 3000  # 1000 + 2000, not 999
+    assert suite_idx[0]["total"] == 2

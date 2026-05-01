@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -12,6 +13,42 @@ def _load_cost_summary(folder: Path):
             return json.load(f)
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _parse_suite_ts(folder_name: str) -> datetime | None:
+    try:
+        return datetime.strptime(folder_name, "suite_%Y%m%d_%H%M%S")
+    except ValueError:
+        return None
+
+
+def _parse_page_ts(child_name: str) -> datetime | None:
+    stem = child_name.replace("_single_page", "")
+    try:
+        return datetime.strptime(stem, "%Y-%m-%d_%H%M%S")
+    except ValueError:
+        return None
+
+
+def _suite_page_dirs(suite_folder: Path, runs_dir: Path, window_minutes: int = 30) -> list[Path]:
+    """Return page run dirs across all domain subdirs whose timestamps fall within the suite window."""
+    suite_dt = _parse_suite_ts(suite_folder.name)
+    if suite_dt is None:
+        return []
+    window_end = suite_dt + timedelta(minutes=window_minutes)
+    page_dirs = []
+    for domain_dir in sorted(runs_dir.iterdir()):
+        if not domain_dir.is_dir() or domain_dir.name.startswith("suite_"):
+            continue
+        for child in sorted(domain_dir.iterdir()):
+            if not child.is_dir() or not child.name.endswith("_single_page"):
+                continue
+            page_dt = _parse_page_ts(child.name)
+            if page_dt is None:
+                continue
+            if suite_dt <= page_dt < window_end:
+                page_dirs.append(child)
+    return page_dirs
 
 
 def _index_individual_run(run_folder: Path, runs_dir: Path, index: list) -> None:
@@ -85,15 +122,13 @@ def main(runs_dir: Path = Path("runs")) -> None:
                 continue
 
             passed = failed = errors = total = 0
-            for child in run_folder.iterdir():
-                if not child.is_dir():
-                    continue
-                child_report = child / "report.json"
+            tokens_sum = 0
+            for page_dir in _suite_page_dirs(run_folder, runs_dir):
+                child_report = page_dir / "report.json"
                 if not child_report.exists():
                     continue
                 try:
-                    with open(child_report, "r", encoding="utf-8") as f:
-                        data = json.load(f)
+                    data = json.loads(child_report.read_text(encoding="utf-8"))
                     if data:
                         total += 1
                         status = data[-1].get("pass_fail", "unknown")
@@ -105,8 +140,11 @@ def main(runs_dir: Path = Path("runs")) -> None:
                             errors += 1
                 except (OSError, json.JSONDecodeError, KeyError, IndexError):
                     continue
+                pg_cost = _load_cost_summary(page_dir)
+                if pg_cost:
+                    tokens_sum += pg_cost.get("total_tokens") or 0
 
-            total_tokens = (cost_data or {}).get("total_tokens")
+            total_tokens = tokens_sum if tokens_sum else (cost_data or {}).get("total_tokens")
             html_path = pdfs[0] if pdfs else (run_folder / "")
 
             parts = folder_name.split("_")
