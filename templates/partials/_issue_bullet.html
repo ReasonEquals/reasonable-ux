@@ -1,0 +1,16 @@
+{#
+  _issue_bullet.html — single issue line inside the 2×2 grid.
+  Locals:
+    n   (int)
+    iss (dict) — title, fix, count, pages
+#}
+<div style="display: grid; grid-template-columns: 14px 1fr; gap: 6px; align-items: baseline;">
+  <span class="mono caption">{{ "%02d" | format(n) }}</span>
+  <div>
+    <div style="font-size: 9pt; line-height: 1.3; font-weight: 500;">{{ iss.title }}</div>
+    {% if iss.fix %}<div class="caption" style="font-size: 7.5pt; line-height: 1.3; margin-top: 2px;">{{ iss.fix }}</div>{% endif %}
+    <div class="caption" style="margin-top: 2px; letter-spacing: 0.1em; text-transform: uppercase; font-size: 6.5pt; color: var(--muted);">
+      {{ iss.count }} obs · {{ iss.pages }} page{% if iss.pages != 1 %}s{% endif %}
+    </div>
+  </div>
+</div>
