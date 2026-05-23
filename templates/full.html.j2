@@ -90,6 +90,7 @@
       ("07", "Quick wins", "What to ship in one sprint"),
       ("A", "Appendix", "Raw scores, severity scale, confidence notes"),
     ] %}
+    {% if issues %}{% set _contents = _contents | rejectattr(0, 'equalto', '07') | list %}{% endif %}
     {% if issues %}{% set _ = _contents.insert(1, ("·", "Key issues", (metrics.issuesCount ~ " issues from " ~ metrics.issueObsTotal ~ " raw observations"))) %}{% endif %}
     <div style="display: flex; flex-direction: column;">
       {% for n, t, sub in _contents %}
@@ -337,7 +338,7 @@
       Impact is inferred from severity of the friction the recommendation addresses; effort is
       inferred from scope. Start top-left.
     </p>
-    {% include "partials/recommendation_grid.html" %}
+    {% if issues %}{% include "partials/issue_grid.html" %}{% else %}{% include "partials/recommendation_grid.html" %}{% endif %}
 
     {% if execSummary and execSummary.recommendations %}
     <div class="eyebrow mt-4 mb-2">Synthesized top recommendations</div>
@@ -352,7 +353,8 @@
   </footer>
 </section>
 
-{#— 09 · Quick wins —#}
+{#— 09 · Quick wins (single-page only; multi-page subsumes this into Key issues) —#}
+{% if not issues %}
 {% set _wins = [] %}
 {% for r in recommendations.all if r.effort <= 2 and r.impact >= 2 %}{% set _ = _wins.append(r) %}{% endfor %}
 {% set wins = _wins[:8] %}
@@ -404,6 +406,7 @@
     <span class="folio">One-sprint fixes</span>
   </footer>
 </section>
+{% endif %}
 
 {#— 10 · Appendix —#}
 <section class="page" style="height: 11in;">
