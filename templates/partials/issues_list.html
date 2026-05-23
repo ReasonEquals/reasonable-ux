@@ -1,0 +1,53 @@
+{#
+  issues_list.html — synthesized distinct issues, with per-persona takes.
+  Locals:
+    issues       (list[dict]) — title, description, severity, affectedPages, count, personaTakes
+    severityMeta (list[dict])
+    start        (int, optional) — numbering offset for paged rendering
+#}
+{%- set _start = start if start is defined else 0 -%}
+<div style="display: flex; flex-direction: column; gap: 12px;">
+  {% for iss in issues %}
+  <div style="padding-bottom: 10px; border-bottom: 1px solid var(--rule-soft);">
+    <div style="
+        display: grid; grid-template-columns: 28px 1fr 52px;
+        align-items: baseline; gap: 10px;">
+      <span class="mono text-muted" style="font-size: 9pt;">{{ "%02d" | format(_start + loop.index) }}</span>
+      <div>
+        <div style="font-weight: 600; font-size: 10.5pt;">
+          <span class="sev-glyph sev-{{ iss.severity }}"></span>{{ iss.title }}
+          <span class="caption text-muted" style="margin-left: 4px;">{{ severityMeta[iss.severity].label }}</span>
+        </div>
+        {% if iss.description %}
+        <div class="caption" style="margin-top: 3px; line-height: 1.45;">{{ iss.description }}</div>
+        {% endif %}
+        {% if iss.fix %}
+        <div class="caption" style="margin-top: 4px; line-height: 1.45; color: var(--fg);">
+          <span class="small-caps" style="color: var(--accent); font-weight: 600;">Fix</span>
+          — {{ iss.fix }}
+        </div>
+        {% endif %}
+        {% if iss.affectedPages %}
+        <div class="caption text-muted" style="margin-top: 3px;">
+          Affects: {{ iss.affectedPages | join(", ") }}
+        </div>
+        {% endif %}
+        {% if iss.personaTakes %}
+        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+          {% for take in iss.personaTakes %}
+          <div style="display: grid; grid-template-columns: 4px 1fr; gap: 8px;">
+            <span style="background: {{ take.color }}; border-radius: 2px;"></span>
+            <div class="caption" style="line-height: 1.4;">
+              <span class="small-caps" style="color: {{ take.color }}; font-weight: 600;">{{ take.role }}</span>
+              — {{ take.text }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="mono" style="text-align: right; font-size: 11pt; color: var(--accent);">{{ iss.count }}&times;</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
