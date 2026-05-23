@@ -8,8 +8,8 @@
   <div class="grid g-4 gap-4 mb-4">
     {% with label="Overall UX score", value=metrics.overall, sub="/ 5" %}{% include "partials/summary_stat.html" %}{% endwith %}
     {% with label="Personas evaluated", value=metrics.personasCount, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
-    {% with label="Friction points", value=metrics.totalFriction, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
-    {% with label="Recommendations", value=metrics.totalRecs, sub=None %}{% include "partials/summary_stat.html" %}{% endwith %}
+    {% with label=("Key issues" if metrics.issuesCount is defined else "Friction points"), value=(metrics.issuesCount if metrics.issuesCount is defined else metrics.totalFriction), sub=(("from " ~ metrics.totalFriction ~ " observations") if metrics.issuesCount is defined else None) %}{% include "partials/summary_stat.html" %}{% endwith %}
+    {% with label=("Fixes" if metrics.issuesCount is defined else "Recommendations"), value=(metrics.issuesCount if metrics.issuesCount is defined else metrics.totalRecs), sub=(("synthesized · " ~ metrics.totalRecs ~ " raw") if metrics.issuesCount is defined else None) %}{% include "partials/summary_stat.html" %}{% endwith %}
   </div>
   <div class="grid gap-4" style="grid-template-columns: 1.2fr 1fr;">
     <div>

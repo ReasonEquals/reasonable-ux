@@ -115,6 +115,156 @@ def _exec_summary_content(page_summaries, tech_summary=None):
         return [], [], "", ""
 
 
+# ── Issue synthesis via Claude Sonnet ────────────────────────────────────────
+def _synthesize_issues(steps, persona_results):
+    """Cluster every per-step friction observation into 8-15 distinct issues via one
+    claude-sonnet-4-6 call. Returns (issues, total_observations). The LLM clusters,
+    titles, and maps persona findings only; severity/count/affectedPages are computed
+    in Python. Returns ([], total) on any failure so the template degrades gracefully."""
+    import anthropic
+
+    # Collect raw friction observations, numbered 1..N. Each friction[i] is paired
+    # with the step's recommendations[i] (the agent emits them together), so we keep
+    # the paired raw rec text to feed the LLM for per-issue fix synthesis.
+    observations = []
+    for s in steps:
+        page_label = s.get("pageLabel") or "—"
+        recs = s.get("recommendations") or []
+        for i, fp in enumerate(s.get("friction") or []):
+            text = sanitize_field(fp.get("text") or "")
+            if not text:
+                continue
+            sev = fp.get("severity")
+            sev = sev if isinstance(sev, int) and 0 <= sev <= 4 else 0
+            rec_text = sanitize_field((recs[i] or {}).get("text") or "") if i < len(recs) else ""
+            observations.append({"text": text, "severity": sev, "pageLabel": page_label,
+                                 "rec": rec_text})
+    total = len(observations)
+    if total == 0:
+        return [], 0
+
+    # Collect each evaluator persona's own key findings, numbered P1..Pm.
+    persona_findings = []
+    for p in persona_results or []:
+        role = sanitize_field(p.get("role") or p.get("archetype") or "Persona")
+        color = p.get("color") or "#888888"
+        for kf in p.get("key_findings") or []:
+            kf = sanitize_field(kf or "")
+            if kf:
+                persona_findings.append({
+                    "key": f"P{len(persona_findings) + 1}", "personaId": p.get("id") or "",
+                    "role": role, "color": color, "text": kf,
+                })
+
+    obs_lines = "\n".join(
+        f"[{i + 1}] ({o['pageLabel']}) {o['text']}"
+        + (f"\n    → suggested fix: {o['rec']}" if o["rec"] else "")
+        for i, o in enumerate(observations)
+    )
+    persona_block = ""
+    if persona_findings:
+        pf_lines = "\n".join(
+            f"[{pf['key']}] persona={pf['role']}: {pf['text']}" for pf in persona_findings
+        )
+        persona_block = (
+            "\n\nEach evaluator persona also summarized the site in their own words. "
+            "Assign each persona finding below to the one issue it most relates to "
+            "(a finding may relate to no issue — then omit it):\n" + pf_lines
+        )
+
+    prompt = (
+        f"You are analyzing {total} raw UX friction observations collected across a "
+        "multi-page website walkthrough. Many describe the SAME underlying issue in "
+        "different words.\n\n"
+        f"Friction observations (numbered, with the page each came from):\n{obs_lines}"
+        f"{persona_block}\n\n"
+        "Cluster the friction observations into 8-15 DISTINCT underlying issues. Every "
+        "observation number must be assigned to exactly one issue. Do not invent "
+        "numbers. For each issue write a `title` (<=8-word noun phrase), a 1-2 "
+        "sentence `description`, and a `fix` — ONE canonical 1-2 sentence "
+        "recommendation that addresses this issue, grounded in the `suggested fix` "
+        "lines from the observations in the cluster (do not invent fixes that have "
+        "no basis in those lines). Order issues most to least important.\n\n"
+        'Respond ONLY with valid JSON: {"issues": [{"title": "...", "description": '
+        '"...", "fix": "...", "observation_numbers": [1, 2], '
+        '"persona_finding_numbers": ["P1"]}]}'
+    )
+
+    try:
+        client = anthropic.Anthropic()
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=8192,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = msg.content[0].text.strip() if msg.content else ""
+        if not raw:
+            raise ValueError("Empty response")
+        if raw.startswith("```"):
+            raw = raw.split("```", 2)[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+            raw = raw.rstrip("`").strip()
+        data = json.loads(raw)
+    except Exception as e:
+        print(f"⚠️  Issue synthesis failed: {e}")
+        return [], total
+
+    # Post-process: the LLM only clustered + titled — all counts are computed here.
+    obs_by_num = {i + 1: o for i, o in enumerate(observations)}
+    pf_by_key = {pf["key"]: pf for pf in persona_findings}
+    assigned_obs: set = set()
+    assigned_pf: set = set()
+    issues = []
+    for raw_issue in data.get("issues", []):
+        nums = [
+            n for n in raw_issue.get("observation_numbers", [])
+            if isinstance(n, int) and n in obs_by_num and n not in assigned_obs
+        ]
+        if not nums:
+            continue
+        assigned_obs.update(nums)
+        takes = []
+        for pk in raw_issue.get("persona_finding_numbers", []):
+            if pk in pf_by_key and pk not in assigned_pf:
+                assigned_pf.add(pk)
+                pf = pf_by_key[pk]
+                takes.append({"personaId": pf["personaId"], "role": pf["role"],
+                              "color": pf["color"], "text": pf["text"]})
+        issues.append({
+            "title": sanitize_field(raw_issue.get("title") or "Untitled issue"),
+            "description": sanitize_field(raw_issue.get("description") or ""),
+            "fix": sanitize_field(raw_issue.get("fix") or ""),
+            "personaTakes": takes, "_nums": nums,
+        })
+
+    # Cap at 20 issues — return the dropped issues' observations to the leftover pool.
+    if len(issues) > 20:
+        issues.sort(key=lambda x: (
+            -max(obs_by_num[n]["severity"] for n in x["_nums"]), -len(x["_nums"]),
+        ))
+        for dropped in issues[20:]:
+            assigned_obs.difference_update(dropped["_nums"])
+        issues = issues[:20]
+
+    # Reconcile any unassigned observation so sum(count) always equals `total`.
+    leftover = [n for n in obs_by_num if n not in assigned_obs]
+    if leftover:
+        issues.append({
+            "title": "Other observations",
+            "description": "Friction points that did not cluster into a distinct issue.",
+            "fix": "", "personaTakes": [], "_nums": leftover,
+        })
+
+    for iss in issues:
+        members = [obs_by_num[n] for n in iss.pop("_nums")]
+        iss["severity"] = max(m["severity"] for m in members)
+        iss["affectedPages"] = sorted({m["pageLabel"] for m in members})
+        iss["count"] = len(members)
+
+    return issues, total
+
+
 # ── HTML+Playwright renderer (Phase C+) ──────────────────────────────────────
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -339,6 +489,12 @@ def stitch_reports(page_results, base_url, output_path, persona_results=None, *,
             normalized["steps"][step_offset]["isGroupStart"] = True
             normalized["steps"][step_offset]["groupUrl"] = pr["url"]
         step_offset += len(pr["report"])
+
+    print("🧠 Synthesizing distinct issues...")
+    issues, issue_obs_total = _synthesize_issues(normalized["steps"], persona_results)
+    normalized["issues"] = issues
+    normalized["metrics"]["issuesCount"] = len(issues)
+    normalized["metrics"]["issueObsTotal"] = issue_obs_total
 
     normalized["execSummary"] = {
         "findings":          exec_findings,

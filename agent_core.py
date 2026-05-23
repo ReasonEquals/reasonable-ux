@@ -336,7 +336,7 @@ def _build_prompt(goal, step, max_steps, email, password, url=None, persona=None
 
 Current step: {step + 1}
 
-Friction is REQUIRED. Every real website has at least one friction point for any given persona — unclear CTAs, hidden pricing, cognitive load, competing messages, missing social proof, copy that assumes context. You MUST surface 1-3 concrete friction points on every step unless action="done" AND severity=0 (in which case verdict must justify the zero-friction claim). Empty friction_points on a non-`done` step is invalid. Keep every text field terse — one short sentence per note.
+Friction is REQUIRED, but do not repeat yourself. Every real website has friction for any given persona — unclear CTAs, hidden pricing, cognitive load, competing messages, missing social proof, copy that assumes context. Surface only friction NEW to this step: if you already raised a friction point on an earlier step of this walkthrough, do not flag it again — list only friction not yet mentioned. On step 1 you MUST surface 1-3 concrete friction points. On a later step, list 0-3 NEW friction points; an empty list is valid only when every friction point you would raise was already flagged on an earlier step (then say so in the verdict) or when action="done" AND severity=0. Empty friction_points is otherwise invalid on a non-`done` step. Keep every text field terse — one short sentence per note.
 
 Navigate the page and evaluate the user experience. Respond in JSON with exactly this shape:
 {{
@@ -349,7 +349,7 @@ Navigate the page and evaluate the user experience. Respond in JSON with exactly
     "flow_smoothness": {{"score": 1-5, "note": "one short sentence"}},
     "severity": "integer 0-4 — Nielsen severity for the worst issue. 0=no problem, 1=cosmetic, 2=minor, 3=major, 4=catastrophe. Be honest; don't pad.",
     "first_impression": "one short sentence",
-    "friction_points": ["REQUIRED: 1-3 concrete, one-sentence friction points this persona would encounter on THIS page. Not generic UX maxims. Empty list is invalid unless action=done AND severity=0."],
+    "friction_points": ["NEW friction points for this step — 1-3 concrete, one-sentence points NOT already raised on an earlier step of this walkthrough. Not generic UX maxims. On step 1 the list must be non-empty; on a later step an empty list is valid only if all friction was already raised earlier (or action=done AND severity=0)."],
     "recommendations": ["one concrete fix per friction point — one short sentence each. Same count as friction_points."],
     "confidence": "high | medium | low",
     "pass_fail": "pass | fail | in_progress",

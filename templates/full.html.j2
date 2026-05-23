@@ -51,7 +51,7 @@
           max-width: 38ch;
           line-height: 1.3;">
         A {{ metrics.personasCount }}-persona walkthrough across {{ metrics.stepsCount }} steps,
-        surfacing {{ metrics.totalFriction }} friction points and {{ metrics.totalRecs }} prioritized fixes.
+        surfacing {% if metrics.issuesCount is defined %}{{ metrics.issuesCount }} distinct issues{% else %}{{ metrics.totalFriction }} friction points and {{ metrics.totalRecs }} prioritized fixes{% endif %}.
       </div>
     </div>
 
@@ -90,6 +90,7 @@
       ("07", "Quick wins", "What to ship in one sprint"),
       ("A", "Appendix", "Raw scores, severity scale, confidence notes"),
     ] %}
+    {% if issues %}{% set _ = _contents.insert(1, ("·", "Key issues", (metrics.issuesCount ~ " issues from " ~ metrics.issueObsTotal ~ " raw observations"))) %}{% endif %}
     <div style="display: flex; flex-direction: column;">
       {% for n, t, sub in _contents %}
       <div style="
@@ -101,7 +102,7 @@
           <div style="font-size: 12pt; font-weight: 500;">{{ t }}</div>
           <div class="caption">{{ sub }}</div>
         </div>
-        <span class="mono text-muted caption">§{{ n }}</span>
+        <span class="mono text-muted caption">{% if n[0].isalnum() %}§{{ n }}{% endif %}</span>
       </div>
       {% endfor %}
     </div>
@@ -150,6 +151,34 @@
     <span class="folio">01</span>
   </footer>
 </section>
+
+{#— Key issues (synthesized, unnumbered) —#}
+{% if issues %}
+{% for issue_page in issues | batch(5) %}
+<section class="page" style="height: 11in;">
+  <header class="page-head">
+    <span class="small-caps text-muted">Key issues{% if not loop.first %} (cont.){% endif %}</span>
+    <span class="small-caps text-muted">{{ site.name }}</span>
+  </header>
+  <div class="page-body">
+    {% if loop.first %}
+    <div class="eyebrow mb-1">Synthesized</div>
+    <h2 style="margin: 0 0 6px;">{{ metrics.issuesCount }} distinct issues</h2>
+    <p class="caption mb-4" style="max-width: 70ch;">
+      The {{ metrics.issueObsTotal }} raw friction observations recorded across every
+      step collapse into these {{ metrics.issuesCount }} underlying issues, each with
+      the evaluator personas' own takes where they apply.
+    </p>
+    {% endif %}
+    {% with issues=issue_page, start=loop.index0 * 5 %}{% include "partials/issues_list.html" %}{% endwith %}
+  </div>
+  <footer class="page-foot">
+    <span class="folio">Key issues</span>
+    <span class="folio">—</span>
+  </footer>
+</section>
+{% endfor %}
+{% endif %}
 
 {#— 04 · Methodology —#}
 <section class="page" style="height: 11in;">
